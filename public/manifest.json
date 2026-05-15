@@ -2,7 +2,7 @@
   "name": "Editorial Devotion",
   "short_name": "Devotion",
   "description": "Your 4H Quiet Time Sanctuary — Hear, Heed, Hold, Help.",
-  "start_url": "/today",
+  "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#fdf6ec",
