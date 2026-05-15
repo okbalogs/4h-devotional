@@ -1,0 +1,289 @@
+"use client"
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/context/AuthContext'
+import { supabase } from '@/utils/supabase'
+
+const BIBLE_VERSIONS = [
+  { code: 'kjv', label: 'KJV' },
+  { code: 'web', label: 'WEB' },
+  { code: 'asv', label: 'ASV' },
+]
+
+export default function Settings() {
+  const { user, logout } = useAuth()
+  const router = useRouter()
+  const [activeTab, setActiveTab] = useState('General')
+  const [saving, setSaving] = useState(false)
+  const [saveMsg, setSaveMsg] = useState(null)
+  const [loaded, setLoaded] = useState(false)
+
+  // Profile fields
+  const [fullName, setFullName] = useState('')
+  const [church, setChurch] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState(null)
+
+  // Preferences
+  const [bibleVersion, setBibleVersion] = useState('web')
+  const [reminders, setReminders] = useState(true)
+  const [reminderTime, setReminderTime] = useState('06:00')
+  const [publicProfile, setPublicProfile] = useState(false)
+  const [weeklySummary, setWeeklySummary] = useState(true)
+  const [communityPrayers, setCommunityPrayers] = useState(false)
+
+  useEffect(() => {
+    if (!user) return
+    setFullName(user.user_metadata?.full_name ?? '')
+
+    supabase
+      .from('profiles')
+      .select('avatar_url, bible_version, church, reminders_enabled, reminder_time, public_profile, weekly_summary, community_prayers')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (!data) return
+        if (data.avatar_url) setAvatarUrl(data.avatar_url)
+        if (data.bible_version) setBibleVersion(data.bible_version)
+        if (data.church) setChurch(data.church)
+        setReminders(data.reminders_enabled ?? true)
+        setReminderTime(data.reminder_time ?? '06:00')
+        setPublicProfile(data.public_profile ?? false)
+        setWeeklySummary(data.weekly_summary ?? true)
+        setCommunityPrayers(data.community_prayers ?? false)
+        setLoaded(true)
+      })
+  }, [user])
+
+  const handleSave = async () => {
+    setSaving(true)
+    setSaveMsg(null)
+
+    const [authResult, profileResult] = await Promise.all([
+      supabase.auth.updateUser({ data: { full_name: fullName } }),
+      supabase.from('profiles').upsert({
+        id: user.id,
+        bible_version: bibleVersion,
+        church,
+        reminders_enabled: reminders,
+        reminder_time: reminderTime,
+        public_profile: publicProfile,
+        weekly_summary: weeklySummary,
+        community_prayers: communityPrayers,
+        updated_at: new Date().toISOString(),
+      }),
+    ])
+
+    const error = authResult.error || profileResult.error
+    setSaving(false)
+    setSaveMsg(error ? error.message : 'Changes saved.')
+    setTimeout(() => setSaveMsg(null), 3000)
+  }
+
+  const handleDiscard = () => {
+    setFullName(user?.user_metadata?.full_name ?? '')
+    setChurch('')
+    setSaveMsg(null)
+  }
+
+  return (
+    <div className="page-container">
+      <header className="page-header">
+        <h1 className="page-title">Settings</h1>
+      </header>
+
+      <div className="tabs">
+        {['General', 'Notifications', 'Privacy', 'Subscription'].map(tab => (
+          <button
+            key={tab}
+            className={`tab-btn ${activeTab === tab ? 'tab-btn--active' : ''}`}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'General' && (
+        <div className="tab-content" style={{ animation: 'fadeIn 0.3s ease' }}>
+
+          {/* Profile Management */}
+          <section className="settings-section">
+            <h2 className="section-title">Profile Management</h2>
+            <div className="card-soft profile-card" style={{ background: '#fff' }}>
+              <div className="avatar-upload">
+                <img
+                  src={avatarUrl ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName || user?.email || 'U')}&background=9d4f14&color=fff`}
+                  alt="Profile"
+                />
+                <button className="update-photo-btn">UPDATE PHOTO</button>
+              </div>
+              <div className="profile-form">
+                <div className="form-row">
+                  <div>
+                    <label className="input-label">Full Name</label>
+                    <input
+                      type="text"
+                      className="input-soft"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="input-label">Email Address</label>
+                    <input type="email" className="input-soft" value={user?.email ?? ''} disabled />
+                  </div>
+                </div>
+                <div>
+                  <label className="input-label">Church / Denomination (Optional)</label>
+                  <input
+                    type="text"
+                    className="input-soft"
+                    placeholder="e.g. ECWA Central, Abuja"
+                    value={church}
+                    onChange={(e) => setChurch(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Daily Selah */}
+          <section className="settings-section">
+            <h2 className="section-title">Daily Selah</h2>
+            <div className="cards-grid">
+              <div className="mini-card">
+                <div className="mini-card-header">
+                  <div className="circle-icon">🔔</div>
+                  <div className={`toggle-switch ${reminders ? 'on' : ''}`} onClick={() => setReminders(v => !v)} />
+                </div>
+                <div>
+                  <h3>Daily Reminders</h3>
+                  <p>Receive a gentle nudge for your morning devotion.</p>
+                </div>
+              </div>
+
+              <div className="mini-card">
+                <div className="mini-card-header">
+                  <div className="circle-icon">📖</div>
+                </div>
+                <div>
+                  <h3>Bible Version</h3>
+                  <p style={{ fontSize: '0.8rem', color: '#999', marginBottom: '8px' }}>KJV · WEB · ASV</p>
+                  <div className="pill-selector">
+                    {BIBLE_VERSIONS.map(({ code, label }) => (
+                      <span
+                        key={code}
+                        className={`pill ${bibleVersion === code ? 'active' : ''}`}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => setBibleVersion(code)}
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mini-card">
+                <div className="mini-card-header">
+                  <div className="circle-icon">👁️</div>
+                  <div className={`toggle-switch ${publicProfile ? 'on' : ''}`} onClick={() => setPublicProfile(v => !v)} />
+                </div>
+                <div>
+                  <h3>Public Profile</h3>
+                  <p>Allow church members to find you and share prayer requests.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Notifications */}
+          <section className="settings-section">
+            <h2 className="section-title">Notifications</h2>
+            <div className="cards-grid">
+              <div className="mini-card">
+                <div className="mini-card-header">
+                  <div className="circle-icon">⏰</div>
+                </div>
+                <div>
+                  <h3>Morning Devotion</h3>
+                  <p>Set your preferred time for daily morning reminders.</p>
+                  <input
+                    type="time"
+                    className="input-soft"
+                    value={reminderTime}
+                    onChange={(e) => setReminderTime(e.target.value)}
+                    style={{ marginTop: '12px', padding: '6px 12px' }}
+                  />
+                </div>
+              </div>
+
+              <div className="mini-card">
+                <div className="mini-card-header">
+                  <div className="circle-icon">📊</div>
+                  <div className={`toggle-switch ${weeklySummary ? 'on' : ''}`} onClick={() => setWeeklySummary(v => !v)} />
+                </div>
+                <div>
+                  <h3>Weekly Summary</h3>
+                  <p>Get a recap of your journaling consistency every Sunday.</p>
+                </div>
+              </div>
+
+              <div className="mini-card">
+                <div className="mini-card-header">
+                  <div className="circle-icon">🤲</div>
+                  <div className={`toggle-switch ${communityPrayers ? 'on' : ''}`} onClick={() => setCommunityPrayers(v => !v)} />
+                </div>
+                <div>
+                  <h3>Community Prayers</h3>
+                  <p>Receive alerts when members share new prayer requests.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Account Security */}
+          <section className="settings-section">
+            <h2 className="section-title">Account Security</h2>
+            <div className="card-strong flex-between">
+              <div className="gap-12">
+                <div className="circle-icon circle-icon-white">🔑</div>
+                <div>
+                  <h3 style={{ fontSize: '1.05rem', color: '#333' }}>Change Your Password</h3>
+                  <p style={{ fontSize: '0.85rem', color: '#666' }}>Update your credentials to keep your journal private.</p>
+                </div>
+              </div>
+              <div className="flex-between gap-12">
+                <button className="btn-white" onClick={() => router.push('/forgot-password')}>Change Password</button>
+                <button className="btn-danger-light" onClick={logout}>↳ Logout</button>
+              </div>
+            </div>
+          </section>
+
+          <div className="action-footer">
+            {saveMsg && (
+              <span style={{ fontSize: '0.85rem', color: saveMsg === 'Changes saved.' ? '#2b7a3b' : '#c0392b' }}>
+                {saveMsg}
+              </span>
+            )}
+            <button className="btn-text" onClick={handleDiscard}>Discard Changes</button>
+            <button
+              className="btn-primary"
+              style={{ border: 'none', padding: '12px 24px', borderRadius: '8px', background: '#9d4f14', color: '#fff', fontWeight: 600 }}
+              onClick={handleSave}
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {activeTab !== 'General' && (
+        <div className="tab-content" style={{ animation: 'fadeIn 0.3s ease', padding: '40px 0' }}>
+          <p style={{ color: '#888', textAlign: 'center' }}>This pane is configured globally within General.</p>
+        </div>
+      )}
+    </div>
+  )
+}
