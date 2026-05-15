@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/utils/supabase'
@@ -22,6 +22,8 @@ export default function Settings() {
   const [fullName, setFullName] = useState('')
   const [church, setChurch] = useState('')
   const [avatarUrl, setAvatarUrl] = useState(null)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const fileInputRef = useRef(null)
 
   // Preferences
   const [bibleVersion, setBibleVersion] = useState('web')
@@ -85,6 +87,39 @@ export default function Settings() {
     setSaveMsg(null)
   }
 
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingPhoto(true)
+    setSaveMsg(null)
+
+    const ext = file.name.split('.').pop()
+    const path = `${user.id}/avatar.${ext}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(path, file, { upsert: true })
+
+    if (uploadError) {
+      setSaveMsg(uploadError.message)
+      setUploadingPhoto(false)
+      return
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
+
+    await supabase.from('profiles').upsert({
+      id: user.id,
+      avatar_url: publicUrl,
+      updated_at: new Date().toISOString(),
+    })
+
+    setAvatarUrl(publicUrl)
+    setSaveMsg('Photo updated.')
+    setTimeout(() => setSaveMsg(null), 3000)
+    setUploadingPhoto(false)
+  }
+
   return (
     <div className="page-container">
       <header className="page-header">
@@ -115,7 +150,20 @@ export default function Settings() {
                   src={avatarUrl ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName || user?.email || 'U')}&background=9d4f14&color=fff`}
                   alt="Profile"
                 />
-                <button className="update-photo-btn">UPDATE PHOTO</button>
+                <button
+                  className="update-photo-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingPhoto}
+                >
+                  {uploadingPhoto ? 'UPLOADING...' : 'UPDATE PHOTO'}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={handleAvatarChange}
+                />
               </div>
               <div className="profile-form">
                 <div className="form-row">
