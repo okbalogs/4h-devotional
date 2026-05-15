@@ -1,69 +1,59 @@
+"use client"
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import hero from "../assets/images/hero.png"
+import { useScrollReveal } from '@/hooks/useScrollReveal'
+
+const pillars = [
+  { step: 'H1', title: 'Hear', sub: 'What does God say?' },
+  { step: 'H2', title: 'Heed', sub: 'How does it convict me?' },
+  { step: 'H3', title: 'Hold', sub: 'What will I do today?' },
+  { step: 'H4', title: 'Help', sub: 'Who can I serve?' },
+]
+
+const DEMO_STEPS = ['Hear', 'Heed', 'Hold', 'Help']
+const DEMO_PROMPTS = {
+  Hear: 'What does this passage say? Write it in your own words…',
+  Heed: 'What does this stir in your heart? What conviction or comfort do you feel?',
+  Hold: 'What one specific action will you take today because of this?',
+  Help: 'Who in your life needs to hear this truth today?',
+}
+const DEMO_VERSE = 'Psalm 46:10 — "Be still, and know that I am God."'
 
 export default function Landing() {
-  const framework = [
-    {
-      step: "01",
-      title: "Head",
-      description:
-        "What does God say? Listen to the scripture closely, identifying the main truths and key messages.",
-      color: "#f5e6d3",
-      link: "/explore#hear",
-    },
-    {
-      step: "02",
-      title: "Heart",
-      description:
-        "Let the word penetrate your heart. Reflect on the emotions it stirs and the conviction it brings.",
-      color: "#f5e6d3",
-      link: "/explore#heart",
-    },
-    {
-      step: "03",
-      title: "Hand",
-      description:
-        "Think about what you've read. What truths have you learned? How does this change your perspective?",
-      color: "#f5e6d3",
-      link: "/explore#head",
-    },
-    {
-      step: "04",
-      title: "Help",
-      description:
-        "Put it into practice. What action steps will you take to apply the word to your life and extend to others?",
-      color: "#9d4f14",
-      link: "/explore#help",
-    },
-  ]
+  const pillarsRef = useScrollReveal()
+  const ctaRef = useScrollReveal()
+
+  const [demoStep, setDemoStep] = useState('Hear')
+  const [demoTexts, setDemoTexts] = useState({ Hear: '', Heed: '', Hold: '', Help: '' })
+
+  const currentIdx = DEMO_STEPS.indexOf(demoStep)
+  const isLast = currentIdx === DEMO_STEPS.length - 1
 
   return (
     <main>
       {/* ─── HERO ─── */}
       <section className="hero-section">
         <div className="hero-text">
+          <span className="section-tag">FOR ECWA BELIEVERS</span>
           <h1>
-            A Sanctuary for your <em>Daily Selah</em>
+            Your daily <em>Quiet Time</em>,<br />structured and sacred.
           </h1>
           <p>
-            Engage with God through the ECWA 4H Quiet time format:{" "}
-            <strong>Hear, Heart, Head, Help</strong>. A digital parchment
-            for your spiritual journey.
+            The ECWA 4H method — Hear, Heed, Hold, Help — is a proven framework
+            for engaging God's word with your whole self. Editorial Devotion gives
+            you a private, distraction-free space to practise it every morning.
           </p>
           <div className="hero-buttons">
-            <Link href="/signup" className="btn-primary">
-              Start Your Journey
-            </Link>
-            <Link href="/explore" className="btn-outline">
-              Explore the 4H Method
-            </Link>
+            <Link href="/signup" className="btn-primary">Begin Your Journey</Link>
+            <Link href="/explore" className="btn-outline">Learn the 4H Method</Link>
           </div>
         </div>
         <div className="hero-image">
           <Image
             src={hero}
-            alt="Bible and coffee — quiet time"
+            alt="Open Bible and pen for morning quiet time"
             priority
             placeholder="blur"
           />
@@ -71,130 +61,88 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── 4H FRAMEWORK ─── */}
-      <section className="framework-section">
-        <span className="section-tag">THE METHOD</span>
-        <h2>The ECWA 4H Framework</h2>
-        <div className="framework-divider" />
-
-        <div className="framework-grid">
-          {framework.map((item) => (
-            <Link
-              href={item.link}
-              key={item.step}
-              className={`framework-card ${
-                item.step === "04" ? "framework-card--accent" : ""
-              }`}
-            >
-              <span className="framework-step">{item.step}</span>
-              <h3>{item.title}</h3>
-              <p>{item.description}</p>
-              <span className="framework-link">
-                Explore →
-              </span>
-            </Link>
+      {/* ─── 4H PILLS ─── */}
+      <section ref={pillarsRef} className="pillars-section reveal">
+        <span className="section-tag">THE 4H FRAMEWORK</span>
+        <h2>Four questions. One faithful morning.</h2>
+        <p className="pillars-sub">
+          Every devotional entry you write walks through four intentional steps.
+          <Link href="/explore" className="pillars-more"> See how it works →</Link>
+        </p>
+        <div className="pillars-row">
+          {pillars.map(({ step, title, sub }) => (
+            <div className="pillar-pill" key={step}>
+              <span className="pillar-step">{step}</span>
+              <strong>{title}</strong>
+              <span className="pillar-sub">{sub}</span>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* ─── FEATURE HIGHLIGHTS ─── */}
-      <section className="features-section">
-        <div className="features-top">
-          <div className="feature-card feature-card--wide">
-            <div className="feature-card-text">
-              <h3>Consistent Growth</h3>
-              <p>
-                Our personalized devotional plans and daily reminders help you
-                cultivate a rhythm of consistency with the Bible.
-              </p>
-            </div>
-            <div className="feature-card-image">
-              <Image
-                src="/growth-icon.png"
-                alt="Growth illustration"
-                width={160}
-                height={160}
-              />
-            </div>
+      {/* ─── INTERACTIVE DEMO ─── */}
+      <section className="demo-section">
+        <div className="demo-inner">
+          <div className="demo-header">
+            <span className="section-tag" style={{ textAlign: 'left' }}>TRY IT NOW</span>
+            <h2>See how a devotion feels</h2>
+            <p>Pick up today's verse and write your first reflection. No account needed.</p>
           </div>
 
-          <div className="feature-card feature-card--dark">
-            <div className="feature-card-text">
-              <h3>Spiritual Archives</h3>
-              <p>
-                Every reflection you write is saved. Revisit your devotional
-                history at any time to see how far you&apos;ve come.
-              </p>
-              <Link href="/signup" className="feature-link">
-                Learn More →
-              </Link>
-            </div>
-            <div className="feature-card-image">
-              <Image
-                src="/archives-icon.png"
-                alt="Archives illustration"
-                width={120}
-                height={120}
-              />
-            </div>
-          </div>
-        </div>
+          <div className="demo-card">
+            <div className="demo-verse">{DEMO_VERSE}</div>
 
-        <div className="feature-card feature-card--full">
-          <div className="feature-card-avatar">
-            <Image
-              src="/community-icon.png"
-              alt="Community"
-              width={80}
-              height={80}
-              className="community-avatar"
+            <div className="demo-tabs">
+              {DEMO_STEPS.map((s, i) => (
+                <button
+                  key={s}
+                  className={`demo-tab ${demoStep === s ? 'demo-tab--active' : ''} ${i < currentIdx ? 'demo-tab--done' : ''}`}
+                  onClick={() => setDemoStep(s)}
+                >
+                  {i < currentIdx ? '✓ ' : ''}{s}
+                </button>
+              ))}
+            </div>
+
+            <textarea
+              className="demo-textarea"
+              placeholder={DEMO_PROMPTS[demoStep]}
+              value={demoTexts[demoStep]}
+              onChange={e => setDemoTexts(prev => ({ ...prev, [demoStep]: e.target.value }))}
+              rows={4}
             />
-          </div>
-          <div className="feature-card-text">
-            <h3>Community Connection</h3>
-            <p>
-              Share insights, encourage others, and join group devotionals that
-              build genuine Christian fellowship in your local ECWA community.
-            </p>
-          </div>
-          <Link href="/signup" className="feature-link-btn">
-            Learn More →
-          </Link>
-        </div>
-      </section>
 
-      {/* ─── TESTIMONIAL ─── */}
-      <section className="testimonial-section">
-        <div className="testimonial-quote-icon">❝</div>
-        <blockquote>
-          &ldquo;This app has transformed my morning quiet time into a deep
-          conversation with God. The 4H structure brings clarity I never had
-          before.&rdquo;
-        </blockquote>
-        <div className="testimonial-author">
-          <Image
-            src="/testimonial-avatar.png"
-            alt="Sarah Adesola"
-            width={56}
-            height={56}
-            className="testimonial-avatar"
-          />
-          <div>
-            <strong>Sarah Adesola</strong>
-            <span>ECWA Member, Lagos</span>
+            <div className="demo-footer">
+              {isLast ? (
+                <Link href="/signup" className="btn-primary" style={{ border: 'none' }}>
+                  Save this entry — Sign up free →
+                </Link>
+              ) : (
+                <button
+                  className="btn-primary"
+                  style={{ border: 'none' }}
+                  onClick={() => setDemoStep(DEMO_STEPS[currentIdx + 1])}
+                >
+                  Next: {DEMO_STEPS[currentIdx + 1]} →
+                </button>
+              )}
+              <span className="demo-hint">
+                Step {currentIdx + 1} of {DEMO_STEPS.length}
+              </span>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ─── CTA ─── */}
-      <section className="cta-section">
-        <h2>Ready to step inside?</h2>
+      <section ref={ctaRef} className="cta-section reveal">
+        <h2>Thousands of Nigerian believers journal here every morning.</h2>
         <p>
-          Begin your journey today and experience the depth of scripture like
-          never before. Your digital sanctuary awaits.
+          From Lagos to Kaduna, Enugu to Abuja — join a growing community
+          anchoring their day in God's word before the world pulls them away.
         </p>
         <Link href="/signup" className="btn-primary btn-lg">
-          Enter the Sanctuary
+          Start for Free
         </Link>
       </section>
     </main>

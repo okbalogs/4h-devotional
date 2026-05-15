@@ -1,8 +1,9 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import ShellWrapper from "@/components/ShellWrapper";
 import { AuthProvider } from "@/context/AuthContext";
 import PwaRegistration from "@/components/PwaRegistration";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,6 +13,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata = {
@@ -36,14 +43,19 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} antialiased`}>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        {/* Prevent flash of wrong theme on load */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t)})()` }} />
       </head>
       <body>
         <AuthProvider>
-          <PwaRegistration />
-          <ShellWrapper>{children}</ShellWrapper>
+          <ThemeProvider>
+            <PwaRegistration />
+            <ShellWrapper>{children}</ShellWrapper>
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>

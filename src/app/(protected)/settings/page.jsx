@@ -13,10 +13,8 @@ const BIBLE_VERSIONS = [
 export default function Settings() {
   const { user, logout } = useAuth()
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState('General')
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState(null)
-  const [loaded, setLoaded] = useState(false)
 
   // Profile fields
   const [fullName, setFullName] = useState('')
@@ -52,7 +50,6 @@ export default function Settings() {
         setPublicProfile(data.public_profile ?? false)
         setWeeklySummary(data.weekly_summary ?? true)
         setCommunityPrayers(data.community_prayers ?? false)
-        setLoaded(true)
       })
   }, [user])
 
@@ -126,20 +123,7 @@ export default function Settings() {
         <h1 className="page-title">Settings</h1>
       </header>
 
-      <div className="tabs">
-        {['General', 'Notifications', 'Privacy', 'Subscription'].map(tab => (
-          <button
-            key={tab}
-            className={`tab-btn ${activeTab === tab ? 'tab-btn--active' : ''}`}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {activeTab === 'General' && (
-        <div className="tab-content" style={{ animation: 'fadeIn 0.3s ease' }}>
+      <div className="tab-content" style={{ animation: 'fadeIn 0.3s ease' }}>
 
           {/* Profile Management */}
           <section className="settings-section">
@@ -325,13 +309,6 @@ export default function Settings() {
             </button>
           </div>
         </div>
-      )}
-
-      {activeTab !== 'General' && (
-        <div className="tab-content" style={{ animation: 'fadeIn 0.3s ease', padding: '40px 0' }}>
-          <p style={{ color: '#888', textAlign: 'center' }}>This pane is configured globally within General.</p>
-        </div>
-      )}
     </div>
   )
 }

@@ -6,8 +6,17 @@ export default function InstallButton() {
   const [installed, setInstalled] = useState(false)
 
   useEffect(() => {
+    // Prompt may have already fired before this component mounted
+    if (window._deferredInstallPrompt) {
+      setPrompt(window._deferredInstallPrompt)
+    }
+
     const onInstallable = (e) => setPrompt(e.detail)
-    const onInstalled = () => { setInstalled(true); setPrompt(null) }
+    const onInstalled = () => {
+      setInstalled(true)
+      setPrompt(null)
+      window._deferredInstallPrompt = null
+    }
 
     window.addEventListener('pwa:installable', onInstallable)
     window.addEventListener('appinstalled', onInstalled)

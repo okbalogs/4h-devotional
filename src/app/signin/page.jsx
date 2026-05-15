@@ -2,6 +2,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import { useAuth } from "@/context/AuthContext"
+import GoogleButton from "@/components/GoogleButton"
 
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false)
@@ -64,6 +65,12 @@ export default function SignIn() {
             Continue your 4H journey: Hear, Heed, Hold, Help.
           </p>
 
+          <GoogleButton onClick={handleGoogle} />
+
+          <div className="auth-divider">
+            <span>Or continue with email</span>
+          </div>
+
           <form className="auth-form" onSubmit={handleLogin}>
             {error && <div className="auth-error">{error}</div>}
             <div className="auth-field">
@@ -120,28 +127,6 @@ export default function SignIn() {
               {loading ? "Signing In..." : <>Sign In <span>→</span></>}
             </button>
           </form>
-
-          {/* Divider */}
-          <div className="auth-divider">
-            <span>Or join with</span>
-          </div>
-
-          {/* Social buttons */}
-          <div className="auth-social-row">
-            <button type="button" className="auth-social-btn" onClick={handleGoogle}>
-              <span className="auth-social-icon auth-social-icon--google" />
-              Google
-            </button>
-            <button type="button" className="auth-social-btn">
-              <span className="auth-social-icon auth-social-icon--outlook">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="4" width="20" height="16" rx="2" />
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                </svg>
-              </span>
-              Outlook
-            </button>
-          </div>
 
           <p className="auth-switch" style={{ marginTop: '30px' }}>
             Don&apos;t have an account?{" "}

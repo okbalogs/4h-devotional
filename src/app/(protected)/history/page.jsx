@@ -51,6 +51,28 @@ export default function DailyArchives() {
   const completionRate = daysInMonth > 0 ? Math.round((entryDays.size / daysInMonth) * 100) : 0
   const monthLabel = viewDate.toLocaleString('default', { month: 'long', year: 'numeric' })
 
+  if (loading) return (
+    <div className="page-container">
+      <header className="page-header" style={{ marginBottom: '20px' }}>
+        <h1 className="page-title">Daily Archives</h1>
+      </header>
+      <div className="skeleton-block" style={{ width: '180px', height: '14px', marginBottom: '8px' }} />
+      <div className="skeleton-block" style={{ width: '260px', height: '36px', marginBottom: '12px' }} />
+      <div className="skeleton-block" style={{ width: '420px', maxWidth: '100%', height: '16px', marginBottom: '40px' }} />
+      <div className="history-layout">
+        <div>
+          <div className="skeleton-block" style={{ height: '320px', borderRadius: '16px', marginBottom: '20px' }} />
+          <div className="skeleton-block" style={{ height: '80px', borderRadius: '12px' }} />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {[1,2,3].map(i => (
+            <div key={i} className="skeleton-block" style={{ height: '110px', borderRadius: '12px' }} />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+
   return (
     <div className="page-container">
       <header className="page-header" style={{ marginBottom: '20px' }}>

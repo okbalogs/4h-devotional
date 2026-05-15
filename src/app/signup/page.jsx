@@ -3,6 +3,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useState } from "react"
 import { useAuth } from "@/context/AuthContext"
+import GoogleButton from "@/components/GoogleButton"
 import hero from "../../assets/images/hero.png"
 
 export default function SignUp() {
@@ -108,6 +109,12 @@ export default function SignUp() {
             Begin your meditative devotion experience today.
           </p>
 
+          <GoogleButton onClick={handleGoogle} />
+
+          <div className="auth-divider">
+            <span>Or sign up with email</span>
+          </div>
+
           <form className="auth-form" onSubmit={handleSignup}>
             {error && <div className="auth-error">{error}</div>}
             <div className="auth-field">
@@ -207,27 +214,6 @@ export default function SignUp() {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="auth-divider">
-            <span>Or join with</span>
-          </div>
-
-          {/* Social buttons */}
-          <div className="auth-social-row">
-            <button type="button" className="auth-social-btn" onClick={handleGoogle}>
-              <span className="auth-social-icon auth-social-icon--google" />
-              Google
-            </button>
-            <button type="button" className="auth-social-btn">
-              <span className="auth-social-icon auth-social-icon--outlook">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="4" width="20" height="16" rx="2" />
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                </svg>
-              </span>
-              Outlook
-            </button>
-          </div>
 
           <p className="auth-switch">
             Already have an account?{" "}

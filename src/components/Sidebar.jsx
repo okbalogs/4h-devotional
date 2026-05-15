@@ -1,10 +1,42 @@
 "use client"
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import InstallButton from './InstallButton'
+import ThemeToggle from './ThemeToggle'
+import { supabase } from '@/utils/supabase'
+import { useAuth } from '@/context/AuthContext'
 
 export default function Sidebar() {
-  const pathname = usePathname();
+  const pathname = usePathname()
+  const { user } = useAuth()
+  const [streak, setStreak] = useState(null)
+
+  useEffect(() => {
+    if (!user) return
+    // Fetch last 60 days of entry dates to calculate streak
+    const since = new Date()
+    since.setDate(since.getDate() - 60)
+    supabase
+      .from('entries')
+      .select('created_at')
+      .eq('user_id', user.id)
+      .gte('created_at', since.toISOString())
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (!data?.length) { setStreak(0); return }
+        const days = new Set(data.map(e => e.created_at.slice(0, 10)))
+        let count = 0
+        const d = new Date()
+        // Allow today or yesterday as streak start
+        if (!days.has(d.toISOString().slice(0, 10))) d.setDate(d.getDate() - 1)
+        while (days.has(d.toISOString().slice(0, 10))) {
+          count++
+          d.setDate(d.getDate() - 1)
+        }
+        setStreak(count)
+      })
+  }, [user])
 
   const navItems = [
     { name: 'Today', path: '/today', icon: (
@@ -33,7 +65,9 @@ export default function Sidebar() {
     <aside className="sidebar">
       <div className="sidebar-header">
         <h1>Editorial<br/>Devotion</h1>
-        <p className="sidebar-streak">5-day streak 🔥</p>
+        {streak !== null && streak > 0 && (
+          <p className="sidebar-streak">{streak}-day streak 🔥</p>
+        )}
       </div>
 
       <Link href="/entry/new" className="sidebar-new-entry">
@@ -57,6 +91,10 @@ export default function Sidebar() {
           )
         })}
       </nav>
+
+      <div style={{ padding: '16px 32px', marginTop: 'auto' }}>
+        <ThemeToggle />
+      </div>
     </aside>
   )
 }

@@ -1,68 +1,171 @@
-import Link from "next/link"
+import Link from 'next/link'
+import Image from 'next/image'
+
+const steps = [
+  {
+    icon: '👂',
+    step: 'STEP ONE',
+    title: 'Hear',
+    subtitle: 'What does God say?',
+    body: `Approach the scripture with your mind fully engaged. Observe the context, the characters, the commands, and the promises. Resist the urge to jump to application — first, simply receive the text as it is written. What is the author saying, and to whom? What does this passage reveal about the nature of God?`,
+    accent: false,
+  },
+  {
+    icon: '❤️',
+    step: 'STEP TWO',
+    title: 'Heed',
+    subtitle: 'How does it convict my heart?',
+    body: `Knowledge without conviction is dead orthodoxy. In this step, let the word press against your interior life. What emotions does this passage stir? What sin is exposed? What anxiety is addressed? What promise reassures you? Allow the Holy Spirit room to minister before you move on.`,
+    accent: false,
+  },
+  {
+    icon: '✋',
+    step: 'STEP THREE',
+    title: 'Hold',
+    subtitle: 'What will I do with this today?',
+    body: `Faith without works is dead. This is the step most people skip — and it is the reason many devout Christians are unchanged by years of Bible reading. Write one concrete, time-bound action you will take today because of what you have read. Not a vague resolution. One specific thing.`,
+    accent: true,
+  },
+  {
+    icon: '🤲',
+    step: 'STEP FOUR',
+    title: 'Help',
+    subtitle: 'Who can I serve with this truth?',
+    body: `The Gospel is not designed to stop with you. Think of one person in your life — a colleague, a neighbour, a younger believer in your church — who needs to hear what God fed you this morning. The discipline of outward application keeps devotion from becoming spiritual self-indulgence.`,
+    accent: false,
+  },
+]
+
+const features = [
+  {
+    icon: '📅',
+    title: 'A verse chosen for your journey',
+    body: 'Each day you receive a scripture matched to how long you have been walking with God — not random, not generic. Your journey day determines your reading.',
+  },
+  {
+    icon: '📖',
+    title: 'Your preferred Bible translation',
+    body: 'Choose KJV, WEB, or ASV. Your preference is saved and applied across every daily verse and new entry automatically.',
+  },
+  {
+    icon: '🗂️',
+    title: 'A permanent spiritual archive',
+    body: 'Every entry you write is stored privately in your account. Return to any past reflection in History and trace how God has been speaking to you over months and years.',
+  },
+  {
+    icon: '📴',
+    title: 'Works without internet',
+    body: 'Wrote your devotion on the bus without data? No problem. Entries are saved offline and synced to your account the moment you reconnect.',
+  },
+]
 
 export default function Explore() {
   return (
     <main>
-      <section className="hero-section" style={{ textAlign: 'center', gridTemplateColumns: '1fr', paddingBottom: '40px' }}>
-        <div className="hero-text" style={{ margin: '0 auto' }}>
-          <span className="section-tag" style={{ marginBottom: '16px' }}>The Philosophy</span>
-          <h1 style={{ fontSize: '3.8rem' }}>The <em>4H</em> Method</h1>
-          <p style={{ maxWidth: '600px', margin: '0 auto 30px' }}>
-            A structured, intentional approach to Daily Devotion. Moving beyond merely reading the word, into digesting and acting upon it.
+      {/* ─── HEADER ─── */}
+      <section
+        className="hero-section"
+        style={{ gridTemplateColumns: '1fr', textAlign: 'center', paddingBottom: '40px' }}
+      >
+        <div className="hero-text" style={{ margin: '0 auto', maxWidth: '680px' }}>
+          <span className="section-tag">THE PHILOSOPHY</span>
+          <h1 style={{ fontSize: '3.2rem' }}>
+            The <em>4H</em> Framework
+          </h1>
+          <p>
+            A structured, intentional approach to daily devotion — designed to move
+            you beyond merely reading the word into digesting and acting upon it.
+            Developed within ECWA and practised by millions of African believers.
           </p>
         </div>
       </section>
 
-      <section className="framework-section" style={{ paddingTop: '0', paddingBottom: '100px' }}>
-        <div className="framework-grid" style={{ gap: '30px' }}>
-          
-          <div className="framework-card" style={{ minHeight: '320px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', marginBottom: '20px', color: '#9d4f14', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>⚙️</div>
-            <span className="framework-step">STEP ONE</span>
-            <h3 style={{ fontSize: '1.8rem' }}>Hear (Head)</h3>
-            <p style={{ fontSize: '1rem', lineHeight: '1.7' }}>
-              What does God say? In this step, we approach the scripture intellectually. We observe the context, the characters, the commands, and the core promises. We distill the absolute truth of the passage before doing anything else.
-            </p>
-          </div>
-
-          <div className="framework-card" style={{ minHeight: '320px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', marginBottom: '20px', color: '#9d4f14', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>🤎</div>
-            <span className="framework-step">STEP TWO</span>
-            <h3 style={{ fontSize: '1.8rem' }}>Heed (Heart)</h3>
-            <p style={{ fontSize: '1rem', lineHeight: '1.7' }}>
-              Knowledge without conviction is dead orthodoxy. Here, we let the word penetrate. What emotions does this stir? What sins are exposed? What fears are calmed? We allow the Holy Spirit to minister to our internal posture.
-            </p>
-          </div>
-
-          <div className="framework-card framework-card--accent" style={{ minHeight: '320px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', marginBottom: '20px', color: '#fff' }}>✋</div>
-            <span className="framework-step" style={{ color: 'rgba(255,255,255,0.8)' }}>STEP THREE</span>
-            <h3 style={{ fontSize: '1.8rem' }}>Hold (Hands)</h3>
-            <p style={{ fontSize: '1rem', lineHeight: '1.7', color: 'rgba(255,255,255,0.9)' }}>
-              Faith without works is dead. What action steps will you take today because of this truth? This is where devotion moves from the theoretical into the practical reality of your daily schedule and habits.
-            </p>
-          </div>
-
-          <div className="framework-card" style={{ minHeight: '320px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', marginBottom: '20px', color: '#9d4f14', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>🤲</div>
-            <span className="framework-step">STEP FOUR</span>
-            <h3 style={{ fontSize: '1.8rem' }}>Help (Others)</h3>
-            <p style={{ fontSize: '1rem', lineHeight: '1.7' }}>
-              The Gospel is designed to flow through you, not just to you. Who in your sphere of influence needs to hear this truth? How can you serve others based on what God has fed you today?
-            </p>
-          </div>
-
+      {/* ─── FOUR STEPS ─── */}
+      <section className="framework-section" style={{ paddingTop: 0 }}>
+        <div className="framework-grid" style={{ gap: '28px' }}>
+          {steps.map(({ icon, step, title, subtitle, body, accent }) => (
+            <div
+              key={step}
+              className={`framework-card${accent ? ' framework-card--accent' : ''}`}
+              style={{ minHeight: '340px' }}
+            >
+              <div
+                style={{
+                  width: 48, height: 48, borderRadius: '50%',
+                  background: accent ? 'rgba(255,255,255,0.18)' : '#fff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '1.3rem', marginBottom: '20px',
+                  boxShadow: accent ? 'none' : '0 4px 12px rgba(0,0,0,0.06)',
+                }}
+              >
+                {icon}
+              </div>
+              <span
+                className="framework-step"
+                style={accent ? { color: 'rgba(255,255,255,0.7)' } : {}}
+              >
+                {step}
+              </span>
+              <h3 style={{ fontSize: '1.9rem' }}>{title}</h3>
+              <p
+                style={{
+                  fontSize: '0.88rem', fontStyle: 'italic', marginBottom: '12px',
+                  color: accent ? 'rgba(255,255,255,0.7)' : '#9d4f14',
+                }}
+              >
+                {subtitle}
+              </p>
+              <p style={{ fontSize: '0.97rem', lineHeight: '1.75', color: accent ? 'rgba(255,255,255,0.9)' : undefined }}>
+                {body}
+              </p>
+            </div>
+          ))}
         </div>
+      </section>
 
-        <div style={{ marginTop: '80px', background: '#fdf6ec', borderRadius: '16px', padding: '60px', textAlign: 'center' }}>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '2.2rem', color: '#3d2a1a', marginBottom: '16px' }}>Ready to begin?</h2>
-          <p style={{ color: '#7a6555', maxWidth: '500px', margin: '0 auto 30px', fontSize: '1.05rem' }}>
-            Join thousands of believers journaling their journey using the 4H framework every single morning.
+      {/* ─── WHY IT WORKS ─── */}
+      <section style={{ background: '#fdf6ec', padding: '80px 60px' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <span className="section-tag">WHY IT WORKS</span>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '2.4rem', color: '#3d2a1a', margin: '16px 0 20px' }}>
+            Built for the way Nigerian believers live
+          </h2>
+          <p style={{ color: '#7a6555', fontSize: '1.05rem', lineHeight: '1.8', maxWidth: '700px', marginBottom: '56px' }}>
+            Many of us grew up in homes where morning devotion was a real, daily practice —
+            not a performance, but a genuine first conversation with God before the day began.
+            The 4H method gives that practice a spine. It prevents quiet time from drifting into
+            passive Bible reading and keeps it anchored to transformation: what you know,
+            what you feel, what you will do, and who you will reach.
           </p>
-          <Link href="/signup" className="btn-primary btn-lg">
-            Start Your Sandbox
-          </Link>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '24px' }}>
+            {features.map(({ icon, title, body }) => (
+              <div
+                key={title}
+                style={{
+                  background: '#fff', borderRadius: '12px', padding: '28px',
+                  boxShadow: '0 4px 16px rgba(157,79,20,0.06)',
+                }}
+              >
+                <div style={{ fontSize: '1.6rem', marginBottom: '14px' }}>{icon}</div>
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#3d2a1a', marginBottom: '8px' }}>{title}</h3>
+                <p style={{ fontSize: '0.88rem', color: '#7a6555', lineHeight: '1.7' }}>{body}</p>
+              </div>
+            ))}
+          </div>
         </div>
+      </section>
+
+      {/* ─── CTA ─── */}
+      <section className="cta-section">
+        <h2>Ready to start?</h2>
+        <p>
+          Create your free account and begin your first 4H entry today.
+          No subscription required to get started.
+        </p>
+        <Link href="/signup" className="btn-primary btn-lg">
+          Begin Your Journey
+        </Link>
       </section>
     </main>
   )

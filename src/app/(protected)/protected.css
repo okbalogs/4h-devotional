@@ -23,7 +23,7 @@
   margin-bottom: 40px;
 }
 .sidebar-header h1 {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-serif);
   color: #9d4f14;
   font-size: 1.6rem;
   line-height: 1.25;
@@ -192,7 +192,7 @@
   margin-bottom: 40px;
 }
 .section-title {
-  font-family: Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 1.8rem;
   color: #9d4f14;
   margin-bottom: 20px;

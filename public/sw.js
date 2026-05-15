@@ -1,6 +1,7 @@
-const STATIC_CACHE = 'static-v2'
-const DYNAMIC_CACHE = 'dynamic-v2'
-const VERSE_CACHE = 'verse-v2'
+// v3 — removed protected routes from install cache
+const STATIC_CACHE = 'static-v3'
+const DYNAMIC_CACHE = 'dynamic-v3'
+const VERSE_CACHE = 'verse-v3'
 
 const APP_SHELL = [
   '/',

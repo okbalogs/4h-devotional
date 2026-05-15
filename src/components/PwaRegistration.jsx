@@ -14,10 +14,12 @@ export default function PwaRegistration() {
     }
   }, [])
 
-  // Capture the install prompt and broadcast it so InstallButton can use it
+  // Capture the install prompt and store it globally so InstallButton can
+  // access it whenever it mounts — beforeinstallprompt fires once, early.
   useEffect(() => {
     const handler = (e) => {
       e.preventDefault()
+      window._deferredInstallPrompt = e
       window.dispatchEvent(new CustomEvent('pwa:installable', { detail: e }))
     }
     window.addEventListener('beforeinstallprompt', handler)
