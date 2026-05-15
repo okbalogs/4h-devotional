@@ -1,6 +1,7 @@
 "use client"
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import InstallButton from './InstallButton'
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -38,6 +39,8 @@ export default function Sidebar() {
       <Link href="/entry/new" className="sidebar-new-entry">
         + New Entry
       </Link>
+
+      <InstallButton />
 
       <nav className="sidebar-nav">
         {navItems.map((item) => {

@@ -18,7 +18,6 @@ export const metadata = {
   title: "Editorial Devotion — Your 4H Quiet Time Sanctuary",
   description:
     "Engage with God through the ECWA 4H framework: Hear, Heart, Head, Help. A digital sanctuary for your daily selah.",
-  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

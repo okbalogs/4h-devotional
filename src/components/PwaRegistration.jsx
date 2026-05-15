@@ -14,16 +14,25 @@ export default function PwaRegistration() {
     }
   }, [])
 
-  // Sync pending offline entries when user is logged in and online
+  // Capture the install prompt and broadcast it so InstallButton can use it
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault()
+      window.dispatchEvent(new CustomEvent('pwa:installable', { detail: e }))
+    }
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  // Sync pending offline entries when back online
   useEffect(() => {
     if (!user) return
 
     const syncPending = async () => {
       if (!navigator.onLine || !hasPendingEntries()) return
-      const pending = getPendingEntries()
-      for (const entry of pending) {
-        const { _offlineId, ...entryData } = entry
-        const { error } = await supabase.from('entries').insert(entryData)
+      for (const entry of getPendingEntries()) {
+        const { _offlineId, ...data } = entry
+        const { error } = await supabase.from('entries').insert(data)
         if (!error) removePendingEntry(_offlineId)
       }
     }
