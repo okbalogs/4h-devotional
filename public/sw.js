@@ -1,6 +1,6 @@
-const STATIC_CACHE = 'static-v5'
-const DYNAMIC_CACHE = 'dynamic-v5'
-const VERSE_CACHE = 'verse-v5'
+const STATIC_CACHE = 'static-v6'
+const DYNAMIC_CACHE = 'dynamic-v6'
+const VERSE_CACHE = 'verse-v6'
 
 const APP_SHELL = [
   '/',
@@ -19,18 +19,17 @@ const APP_SHELL = [
   '/settings',
 ]
 
-// ─── Install: cache full app shell ───
+// ─── Install: pre-cache app shell ───
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) =>
-      // addAll fails atomically — individual failures won't crash install
       Promise.allSettled(APP_SHELL.map((url) => cache.add(url)))
     )
   )
   self.skipWaiting()
 })
 
-// ─── Activate: remove old caches ───
+// ─── Activate: drop old caches ───
 self.addEventListener('activate', (event) => {
   const valid = [STATIC_CACHE, DYNAMIC_CACHE, VERSE_CACHE]
   event.waitUntil(
@@ -41,19 +40,41 @@ self.addEventListener('activate', (event) => {
   self.clients.claim()
 })
 
+// Return the best cached response for a pathname, ignoring Vary headers.
+// Falls back to root shell if nothing else matches.
+async function serveFromCache(pathname) {
+  const opts = { ignoreVary: true }
+  return (
+    (await caches.match(new Request(pathname), opts)) ||
+    (await caches.match('/', opts))
+  )
+}
+
+// Strip the Vary header before caching so future lookups always succeed
+// regardless of what RSC/Next-Router headers the request carries.
+function makeCacheable(response) {
+  const headers = new Headers(response.headers)
+  headers.delete('Vary')
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  })
+}
+
 // ─── Fetch ───
 self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
 
-  // Only handle GET requests
+  // Only handle GET
   if (request.method !== 'GET') return
 
-  // Bible API — cache-first (offline verse reading)
+  // ── Bible verse API — cache-first ──
   if (url.hostname === 'bible-api.com') {
     event.respondWith(
       caches.open(VERSE_CACHE).then(async (cache) => {
-        const cached = await cache.match(request)
+        const cached = await cache.match(request, { ignoreVary: true })
         if (cached) return cached
         try {
           const response = await fetch(request)
@@ -69,7 +90,7 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Supabase — network only, never cache auth'd data
+  // ── Supabase — network only, data cached in localStorage by the app ──
   if (url.hostname.includes('supabase.co')) {
     event.respondWith(
       fetch(request).catch(() =>
@@ -82,13 +103,12 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Next.js static chunks — cache first, update in background
+  // ── Next.js static chunks — stale-while-revalidate ──
   if (url.pathname.startsWith('/_next/static')) {
     event.respondWith(
       caches.open(STATIC_CACHE).then(async (cache) => {
-        const cached = await cache.match(request)
+        const cached = await cache.match(request, { ignoreVary: true })
         if (cached) {
-          // Refresh in background so next visit gets latest
           fetch(request).then((r) => cache.put(request, r)).catch(() => {})
           return cached
         }
@@ -100,11 +120,11 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Images and fonts — cache first
+  // ── Images & fonts — cache-first ──
   if (request.destination === 'image' || request.destination === 'font') {
     event.respondWith(
       caches.open(STATIC_CACHE).then(async (cache) => {
-        const cached = await cache.match(request)
+        const cached = await cache.match(request, { ignoreVary: true })
         if (cached) return cached
         try {
           const response = await fetch(request)
@@ -118,18 +138,34 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // App shell pages — network first, fall back to cache
+  // ── Same-origin app pages — network-first, cache fallback ──
+  //
+  // Next.js App Router sends RSC fetch requests (with headers like RSC: 1,
+  // Next-Router-State-Tree, etc.) for client-side navigation. Cached HTML
+  // responses carry Vary headers that reference those fields, so a plain
+  // caches.match() call won't serve them. We fix this by:
+  //   1. Stripping Vary before storing (makeCacheable)
+  //   2. Keying the cache on pathname only — RSC requests often carry
+  //      a ?_rsc=<nonce> query string that would miss the cached entry
+  //   3. Using { ignoreVary: true } on every cache lookup
+  //
+  // When offline Next.js receives the cached HTML for an RSC request and
+  // re-renders the page from that shell — which is correct for this app
+  // because all data fetching is client-side.
   if (url.origin === self.location.origin) {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Only cache successful same-origin navigation responses
           if (response.ok) {
-            caches.open(DYNAMIC_CACHE).then((cache) => cache.put(request, response.clone()))
+            caches.open(DYNAMIC_CACHE).then((c) =>
+              // Key by pathname so a single entry covers both RSC and
+              // normal navigation requests to the same route.
+              c.put(new Request(url.pathname), makeCacheable(response.clone()))
+            )
           }
           return response
         })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match('/')))
+        .catch(() => serveFromCache(url.pathname))
     )
     return
   }
