@@ -11,15 +11,41 @@ export default function DailyArchives() {
   const [entries, setEntries] = useState([])
   const [totalEntries, setTotalEntries] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [isOffline, setIsOffline] = useState(false)
 
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
 
+  // Track online/offline status
+  useEffect(() => {
+    const update = () => setIsOffline(!navigator.onLine)
+    update()
+    window.addEventListener('online', update)
+    window.addEventListener('offline', update)
+    return () => {
+      window.removeEventListener('online', update)
+      window.removeEventListener('offline', update)
+    }
+  }, [])
+
+  // Fetch entries for selected month — with localStorage cache fallback
   useEffect(() => {
     if (!user) return
     setLoading(true)
+    const cacheKey = `cached_history_${year}_${month}`
     const start = new Date(year, month, 1).toISOString()
     const end = new Date(year, month + 1, 0, 23, 59, 59).toISOString()
+
+    const applyCache = () => {
+      try {
+        const raw = localStorage.getItem(cacheKey)
+        if (raw) setEntries(JSON.parse(raw))
+        else setEntries([])
+      } catch {
+        setEntries([])
+      }
+      setLoading(false)
+    }
 
     supabase
       .from('entries')
@@ -28,19 +54,42 @@ export default function DailyArchives() {
       .gte('created_at', start)
       .lte('created_at', end)
       .order('created_at', { ascending: false })
-      .then(({ data }) => {
-        setEntries(data ?? [])
-        setLoading(false)
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setEntries(data)
+          try { localStorage.setItem(cacheKey, JSON.stringify(data)) } catch {}
+          setLoading(false)
+        } else {
+          applyCache()
+        }
       })
+      .catch(applyCache)
   }, [user, year, month])
 
+  // Fetch total entry count — with localStorage cache fallback
   useEffect(() => {
     if (!user) return
+
+    const applyCountCache = () => {
+      try {
+        const raw = localStorage.getItem('cached_history_total')
+        if (raw !== null) setTotalEntries(Number(raw))
+      } catch {}
+    }
+
     supabase
       .from('entries')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', user.id)
-      .then(({ count }) => setTotalEntries(count ?? 0))
+      .then(({ count, error }) => {
+        if (!error && count !== null) {
+          setTotalEntries(count)
+          try { localStorage.setItem('cached_history_total', String(count)) } catch {}
+        } else {
+          applyCountCache()
+        }
+      })
+      .catch(applyCountCache)
   }, [user])
 
   const firstDayOfMonth = new Date(year, month, 1).getDay()
@@ -78,6 +127,25 @@ export default function DailyArchives() {
       <header className="page-header" style={{ marginBottom: '20px' }}>
         <h1 className="page-title">Daily Archives</h1>
       </header>
+
+      {/* Offline banner */}
+      {isOffline && (
+        <div style={{
+          background: 'rgba(157, 79, 20, 0.08)',
+          border: '1px solid rgba(157, 79, 20, 0.25)',
+          borderRadius: '10px',
+          padding: '10px 16px',
+          marginBottom: '20px',
+          fontSize: '0.85rem',
+          color: '#7a4a10',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}>
+          <span>📵</span>
+          <span>You&apos;re offline — viewing cached records from your last sync.</span>
+        </div>
+      )}
 
       <div style={{ marginBottom: '40px' }}>
         <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#9d4f14', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Your Journey</span>
@@ -133,12 +201,12 @@ export default function DailyArchives() {
 
         {/* RIGHT: Feed */}
         <div className="entries-feed">
-          {loading && <p style={{ color: '#999', padding: '20px 0' }}>Loading...</p>}
-
           {!loading && entries.length === 0 && (
             <p style={{ color: '#999', padding: '20px 0' }}>
               No entries this month.{' '}
-              <Link href="/entry/new" style={{ color: '#9d4f14', fontWeight: 600 }}>Write one now →</Link>
+              {!isOffline && (
+                <Link href="/entry/new" style={{ color: '#9d4f14', fontWeight: 600 }}>Write one now →</Link>
+              )}
             </p>
           )}
 

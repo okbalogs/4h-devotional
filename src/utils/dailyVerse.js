@@ -131,3 +131,43 @@ export async function getTodayVerseForUser(user) {
   const bibleVersion = await getUserBibleVersion(user.id)
   return getTodayVerse(user, bibleVersion)
 }
+
+// Returns { streak, totalEntries } based on actual logged entries.
+// Streak = consecutive calendar days (in local timezone) ending today or yesterday.
+export async function getStreakAndCount(userId) {
+  const { data, count } = await supabase
+    .from('entries')
+    .select('created_at', { count: 'exact' })
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (!data || data.length === 0) return { streak: 0, totalEntries: 0 }
+
+  const toDay = (d) => new Date(d).toLocaleDateString('en-CA') // YYYY-MM-DD local
+
+  const uniqueDates = [...new Set(data.map((e) => toDay(e.created_at)))].sort(
+    (a, b) => b.localeCompare(a)
+  )
+
+  const today = toDay(new Date())
+  const yesterday = toDay(new Date(Date.now() - 86_400_000))
+
+  // Streak only stays alive if the user logged today or yesterday
+  if (uniqueDates[0] !== today && uniqueDates[0] !== yesterday) {
+    return { streak: 0, totalEntries: count ?? data.length }
+  }
+
+  let streak = 1
+  for (let i = 1; i < uniqueDates.length; i++) {
+    const prev = new Date(uniqueDates[i - 1])
+    const curr = new Date(uniqueDates[i])
+    const diff = Math.round((prev - curr) / 86_400_000)
+    if (diff === 1) {
+      streak++
+    } else {
+      break
+    }
+  }
+
+  return { streak, totalEntries: count ?? data.length }
+}

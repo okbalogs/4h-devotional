@@ -2,13 +2,56 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { getTodayVerseForUser, getJourneyDay, getGreeting } from '@/utils/dailyVerse'
+import { getTodayVerseForUser, getJourneyDay, getGreeting, getStreakAndCount } from '@/utils/dailyVerse'
+import './today.css'
+
+const H4_PILLARS = [
+  {
+    key: 'hear',
+    label: 'Hear',
+    sub: 'What does the Word say?',
+    icon: '📖',
+    color: 'var(--clr-primary)',
+  },
+  {
+    key: 'heed',
+    label: 'Heed',
+    sub: 'What does it mean for me?',
+    icon: '❤️',
+    color: '#c0783a',
+  },
+  {
+    key: 'hold',
+    label: 'Hold',
+    sub: 'What will I do today?',
+    icon: '✋',
+    color: '#7a4f28',
+  },
+  {
+    key: 'help',
+    label: 'Help',
+    sub: 'Who can I share this with?',
+    icon: '🤝',
+    color: '#4a7c59',
+  },
+]
+
+const AFFIRMATIONS = [
+  'His mercies are new every morning.',
+  'Be still, and know that He is God.',
+  'Draw near to God, and He will draw near to you.',
+  'The joy of the LORD is your strength.',
+  'In quietness and trust is your strength.',
+  'He restores my soul.',
+]
 
 export default function Today() {
   const { user } = useAuth()
   const router = useRouter()
   const [verse, setVerse] = useState(null)
   const [verseLoading, setVerseLoading] = useState(true)
+  const [streak, setStreak] = useState(null)
+  const [totalEntries, setTotalEntries] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -16,44 +59,130 @@ export default function Today() {
       setVerse(v)
       setVerseLoading(false)
     })
+    getStreakAndCount(user.id).then(({ streak, totalEntries }) => {
+      setStreak(streak)
+      setTotalEntries(totalEntries)
+    })
   }, [user])
 
   const greeting = getGreeting()
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] ?? ''
   const journeyDay = user ? getJourneyDay(user) : null
+  const affirmation = AFFIRMATIONS[(journeyDay ?? 0) % AFFIRMATIONS.length]
+
+  const today = new Date().toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric',
+  })
 
   return (
-    <div style={{ maxWidth: '800px' }}>
-      <h1 style={{ fontSize: '2rem', fontFamily: 'serif', color: '#333', marginBottom: '8px' }}>
-        {greeting}{firstName ? `, ${firstName}` : ''}.
-      </h1>
-      <p style={{ color: '#666', marginBottom: '40px' }}>
-        {journeyDay ? `Day ${journeyDay} of your journey.` : 'Here is your devotional dashboard for today.'} Ready for Selah?
-      </p>
+    <div className="page-container today-page">
 
-      <div style={{ padding: '30px', backgroundColor: '#fff', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', minHeight: '160px' }}>
-        {verseLoading ? (
-          <div style={{ color: '#bbb', fontStyle: 'italic' }}>Loading today&apos;s verse...</div>
-        ) : verse ? (
-          <>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#9d4f14', textTransform: 'uppercase', letterSpacing: '1px' }}>
-              {verse.verse_reference}
-            </span>
-            <p style={{ color: '#333', lineHeight: 1.8, marginTop: '14px', marginBottom: '20px', fontFamily: 'Georgia, serif', fontSize: '1.05rem' }}>
-              {verse.verse_text}
-            </p>
-          </>
-        ) : (
-          <p style={{ color: '#aaa', fontStyle: 'italic' }}>Could not load today&apos;s verse. Check your connection.</p>
+      {/* ── Greeting ── */}
+      <div className="today-greeting">
+        <div className="today-greeting-text">
+          <p className="today-eyebrow">{today}</p>
+          <h1 className="today-title">
+            {greeting}{firstName ? `, ${firstName}` : ''}.
+          </h1>
+          <p className="today-sub">{affirmation}</p>
+        </div>
+        {journeyDay && (
+          <div className="today-day-badge">
+            <span className="today-day-num">{journeyDay}</span>
+            <span className="today-day-label">day{journeyDay !== 1 ? 's' : ''}<br />in Selah</span>
+          </div>
         )}
-
-        <button
-          style={{ padding: '12px 24px', backgroundColor: '#9d4f14', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 500, cursor: 'pointer' }}
-          onClick={() => router.push('/entry/new')}
-        >
-          Begin Reading
-        </button>
       </div>
+
+      {/* ── Verse Card ── */}
+      <div className="today-verse-card">
+        <div className="today-verse-card-inner">
+          <span className="today-verse-glyph">✦</span>
+
+          {verseLoading ? (
+            <div className="today-verse-skeleton">
+              <div className="skeleton-block" style={{ height: '14px', width: '120px', marginBottom: '16px' }} />
+              <div className="skeleton-block" style={{ height: '20px', width: '100%', marginBottom: '10px' }} />
+              <div className="skeleton-block" style={{ height: '20px', width: '90%', marginBottom: '10px' }} />
+              <div className="skeleton-block" style={{ height: '20px', width: '80%' }} />
+            </div>
+          ) : verse ? (
+            <>
+              <p className="today-verse-ref">{verse.verse_reference}</p>
+              <blockquote className="today-verse-text">
+                &ldquo;{verse.verse_text.trim()}&rdquo;
+              </blockquote>
+            </>
+          ) : (
+            <p className="today-verse-offline">
+              No verse loaded — check your connection and refresh.
+            </p>
+          )}
+
+          <button
+            className="today-begin-btn"
+            onClick={() => router.push('/entry/new')}
+          >
+            Begin Today&apos;s Devotion
+            <span className="today-begin-arrow">→</span>
+          </button>
+        </div>
+
+        {/* decorative strip */}
+        <div className="today-verse-accent" />
+      </div>
+
+      {/* ── 4H Pillars ── */}
+      <div className="today-pillars-header">
+        <h2 className="today-section-title">Your 4H Journey</h2>
+        <p className="today-section-sub">Four lenses for today&apos;s Word</p>
+      </div>
+
+      <div className="today-pillars-grid">
+        {H4_PILLARS.map((pillar) => (
+          <button
+            key={pillar.key}
+            className="today-pillar-card"
+            onClick={() => router.push('/entry/new')}
+          >
+            <span className="today-pillar-icon">{pillar.icon}</span>
+            <strong className="today-pillar-label">{pillar.label}</strong>
+            <p className="today-pillar-sub">{pillar.sub}</p>
+          </button>
+        ))}
+      </div>
+
+      {/* ── Quick Stats ── */}
+      <div className="today-stats-row">
+        <div className="today-stat">
+          <span className="today-stat-icon">🔥</span>
+          <div>
+            <strong className="today-stat-val">
+              {streak === null ? '—' : streak}
+            </strong>
+            <span className="today-stat-label">day streak</span>
+          </div>
+        </div>
+        <div className="today-stat-divider" />
+        <div className="today-stat">
+          <span className="today-stat-icon">📓</span>
+          <div>
+            <strong className="today-stat-val">
+              {totalEntries === null ? '—' : totalEntries}
+            </strong>
+            <span className="today-stat-label">entries logged</span>
+          </div>
+        </div>
+        <div className="today-stat-divider" />
+        <div className="today-stat">
+          <span className="today-stat-icon">✦</span>
+          <div>
+            <strong className="today-stat-val">Day {journeyDay ?? '—'}</strong>
+            <span className="today-stat-label">of your journey</span>
+          </div>
+        </div>
+      </div>
+
     </div>
   )
 }

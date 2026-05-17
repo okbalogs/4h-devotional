@@ -1,6 +1,6 @@
-const STATIC_CACHE = 'static-v4'
-const DYNAMIC_CACHE = 'dynamic-v4'
-const VERSE_CACHE = 'verse-v4'
+const STATIC_CACHE = 'static-v5'
+const DYNAMIC_CACHE = 'dynamic-v5'
+const VERSE_CACHE = 'verse-v5'
 
 const APP_SHELL = [
   '/',
@@ -13,6 +13,10 @@ const APP_SHELL = [
   '/privacy',
   '/terms',
   '/instructors',
+  '/today',
+  '/entry/new',
+  '/history',
+  '/settings',
 ]
 
 // ─── Install: cache full app shell ───

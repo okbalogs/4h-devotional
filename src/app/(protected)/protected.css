@@ -10,13 +10,268 @@
   width: 280px;
   background-color: #f7ede3;
   border-right: 1px solid #efe2d5;
-  padding: 40px 0;
+  padding: 40px 0 0;
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
   height: 100vh;
 }
+
+/* ─── SIDEBAR FOOTER (desktop) ─── */
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px 24px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #efe2d5;
+}
+
+.sidebar-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+  max-width: 160px;
+  overflow: hidden;
+}
+.sidebar-profile-btn:hover {
+  background: rgba(157, 79, 20, 0.07);
+}
+
+.sidebar-profile-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #3a2210;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── PROFILE AVATAR (initials circle) ─── */
+.sidebar-profile-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #9d4f14;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+/* size when used as nav tab icon */
+.sidebar-link .sidebar-profile-avatar {
+  width: 22px;
+  height: 22px;
+  font-size: 0.6rem;
+}
+
+.sidebar-profile-avatar--sm {
+  width: 28px;
+  height: 28px;
+  font-size: 0.72rem;
+}
+
+/* Profile tab button — same shape as sidebar-link */
+.sidebar-link--profile {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: center;
+  width: 100%;
+}
+
+/* ─── PROFILE MODAL ─── */
+.profile-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 18, 8, 0.45);
+  z-index: 200;
+  animation: fadeIn 0.2s ease;
+}
+
+.profile-modal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 201;
+  background: var(--clr-cream, #fdf6ec);
+  border-radius: 24px 24px 0 0;
+  padding: 12px 0 32px;
+  box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.18);
+  animation: slideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.profile-modal-handle {
+  width: 36px;
+  height: 4px;
+  background: #d4c5b6;
+  border-radius: 4px;
+  margin: 0 auto 20px;
+}
+
+.profile-modal-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 24px 20px;
+}
+
+.profile-modal-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #9d4f14;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.profile-modal-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.profile-modal-avatar span {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.profile-modal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.profile-modal-info strong {
+  font-size: 1rem;
+  color: var(--clr-dark, #3a2210);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.profile-modal-info > span {
+  font-size: 0.78rem;
+  color: var(--clr-text-muted, #7a6555);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.profile-modal-streak {
+  font-size: 0.78rem;
+  color: #9d4f14;
+  font-weight: 600;
+}
+
+.profile-modal-divider {
+  height: 1px;
+  background: var(--clr-border, #e8d8c4);
+  margin: 0 0 8px;
+}
+
+.profile-modal-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 0 8px;
+  margin-bottom: 8px;
+}
+
+.profile-modal-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: none;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--clr-text, #3d2a1a);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.15s;
+  width: 100%;
+}
+.profile-modal-item:hover {
+  background: rgba(157, 79, 20, 0.06);
+}
+.profile-modal-item--theme {
+  cursor: default;
+}
+.profile-modal-item--theme:hover {
+  background: none;
+}
+
+.profile-modal-item-icon {
+  font-size: 1.15rem;
+  width: 24px;
+  text-align: center;
+}
+
+.profile-modal-logout {
+  display: block;
+  width: calc(100% - 48px);
+  margin: 8px 24px 0;
+  padding: 14px;
+  background: #ffebe5;
+  color: #c0392b;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+.profile-modal-logout:hover {
+  background: #ffd5cc;
+}
+
+/* On desktop the modal becomes a centred card */
+@media (min-width: 769px) {
+  .profile-modal-backdrop {
+    backdrop-filter: blur(2px);
+  }
+
+  .profile-modal {
+    bottom: auto;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+    width: 360px;
+    border-radius: 20px;
+    animation: scaleIn 0.2s ease;
+  }
+
+  @keyframes scaleIn {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+    to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+}
+
 
 .sidebar-header {
   padding: 0 32px;
@@ -99,6 +354,13 @@
   width: 4px;
   background: #9d4f14;
   border-radius: 4px 0 0 4px;
+}
+
+/* Hide profile tab from desktop nav — it lives in sidebar-footer there */
+@media (min-width: 769px) {
+  .sidebar-link--profile {
+    display: none;
+  }
 }
 
 /* Content Area */
@@ -399,9 +661,16 @@
   padding-top: 20px;
   font-family: inherit;
   flex-wrap: wrap;
+  border-top: 1px solid var(--clr-border, #e8d8c4);
 }
 
 /* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  .protected-content {
+    padding: 32px 32px 84px;
+  }
+}
+
 @media (max-width: 768px) {
   /* Sidebar → fixed bottom tab bar */
   .protected-layout {
@@ -425,6 +694,10 @@
   }
 
   .sidebar-header {
+    display: none;
+  }
+
+  .sidebar-footer {
     display: none;
   }
 
@@ -469,6 +742,7 @@
     font-size: 0.65rem;
     gap: 3px;
     height: 100%;
+    position: relative;
   }
 
   .sidebar-icon {
@@ -480,8 +754,27 @@
   }
 
   .sidebar-link--active {
-    background: rgba(157, 79, 20, 0.1);
-    border-radius: 8px;
+    background: transparent;
+    color: #9d4f14;
+  }
+
+  .sidebar-link--active::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 52px;
+    height: 52px;
+    background: rgba(157, 79, 20, 0.13);
+    border-radius: 14px;
+    z-index: 0;
+  }
+
+  .sidebar-link .sidebar-icon,
+  .sidebar-link > span:not(.sidebar-icon) {
+    position: relative;
+    z-index: 1;
   }
 
   /* Content area */
@@ -537,7 +830,82 @@
     justify-content: flex-end;
     padding-bottom: 8px;
   }
+
+  /* Settings cards — 2 per row on tablet */
+  .cards-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Security card buttons — full width */
+  .card-strong.flex-between > .flex-between {
+    width: 100%;
+  }
+  .btn-white,
+  .btn-danger-light {
+    flex: 1;
+    text-align: center;
+  }
 }
+
+@media (max-width: 480px) {
+  .protected-content {
+    padding: 16px 12px 88px;
+  }
+
+  .page-container {
+    padding-bottom: 16px;
+  }
+
+  .page-header {
+    margin-bottom: 24px;
+  }
+
+  .page-title {
+    font-size: 1.1rem;
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+  }
+
+  /* Single-column grids on small phones */
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+
+  /* Profile card tighter */
+  .card-soft,
+  .card-strong {
+    padding: 20px 16px;
+  }
+
+  /* Tabs — smaller gap */
+  .tabs {
+    gap: 12px;
+  }
+  .tab-btn {
+    font-size: 0.9rem;
+    padding: 8px 2px;
+  }
+
+  /* Action footer — stack buttons */
+  .action-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-top: 32px;
+  }
+  .action-footer button {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+}
+
 .btn-white {
   background: #fff;
   color: #9d4f14;
@@ -564,3 +932,47 @@
   padding: 12px 24px;
   cursor: pointer;
 }
+
+/* ─── OFFLINE SYNC TOAST ─── */
+.sync-toast {
+  position: fixed;
+  bottom: 28px;
+  left: 28px;
+  z-index: 9999;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.22);
+  animation: slideUpIn 0.28s ease forwards;
+}
+.sync-toast--syncing { background: #9d4f14; }
+.sync-toast--done    { background: #2d6a4f; }
+.sync-toast--error   { background: #b83232; }
+.sync-toast-close {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.8);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0 0 0 4px;
+  line-height: 1;
+}
+.sync-toast-close:hover { color: #fff; }
+
+/* On mobile raise toast above the bottom nav */
+@media (max-width: 768px) {
+  .sync-toast {
+    bottom: calc(64px + 16px);
+    left: 16px;
+    right: 16px;
+    border-radius: 10px;
+  }
+}
+
+[data-theme="dark"] .sync-toast--syncing { background: #c06820; }
+[data-theme="dark"] .sync-toast--done    { background: #1e7a52; }

@@ -214,6 +214,12 @@
   }
   .quadrants-grid {
     grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .quadrant-card {
+    min-height: 160px;
+    padding: 20px;
   }
   .entry-top-bar {
     margin-bottom: 20px;
@@ -235,6 +241,119 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
+    padding-top: 20px;
+    padding-bottom: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .entry-top-bar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: nowrap;
+  }
+
+  /* Hide the verbose label on small screens — date is enough */
+  .entry-top-left {
+    font-size: 0;
+    gap: 0;
+  }
+  .entry-top-left span.date {
+    font-size: 0.78rem;
+    letter-spacing: 0;
+    display: block;
+  }
+
+  .entry-top-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  /* Make action buttons into proper pill buttons */
+  .entry-top-right .action-icon-btn {
+    font-size: 1.1rem;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: rgba(157, 79, 20, 0.07);
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .entry-top-right .btn-primary {
+    padding: 10px 18px !important;
+    font-size: 0.85rem !important;
+    border-radius: 10px !important;
+    min-height: 44px;
+  }
+
+  .entry-top-right .user-profile-btn {
+    font-size: 0.82rem;
+    padding: 8px 14px;
+    border-radius: 10px;
+    background: rgba(157, 79, 20, 0.07);
+    border: none;
+    color: #9d4f14;
+    font-weight: 600;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  .scripture-hero {
+    padding: 20px 16px 28px;
+  }
+
+  .scripture-text {
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+  }
+
+  .scripture-meta {
+    margin-bottom: 16px;
+  }
+
+  .quadrant-card {
+    padding: 16px;
+    min-height: auto;
+    border-radius: 10px;
+  }
+
+  .q-header {
+    margin-bottom: 12px;
+  }
+
+  .q-title {
+    font-size: 1rem;
+  }
+
+  .q-textarea {
+    min-height: 100px;
+    font-size: 0.9rem;
+  }
+
+  .q-text {
+    font-size: 0.88rem;
+  }
+
+  .scenic-banner {
+    height: 130px;
+    padding-bottom: 16px;
+    border-radius: 10px;
+    margin-bottom: 24px;
+  }
+
+  .scenic-banner p,
+  .scenic-banner input {
+    font-size: 0.95rem !important;
+    min-width: 88% !important;
   }
 }
 

@@ -30,10 +30,12 @@ export default function ShellWrapper({ children }) {
   if (isAuthRoute || isProtectedRoute) return <>{children}</>
 
   return (
-    <div className="site-wrapper">
+    <div className="site-outer">
       <Navbar />
-      {children}
-      <Footer />
+      <div className="site-wrapper">
+        {children}
+        <Footer />
+      </div>
     </div>
   )
 }

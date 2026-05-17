@@ -1,20 +1,104 @@
 "use client"
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import InstallButton from './InstallButton'
+import { usePathname, useRouter } from 'next/navigation'
 import ThemeToggle from './ThemeToggle'
 import { supabase } from '@/utils/supabase'
 import { useAuth } from '@/context/AuthContext'
 
-export default function Sidebar() {
-  const pathname = usePathname()
-  const { user } = useAuth()
-  const [streak, setStreak] = useState(null)
+function ProfileModal({ user, streak, onClose }) {
+  const router = useRouter()
+  const { logout } = useAuth()
+
+  const name = user?.user_metadata?.full_name || 'Devotee'
+  const email = user?.email || ''
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+  const [avatarUrl, setAvatarUrl] = useState(null)
 
   useEffect(() => {
     if (!user) return
-    // Fetch last 60 days of entry dates to calculate streak
+    supabase
+      .from('profiles')
+      .select('avatar_url')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => { if (data?.avatar_url) setAvatarUrl(data.avatar_url) })
+  }, [user])
+
+  const handleLogout = async () => {
+    onClose()
+    await logout()
+  }
+
+  const handleSettings = () => {
+    onClose()
+    router.push('/settings')
+  }
+
+  const handleNewEntry = () => {
+    onClose()
+    router.push('/entry/new')
+  }
+
+  return (
+    <>
+      <div className="profile-modal-backdrop" onClick={onClose} />
+      <div className="profile-modal" role="dialog" aria-modal="true">
+        <div className="profile-modal-handle" />
+
+        <div className="profile-modal-head">
+          <div className="profile-modal-avatar">
+            {avatarUrl
+              ? <img src={avatarUrl} alt={name} />
+              : <span>{initials}</span>}
+          </div>
+          <div className="profile-modal-info">
+            <strong>{name}</strong>
+            <span>{email}</span>
+            {streak > 0 && (
+              <span className="profile-modal-streak">🔥 {streak}-day streak</span>
+            )}
+          </div>
+        </div>
+
+        <div className="profile-modal-divider" />
+
+        <nav className="profile-modal-nav">
+          <button className="profile-modal-item" onClick={handleNewEntry}>
+            <span className="profile-modal-item-icon">📖</span>
+            New Entry
+          </button>
+          <button className="profile-modal-item" onClick={handleSettings}>
+            <span className="profile-modal-item-icon">⚙️</span>
+            Settings
+          </button>
+          <div className="profile-modal-item profile-modal-item--theme">
+            <span className="profile-modal-item-icon">🌙</span>
+            Theme
+            <span style={{ marginLeft: 'auto' }}>
+              <ThemeToggle compact />
+            </span>
+          </div>
+        </nav>
+
+        <div className="profile-modal-divider" />
+
+        <button className="profile-modal-logout" onClick={handleLogout}>
+          Sign Out
+        </button>
+      </div>
+    </>
+  )
+}
+
+export default function Sidebar() {
+  const pathname = usePathname()
+  const { user } = useAuth()
+  const [streak, setStreak] = useState(0)
+  const [profileOpen, setProfileOpen] = useState(false)
+
+  useEffect(() => {
+    if (!user) return
     const since = new Date()
     since.setDate(since.getDate() - 60)
     supabase
@@ -28,73 +112,97 @@ export default function Sidebar() {
         const days = new Set(data.map(e => e.created_at.slice(0, 10)))
         let count = 0
         const d = new Date()
-        // Allow today or yesterday as streak start
         if (!days.has(d.toISOString().slice(0, 10))) d.setDate(d.getDate() - 1)
-        while (days.has(d.toISOString().slice(0, 10))) {
-          count++
-          d.setDate(d.getDate() - 1)
-        }
+        while (days.has(d.toISOString().slice(0, 10))) { count++; d.setDate(d.getDate() - 1) }
         setStreak(count)
       })
   }, [user])
 
+  const name = user?.user_metadata?.full_name || 'Devotee'
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+
   const navItems = [
-    { name: 'Today', path: '/today', icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-        <line x1="16" y1="2" x2="16" y2="6"/>
-        <line x1="8" y1="2" x2="8" y2="6"/>
-        <line x1="3" y1="10" x2="21" y2="10"/>
-      </svg>
-    )},
-    { name: 'History', path: '/history', icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <polyline points="12 6 12 12 16 14"/>
-      </svg>
-    )},
-    { name: 'Settings', path: '/settings', icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-        <circle cx="12" cy="12" r="3"/>
-      </svg>
-    )},
-  ];
+    {
+      name: 'Today', path: '/today', icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+      )
+    },
+    {
+      name: 'History', path: '/history', icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+        </svg>
+      )
+    },
+    {
+      name: 'Settings', path: '/settings', icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" />
+        </svg>
+      )
+    },
+  ]
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
-        <h1>Editorial<br/>Devotion</h1>
-        {streak !== null && streak > 0 && (
-          <p className="sidebar-streak">{streak}-day streak 🔥</p>
-        )}
-      </div>
+    <>
+      <aside className="sidebar">
+        <div className="sidebar-header">
+          <h1>Editorial<br />Devotion</h1>
+          {streak > 0 && <p className="sidebar-streak">{streak}-day streak 🔥</p>}
+        </div>
 
-      <Link href="/entry/new" className="sidebar-new-entry">
-        + New Entry
-      </Link>
+        <Link href="/entry/new" className="sidebar-new-entry">+ New Entry</Link>
 
-      <InstallButton />
+        <nav className="sidebar-nav">
+          {navItems.map((item) => {
+            const isActive = pathname.startsWith(item.path)
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`sidebar-link ${isActive ? 'sidebar-link--active' : ''}`}
+              >
+                <span className="sidebar-icon">{item.icon}</span>
+                {item.name}
+              </Link>
+            )
+          })}
 
-      <nav className="sidebar-nav">
-        {navItems.map((item) => {
-          const isActive = pathname.startsWith(item.path);
-          return (
-             <Link 
-               key={item.path} 
-               href={item.path} 
-               className={`sidebar-link ${isActive ? 'sidebar-link--active' : ''}`}
-             >
-               <span className="sidebar-icon">{item.icon}</span>
-               {item.name}
-             </Link>
-          )
-        })}
-      </nav>
+          {/* Profile tab — shown in bottom bar on mobile */}
+          <button
+            className={`sidebar-link sidebar-link--profile ${profileOpen ? 'sidebar-link--active' : ''}`}
+            onClick={() => setProfileOpen(true)}
+            aria-label="Open profile"
+          >
+            <span className="sidebar-icon sidebar-profile-avatar">
+              {initials}
+            </span>
+            Profile
+          </button>
+        </nav>
 
-      <div style={{ padding: '16px 32px', marginTop: 'auto' }}>
-        <ThemeToggle />
-      </div>
-    </aside>
+        {/* Desktop-only footer */}
+        <div className="sidebar-footer">
+          <button
+            className="sidebar-profile-btn"
+            onClick={() => setProfileOpen(true)}
+          >
+            <span className="sidebar-profile-avatar sidebar-profile-avatar--sm">{initials}</span>
+            <span className="sidebar-profile-name">{name.split(' ')[0]}</span>
+          </button>
+          <ThemeToggle />
+        </div>
+      </aside>
+
+      {profileOpen && (
+        <ProfileModal
+          user={user}
+          streak={streak}
+          onClose={() => setProfileOpen(false)}
+        />
+      )}
+    </>
   )
 }
