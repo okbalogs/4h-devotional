@@ -62,6 +62,22 @@ function makeCacheable(response) {
   })
 }
 
+// ─── Notification click: focus existing tab or open /today ───
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const url = (event.notification.data && event.notification.data.url) || '/today'
+  event.waitUntil(
+    clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
+      .then((list) => {
+        for (const client of list) {
+          if ('focus' in client) return client.focus()
+        }
+        if (clients.openWindow) return clients.openWindow(url)
+      })
+  )
+})
+
 // ─── Fetch ───
 self.addEventListener('fetch', (event) => {
   const { request } = event

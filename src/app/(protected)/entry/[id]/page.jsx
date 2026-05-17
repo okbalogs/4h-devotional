@@ -205,7 +205,13 @@ export default function ReadingRecord() {
       </div>
 
       <div className="entry-actions">
-        <div className="entry-actions-left" />
+        <div className="entry-actions-left">
+          {!isEditing && (
+            <button className="btn-export" onClick={() => window.print()} title="Save as PDF">
+              <span>⬇</span> Export PDF
+            </button>
+          )}
+        </div>
         <div className="entry-actions-right">
           {!isEditing && (
             <button

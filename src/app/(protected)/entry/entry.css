@@ -357,6 +357,42 @@
   }
 }
 
+/* ─── PRINT / PDF EXPORT ─── */
+@media print {
+  /* Hide everything except the entry content */
+  .sidebar,
+  .entry-top-bar,
+  .entry-actions,
+  .scenic-banner { display: none !important; }
+
+  body, .protected-layout, .protected-content, .page-container {
+    background: #fff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .entry-page {
+    padding: 24px !important;
+  }
+
+  .scripture-hero {
+    box-shadow: none !important;
+    border: 1px solid #ddd;
+    break-inside: avoid;
+  }
+
+  .quadrant-card {
+    break-inside: avoid;
+    border: 1px solid #eee;
+    background: #fafafa !important;
+  }
+
+  /* Remove watermark H letter */
+  .quadrant-card::after { display: none !important; }
+
+  a { text-decoration: none !important; color: inherit !important; }
+}
+
 /* New Entry Textareas */
 .q-textarea {
   width: 100%;

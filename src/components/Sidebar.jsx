@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import ThemeToggle from './ThemeToggle'
+import SearchDrawer from './SearchDrawer'
 import { supabase } from '@/utils/supabase'
 import { useAuth } from '@/context/AuthContext'
 
@@ -96,6 +97,7 @@ export default function Sidebar() {
   const { user } = useAuth()
   const [streak, setStreak] = useState(0)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -170,6 +172,20 @@ export default function Sidebar() {
             )
           })}
 
+          {/* Search tab */}
+          <button
+            className={`sidebar-link ${searchOpen ? 'sidebar-link--active' : ''}`}
+            onClick={() => setSearchOpen(true)}
+            aria-label="Search entries"
+          >
+            <span className="sidebar-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </span>
+            Search
+          </button>
+
           {/* Profile tab — shown in bottom bar on mobile */}
           <button
             className={`sidebar-link sidebar-link--profile ${profileOpen ? 'sidebar-link--active' : ''}`}
@@ -203,6 +219,8 @@ export default function Sidebar() {
           onClose={() => setProfileOpen(false)}
         />
       )}
+
+      <SearchDrawer open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   )
 }

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { getTodayVerseForUser, getJourneyDay, getGreeting, getStreakAndCount } from '@/utils/dailyVerse'
+import BadgeModal, { getNewBadge } from '@/components/BadgeModal'
 import './today.css'
 
 const H4_PILLARS = [
@@ -52,6 +53,7 @@ export default function Today() {
   const [verseLoading, setVerseLoading] = useState(true)
   const [streak, setStreak] = useState(null)
   const [totalEntries, setTotalEntries] = useState(null)
+  const [newBadge, setNewBadge] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -62,6 +64,10 @@ export default function Today() {
     getStreakAndCount(user.id).then(({ streak, totalEntries }) => {
       setStreak(streak)
       setTotalEntries(totalEntries)
+      if (streak > 0) {
+        const badge = getNewBadge(streak)
+        if (badge) setNewBadge(badge)
+      }
     })
   }, [user])
 
@@ -76,6 +82,7 @@ export default function Today() {
 
   return (
     <div className="page-container today-page">
+      <BadgeModal badge={newBadge} onClose={() => setNewBadge(null)} />
 
       {/* ── Greeting ── */}
       <div className="today-greeting">

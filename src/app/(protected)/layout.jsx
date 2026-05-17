@@ -1,5 +1,6 @@
 import Sidebar from "@/components/Sidebar";
 import OfflineSync from "@/components/OfflineSync";
+import NotificationScheduler from "@/components/NotificationScheduler";
 import "./protected.css";
 
 export default function ProtectedLayout({ children }) {
@@ -10,6 +11,7 @@ export default function ProtectedLayout({ children }) {
         {children}
       </div>
       <OfflineSync />
+      <NotificationScheduler />
     </div>
   );
 }

@@ -27,9 +27,14 @@ export default function Settings() {
   const [bibleVersion, setBibleVersion] = useState('web')
   const [reminders, setReminders] = useState(true)
   const [reminderTime, setReminderTime] = useState('06:00')
+  const [notifPermission, setNotifPermission] = useState('default')
   const [publicProfile, setPublicProfile] = useState(false)
   const [weeklySummary, setWeeklySummary] = useState(true)
   const [communityPrayers, setCommunityPrayers] = useState(false)
+
+  useEffect(() => {
+    if ('Notification' in window) setNotifPermission(Notification.permission)
+  }, [])
 
   useEffect(() => {
     if (!user) return
@@ -52,6 +57,43 @@ export default function Settings() {
         setCommunityPrayers(data.community_prayers ?? false)
       })
   }, [user])
+
+  const handleReminderToggle = async () => {
+    if (reminders) {
+      // Turning OFF
+      setReminders(false)
+      localStorage.setItem('notif_enabled', 'false')
+      return
+    }
+    // Turning ON — request permission first
+    if (!('Notification' in window)) {
+      setSaveMsg('Your browser does not support notifications.')
+      setTimeout(() => setSaveMsg(null), 3000)
+      return
+    }
+    if (Notification.permission === 'denied') {
+      setSaveMsg('Notifications are blocked. Please enable them in your browser settings.')
+      setTimeout(() => setSaveMsg(null), 4000)
+      return
+    }
+    const perm = Notification.permission === 'granted'
+      ? 'granted'
+      : await Notification.requestPermission()
+    setNotifPermission(perm)
+    if (perm !== 'granted') {
+      setSaveMsg('Notification permission not granted.')
+      setTimeout(() => setSaveMsg(null), 3000)
+      return
+    }
+    setReminders(true)
+    localStorage.setItem('notif_enabled', 'true')
+    localStorage.setItem('notif_time', reminderTime)
+  }
+
+  const handleReminderTimeChange = (t) => {
+    setReminderTime(t)
+    if (reminders) localStorage.setItem('notif_time', t)
+  }
 
   const handleSave = async () => {
     setSaving(true)
@@ -76,6 +118,12 @@ export default function Settings() {
     setSaving(false)
     setSaveMsg(error ? error.message : 'Changes saved.')
     setTimeout(() => setSaveMsg(null), 3000)
+
+    // Keep localStorage in sync so NotificationScheduler works offline
+    if (!error) {
+      localStorage.setItem('notif_enabled', reminders ? 'true' : 'false')
+      localStorage.setItem('notif_time', reminderTime)
+    }
   }
 
   const handleDiscard = () => {
@@ -186,7 +234,7 @@ export default function Settings() {
               <div className="mini-card">
                 <div className="mini-card-header">
                   <div className="circle-icon">🔔</div>
-                  <div className={`toggle-switch ${reminders ? 'on' : ''}`} onClick={() => setReminders(v => !v)} />
+                  <div className={`toggle-switch ${reminders ? 'on' : ''}`} onClick={handleReminderToggle} />
                 </div>
                 <div>
                   <h3>Daily Reminders</h3>
@@ -244,9 +292,19 @@ export default function Settings() {
                     type="time"
                     className="input-soft"
                     value={reminderTime}
-                    onChange={(e) => setReminderTime(e.target.value)}
+                    onChange={(e) => handleReminderTimeChange(e.target.value)}
                     style={{ marginTop: '12px', padding: '6px 12px' }}
                   />
+                  {notifPermission === 'denied' && (
+                    <p style={{ fontSize: '0.78rem', color: '#c0392b', marginTop: '6px' }}>
+                      Notifications are blocked in your browser.
+                    </p>
+                  )}
+                  {reminders && notifPermission === 'granted' && (
+                    <p style={{ fontSize: '0.78rem', color: '#2d6a4f', marginTop: '6px' }}>
+                      ✓ You&apos;ll be reminded at {reminderTime} each day.
+                    </p>
+                  )}
                 </div>
               </div>
 
