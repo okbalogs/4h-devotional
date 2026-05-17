@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import Link from "next/link"
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
@@ -8,29 +8,6 @@ import ThemeToggle from './ThemeToggle'
 export default function Navbar() {
   const currentPage = usePathname()
   const { user } = useAuth()
-  const [installPrompt, setInstallPrompt] = useState(null)
-
-  useEffect(() => {
-    if (window._deferredInstallPrompt) setInstallPrompt(window._deferredInstallPrompt)
-    const onInstallable = (e) => setInstallPrompt(e.detail)
-    const onInstalled = () => setInstallPrompt(null)
-    window.addEventListener('pwa:installable', onInstallable)
-    window.addEventListener('appinstalled', onInstalled)
-    return () => {
-      window.removeEventListener('pwa:installable', onInstallable)
-      window.removeEventListener('appinstalled', onInstalled)
-    }
-  }, [])
-
-  const handleInstall = async () => {
-    if (!installPrompt) return
-    installPrompt.prompt()
-    const { outcome } = await installPrompt.userChoice
-    if (outcome === 'accepted') {
-      setInstallPrompt(null)
-      window._deferredInstallPrompt = null
-    }
-  }
 
   const navLinks = [
     { href: "/", label: "Sanctuary" },
@@ -61,18 +38,6 @@ export default function Navbar() {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <ThemeToggle />
-        {installPrompt && (
-          <button
-            onClick={handleInstall}
-            style={{
-              padding: '8px 16px', borderRadius: '8px', border: '1.5px dashed #9d4f14',
-              background: 'rgba(157,79,20,0.06)', color: '#9d4f14',
-              fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
-            }}
-          >
-            📲 Install
-          </button>
-        )}
         {user ? (
           <Link href="/today" className='btn-primary py-2.5! px-6! text-sm'>
             Go to App

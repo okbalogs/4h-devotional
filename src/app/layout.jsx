@@ -3,6 +3,7 @@ import "./globals.css";
 import ShellWrapper from "@/components/ShellWrapper";
 import { AuthProvider } from "@/context/AuthContext";
 import PwaRegistration from "@/components/PwaRegistration";
+import InstallPopup from "@/components/InstallPopup";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const geistSans = Geist({
@@ -54,6 +55,7 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <ThemeProvider>
             <PwaRegistration />
+            <InstallPopup />
             <ShellWrapper>{children}</ShellWrapper>
           </ThemeProvider>
         </AuthProvider>

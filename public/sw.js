@@ -1,18 +1,27 @@
-// v3 — removed protected routes from install cache
-const STATIC_CACHE = 'static-v3'
-const DYNAMIC_CACHE = 'dynamic-v3'
-const VERSE_CACHE = 'verse-v3'
+const STATIC_CACHE = 'static-v4'
+const DYNAMIC_CACHE = 'dynamic-v4'
+const VERSE_CACHE = 'verse-v4'
 
 const APP_SHELL = [
   '/',
   '/signin',
   '/signup',
+  '/explore',
+  '/courses',
+  '/fellowship',
+  '/support',
+  '/privacy',
+  '/terms',
+  '/instructors',
 ]
 
-// ─── Install: cache app shell ───
+// ─── Install: cache full app shell ───
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => cache.addAll(APP_SHELL))
+    caches.open(STATIC_CACHE).then((cache) =>
+      // addAll fails atomically — individual failures won't crash install
+      Promise.allSettled(APP_SHELL.map((url) => cache.add(url)))
+    )
   )
   self.skipWaiting()
 })
@@ -32,6 +41,9 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
+
+  // Only handle GET requests
+  if (request.method !== 'GET') return
 
   // Bible API — cache-first (offline verse reading)
   if (url.hostname === 'bible-api.com') {
@@ -66,12 +78,16 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Next.js static chunks — cache first
+  // Next.js static chunks — cache first, update in background
   if (url.pathname.startsWith('/_next/static')) {
     event.respondWith(
       caches.open(STATIC_CACHE).then(async (cache) => {
         const cached = await cache.match(request)
-        if (cached) return cached
+        if (cached) {
+          // Refresh in background so next visit gets latest
+          fetch(request).then((r) => cache.put(request, r)).catch(() => {})
+          return cached
+        }
         const response = await fetch(request)
         cache.put(request, response.clone())
         return response
@@ -80,27 +96,37 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Public assets (images, fonts) — cache first
+  // Images and fonts — cache first
   if (request.destination === 'image' || request.destination === 'font') {
     event.respondWith(
       caches.open(STATIC_CACHE).then(async (cache) => {
         const cached = await cache.match(request)
         if (cached) return cached
-        const response = await fetch(request)
-        cache.put(request, response.clone())
-        return response
+        try {
+          const response = await fetch(request)
+          cache.put(request, response.clone())
+          return response
+        } catch {
+          return new Response('', { status: 408 })
+        }
       })
     )
     return
   }
 
-  // Pages — network first, fall back to cache
-  event.respondWith(
-    fetch(request)
-      .then((response) => {
-        caches.open(DYNAMIC_CACHE).then((cache) => cache.put(request, response.clone()))
-        return response
-      })
-      .catch(() => caches.match(request))
-  )
+  // App shell pages — network first, fall back to cache
+  if (url.origin === self.location.origin) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          // Only cache successful same-origin navigation responses
+          if (response.ok) {
+            caches.open(DYNAMIC_CACHE).then((cache) => cache.put(request, response.clone()))
+          }
+          return response
+        })
+        .catch(() => caches.match(request).then((cached) => cached || caches.match('/')))
+    )
+    return
+  }
 })
