@@ -62,7 +62,7 @@ export default function SignIn() {
 
           <h1>Return to Selah</h1>
           <p className="auth-subtitle">
-            Continue your 4H journey: Hear, Heed, Hold, Help.
+            Continue your 4H journey: Head, Heart, Hand, Help.
           </p>
 
           <GoogleButton onClick={handleGoogle} />

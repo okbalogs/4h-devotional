@@ -146,7 +146,7 @@ export default function NewEntry() {
         <div className="quadrant-card">
           <div className="q-header">
             <span className="q-icon">⚙️</span>
-            <h3 className="q-title">Hear (Head)</h3>
+            <h3 className="q-title">Head</h3>
           </div>
           <textarea
             className="q-textarea"
@@ -159,7 +159,7 @@ export default function NewEntry() {
         <div className="quadrant-card">
           <div className="q-header">
             <span className="q-icon">🤎</span>
-            <h3 className="q-title">Heed (Heart)</h3>
+            <h3 className="q-title">Heart</h3>
           </div>
           <textarea
             className="q-textarea"
@@ -172,7 +172,7 @@ export default function NewEntry() {
         <div className="quadrant-card">
           <div className="q-header">
             <span className="q-icon">✋</span>
-            <h3 className="q-title">Hold (Hands)</h3>
+            <h3 className="q-title">Hand</h3>
           </div>
           <textarea
             className="q-textarea"
@@ -185,7 +185,7 @@ export default function NewEntry() {
         <div className="quadrant-card">
           <div className="q-header">
             <span className="q-icon">🤲</span>
-            <h3 className="q-title">Help (Others)</h3>
+            <h3 className="q-title">Help</h3>
           </div>
           <textarea
             className="q-textarea"

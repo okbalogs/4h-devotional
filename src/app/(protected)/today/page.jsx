@@ -9,21 +9,21 @@ import './today.css'
 const H4_PILLARS = [
   {
     key: 'hear',
-    label: 'Hear',
+    label: 'Head',
     sub: 'What does the Word say?',
     icon: '📖',
     color: 'var(--clr-primary)',
   },
   {
     key: 'heed',
-    label: 'Heed',
+    label: 'Heart',
     sub: 'What does it mean for me?',
     icon: '❤️',
     color: '#c0783a',
   },
   {
     key: 'hold',
-    label: 'Hold',
+    label: 'Hand',
     sub: 'What will I do today?',
     icon: '✋',
     color: '#7a4f28',

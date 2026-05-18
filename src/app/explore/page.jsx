@@ -5,7 +5,7 @@ const steps = [
   {
     icon: '👂',
     step: 'STEP ONE',
-    title: 'Hear',
+    title: 'Head',
     subtitle: 'What does God say?',
     body: `Approach the scripture with your mind fully engaged. Observe the context, the characters, the commands, and the promises. Resist the urge to jump to application — first, simply receive the text as it is written. What is the author saying, and to whom? What does this passage reveal about the nature of God?`,
     accent: false,
@@ -13,7 +13,7 @@ const steps = [
   {
     icon: '❤️',
     step: 'STEP TWO',
-    title: 'Heed',
+    title: 'Heart',
     subtitle: 'How does it convict my heart?',
     body: `Knowledge without conviction is dead orthodoxy. In this step, let the word press against your interior life. What emotions does this passage stir? What sin is exposed? What anxiety is addressed? What promise reassures you? Allow the Holy Spirit room to minister before you move on.`,
     accent: false,
@@ -21,7 +21,7 @@ const steps = [
   {
     icon: '✋',
     step: 'STEP THREE',
-    title: 'Hold',
+    title: 'Hand',
     subtitle: 'What will I do with this today?',
     body: `Faith without works is dead. This is the step most people skip — and it is the reason many devout Christians are unchanged by years of Bible reading. Write one concrete, time-bound action you will take today because of what you have read. Not a vague resolution. One specific thing.`,
     accent: true,

@@ -26,7 +26,7 @@ const playfair = Playfair_Display({
 export const metadata = {
   title: "Editorial Devotion — Your 4H Quiet Time Sanctuary",
   description:
-    "Engage with God through the ECWA 4H framework: Hear, Heart, Head, Help. A digital sanctuary for your daily selah.",
+    "Engage with God through the ECWA 4H framework: Head, Heart, Hand, Help. A digital sanctuary for your daily selah.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

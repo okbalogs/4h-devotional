@@ -357,6 +357,214 @@
   }
 }
 
+/* ─── DEVOTION CARD MODAL ─── */
+.dcard-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(42, 31, 20, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.dcard-modal {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(42, 31, 20, 0.28);
+  display: flex;
+  flex-direction: column;
+}
+.dcard-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid #eedecf;
+}
+.dcard-modal-title {
+  font-family: Georgia, serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #7a6555;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.dcard-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9d4f14;
+  font-size: 1.1rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.dcard-close:hover { background: rgba(157,79,20,0.08); }
+
+/* Preview card */
+.dcard-preview {
+  margin: 20px;
+  border-radius: 16px;
+  border: 1px solid #e8d8c4;
+  overflow: hidden;
+  background: linear-gradient(160deg, #fdf6ec 0%, #f5e6d3 100%);
+  font-family: Arial, sans-serif;
+}
+.dcard-accent-bar {
+  height: 6px;
+  background: linear-gradient(90deg, #9d4f14, #c0783a);
+}
+.dcard-accent-bar-bottom {
+  margin-top: 0;
+}
+.dcard-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px 10px;
+}
+.dcard-brand {
+  font-family: Georgia, serif;
+  font-weight: bold;
+  font-size: 0.85rem;
+  color: #9d4f14;
+  letter-spacing: 2px;
+}
+.dcard-date {
+  font-size: 0.78rem;
+  color: #c0a080;
+}
+.dcard-divider {
+  border: none;
+  border-top: 1px solid #e8d8c4;
+  margin: 0 20px;
+}
+.dcard-divider-bottom { margin-top: 12px; }
+.dcard-ref-pill {
+  display: inline-block;
+  margin: 12px 20px 0;
+  background: #f5e6d3;
+  border: 1px solid #e8cfa8;
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 0.72rem;
+  font-weight: bold;
+  color: #9d4f14;
+  letter-spacing: 1px;
+}
+.dcard-title {
+  font-family: Georgia, serif;
+  font-size: 1.35rem;
+  line-height: 1.3;
+  color: #2a1f14;
+  margin: 10px 20px 0;
+  font-weight: 400;
+}
+.dcard-underline {
+  width: 48px;
+  height: 3px;
+  background: #f5d1a5;
+  border-radius: 2px;
+  margin: 8px 20px 16px;
+}
+.dcard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0 16px 14px;
+}
+.dcard-cell {
+  background: rgba(255,255,255,0.7);
+  border-radius: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(232,216,196,0.7);
+  border-left: 4px solid #9d4f14;
+  min-height: 100px;
+}
+.dcard-cell-1 { border-left-color: #c0783a; }
+.dcard-cell-2 { border-left-color: #7a4f28; background: rgba(253,246,236,0.8); }
+.dcard-cell-3 { border-left-color: #4a7c59; background: rgba(253,246,236,0.8); }
+.dcard-cell-header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.dcard-cell-label {
+  font-family: Georgia, serif;
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: #2a1f14;
+}
+.dcard-cell-sub {
+  font-size: 0.68rem;
+  font-weight: bold;
+  color: #9d4f14;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.dcard-cell-text {
+  font-size: 0.78rem;
+  color: #5a4a3a;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.dcard-thought {
+  margin: 4px 20px 16px;
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-size: 0.88rem;
+  color: #7a4f28;
+  background: rgba(157,79,20,0.06);
+  border-radius: 8px;
+  padding: 10px 14px;
+  line-height: 1.5;
+}
+.dcard-footer-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px 14px;
+  font-size: 0.72rem;
+}
+.dcard-footer-left { color: #c0a080; }
+.dcard-footer-right { font-family: Georgia, serif; font-weight: bold; color: #9d4f14; }
+
+/* Download button */
+.dcard-download-btn {
+  margin: 0 20px 20px;
+  padding: 14px;
+  background: linear-gradient(135deg, #9d4f14, #c0783a);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.2s, transform 0.1s;
+  flex-shrink: 0;
+}
+.dcard-download-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+.dcard-download-btn:active { transform: translateY(0); }
+
+@media (max-width: 480px) {
+  .dcard-modal { border-radius: 16px; max-height: 92vh; }
+  .dcard-grid { gap: 8px; }
+  .dcard-title { font-size: 1.1rem; }
+}
+
 /* ─── PRINT / PDF EXPORT ─── */
 @media print {
   /* Hide everything except the entry content */

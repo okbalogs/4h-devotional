@@ -6,17 +6,17 @@ import hero from "../assets/images/hero.png"
 import { useScrollReveal } from '@/hooks/useScrollReveal'
 
 const pillars = [
-  { step: 'H1', title: 'Hear', sub: 'What does God say?' },
-  { step: 'H2', title: 'Heed', sub: 'How does it convict me?' },
-  { step: 'H3', title: 'Hold', sub: 'What will I do today?' },
+  { step: 'H1', title: 'Head', sub: 'What does God say?' },
+  { step: 'H2', title: 'Heart', sub: 'How does it convict me?' },
+  { step: 'H3', title: 'Hand', sub: 'What will I do today?' },
   { step: 'H4', title: 'Help', sub: 'Who can I serve?' },
 ]
 
-const DEMO_STEPS = ['Hear', 'Heed', 'Hold', 'Help']
+const DEMO_STEPS = ['Head', 'Heart', 'Hand', 'Help']
 const DEMO_PROMPTS = {
-  Hear: 'What does this passage say? Write it in your own words…',
-  Heed: 'What does this stir in your heart? What conviction or comfort do you feel?',
-  Hold: 'What one specific action will you take today because of this?',
+  Head: 'What does this passage say? Write it in your own words…',
+  Heart: 'What does this stir in your heart? What conviction or comfort do you feel?',
+  Hand: 'What one specific action will you take today because of this?',
   Help: 'Who in your life needs to hear this truth today?',
 }
 const DEMO_VERSE = 'Psalm 46:10 — "Be still, and know that I am God."'
@@ -25,8 +25,8 @@ export default function Landing() {
   const pillarsRef = useScrollReveal()
   const ctaRef = useScrollReveal()
 
-  const [demoStep, setDemoStep] = useState('Hear')
-  const [demoTexts, setDemoTexts] = useState({ Hear: '', Heed: '', Hold: '', Help: '' })
+  const [demoStep, setDemoStep] = useState('Head')
+  const [demoTexts, setDemoTexts] = useState({ Head: '', Heart: '', Hand: '', Help: '' })
 
   const currentIdx = DEMO_STEPS.indexOf(demoStep)
   const isLast = currentIdx === DEMO_STEPS.length - 1
@@ -41,7 +41,7 @@ export default function Landing() {
             Your daily <em>Quiet Time</em>,<br />structured and sacred.
           </h1>
           <p>
-            The ECWA 4H method — Hear, Heed, Hold, Help — is a proven framework
+            The ECWA 4H method — Head, Heart, Hand, Help — is a proven framework
             for engaging God's word with your whole self. Editorial Devotion gives
             you a private, distraction-free space to practise it every morning.
           </p>

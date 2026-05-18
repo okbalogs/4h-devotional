@@ -2,7 +2,7 @@ export default function manifest() {
   return {
     name: 'Editorial Devotion',
     short_name: 'Devotion',
-    description: 'Your 4H Quiet Time Sanctuary — Hear, Heed, Hold, Help.',
+    description: 'Your 4H Quiet Time Sanctuary — Head, Heart, Hand, Help.',
     start_url: '/',
     display: 'standalone',
     orientation: 'portrait',

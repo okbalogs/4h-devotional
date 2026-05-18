@@ -8,7 +8,7 @@ const courses = [
     title: 'Introduction to the 4H Quiet Time Method',
     instructor: 'ECWA Discipleship Team',
     duration: '4 lessons · 60 min',
-    desc: 'A step-by-step introduction to Hear, Heed, Hold, and Help. Ideal for new believers and anyone who has never had a structured quiet time before.',
+    desc: 'A step-by-step introduction to Head, Heart, Hand, and Help. Ideal for new believers and anyone who has never had a structured quiet time before.',
     free: true,
   },
   {

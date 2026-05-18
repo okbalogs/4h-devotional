@@ -66,7 +66,7 @@ export default function SignUp() {
           <p>
             Step into a dedicated space designed for the 4H journey:{" "}
             <em>
-              <strong>Hear, Heed, Hold, and Help.</strong>
+              <strong>Head, Heart, Hand, and Help.</strong>
             </em>
           </p>
 
