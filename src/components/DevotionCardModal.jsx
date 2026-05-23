@@ -47,7 +47,7 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath()
 }
 
-function drawCard(canvas, entry, formattedDate) {
+function drawCard(canvas, entry, verseText, formattedDate) {
   const W = 1080
   const H = 1350
   canvas.width = W
@@ -62,7 +62,7 @@ function drawCard(canvas, entry, formattedDate) {
   ctx.fillStyle = bg
   ctx.fillRect(0, 0, W, H)
 
-  // Subtle texture lines (decorative)
+  // Subtle texture lines
   ctx.strokeStyle = 'rgba(157,79,20,0.04)'
   ctx.lineWidth = 1
   for (let i = 0; i < H; i += 40) {
@@ -76,7 +76,7 @@ function drawCard(canvas, entry, formattedDate) {
   ctx.fillStyle = topGrad
   ctx.fillRect(0, 0, W, 10)
 
-  // Header area
+  // Header
   ctx.fillStyle = '#9d4f14'
   ctx.font = 'bold 26px Georgia, serif'
   ctx.letterSpacing = '4px'
@@ -89,54 +89,64 @@ function drawCard(canvas, entry, formattedDate) {
   ctx.fillText(formattedDate, W - 60, 80)
   ctx.textAlign = 'left'
 
-  // Thin separator line
+  // Separator
   ctx.strokeStyle = '#e8d8c4'
   ctx.lineWidth = 1.5
   ctx.beginPath(); ctx.moveTo(60, 105); ctx.lineTo(W - 60, 105); ctx.stroke()
 
   // Scripture reference pill
-  const refY = 140
+  let cursorY = 150
   if (entry.scripture_reference) {
     const refText = entry.scripture_reference.toUpperCase()
     ctx.font = 'bold 20px Arial, sans-serif'
     const refW = ctx.measureText(refText).width + 32
-    roundRect(ctx, 60, refY, refW, 36, 18)
+    roundRect(ctx, 60, cursorY, refW, 36, 18)
     ctx.fillStyle = '#f5e6d3'
     ctx.fill()
     ctx.strokeStyle = '#e8cfa8'
     ctx.lineWidth = 1
     ctx.stroke()
     ctx.fillStyle = '#9d4f14'
-    ctx.fillText(refText, 76, refY + 24)
+    ctx.fillText(refText, 76, cursorY + 24)
+    cursorY += 56
   }
 
-  // Title / verse text (large serif)
-  ctx.fillStyle = '#2a1f14'
-  ctx.font = '52px Georgia, serif'
-  const titleY = entry.scripture_reference ? 250 : 200
-  const titleLines = wrapText(ctx, entry.title || 'Devotional Entry', 60, titleY, W - 120, 66, 3)
+  // Verse text (large italic serif)
+  if (verseText) {
+    ctx.fillStyle = '#2a1f14'
+    ctx.font = 'italic 40px Georgia, serif'
+    const lines = wrapText(ctx, verseText, 60, cursorY, W - 120, 54, 4)
+    cursorY += lines * 54 + 16
+  }
 
-  // Decorative underline
-  const underlineY = titleY + titleLines * 66 - 10
+  // Decorative underline after verse
   ctx.strokeStyle = '#f5d1a5'
   ctx.lineWidth = 4
   ctx.lineCap = 'round'
-  ctx.beginPath(); ctx.moveTo(60, underlineY); ctx.lineTo(160, underlineY); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(60, cursorY); ctx.lineTo(160, cursorY); ctx.stroke()
+  cursorY += 24
+
+  // Entry title (subtitle style)
+  if (entry.title) {
+    ctx.fillStyle = '#7a4f28'
+    ctx.font = '28px Arial, sans-serif'
+    wrapText(ctx, entry.title, 60, cursorY, W - 120, 38, 2)
+    cursorY += 56
+  }
+
+  cursorY += 16
 
   // 4H grid
-  const gridTop = underlineY + 40
   const cellW = (W - 120 - 20) / 2
-  const cellH = 260
+  const cellH = 230
   const cols = [60, 60 + cellW + 20]
-  const rows = [gridTop, gridTop + cellH + 20]
-
+  const rows = [cursorY, cursorY + cellH + 20]
   const pillarColors = ['#9d4f14', '#c0783a', '#7a4f28', '#4a7c59']
 
   PILLARS.forEach((pillar, i) => {
     const cx = cols[i % 2]
     const cy = rows[Math.floor(i / 2)]
 
-    // Card background
     roundRect(ctx, cx, cy, cellW, cellH, 16)
     ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.65)' : 'rgba(253,246,236,0.8)'
     ctx.fill()
@@ -144,12 +154,10 @@ function drawCard(canvas, entry, formattedDate) {
     ctx.lineWidth = 1
     ctx.stroke()
 
-    // Accent left border
     ctx.fillStyle = pillarColors[i]
     roundRect(ctx, cx, cy, 5, cellH, 3)
     ctx.fill()
 
-    // Icon circle
     const iconR = 22
     ctx.beginPath()
     ctx.arc(cx + 38, cy + 38, iconR, 0, Math.PI * 2)
@@ -161,33 +169,32 @@ function drawCard(canvas, entry, formattedDate) {
     ctx.fillText(pillar.icon, cx + 38, cy + 46)
     ctx.textAlign = 'left'
 
-    // Label
     ctx.fillStyle = '#2a1f14'
-    ctx.font = 'bold 28px Georgia, serif'
-    ctx.fillText(pillar.label, cx + 72, cy + 44)
+    ctx.font = 'bold 26px Georgia, serif'
+    ctx.fillText(pillar.label, cx + 72, cy + 42)
 
-    // Sub label
     ctx.fillStyle = pillarColors[i]
-    ctx.font = '18px Arial, sans-serif'
-    ctx.fillText(pillar.sub.toUpperCase(), cx + 72, cy + 66)
+    ctx.font = '17px Arial, sans-serif'
+    ctx.fillText(pillar.sub.toUpperCase(), cx + 72, cy + 62)
 
-    // Content text
     ctx.fillStyle = '#5a4a3a'
-    ctx.font = '20px Arial, sans-serif'
+    ctx.font = '19px Arial, sans-serif'
     const content = entry[pillar.key] || ''
     if (content) {
-      wrapText(ctx, content, cx + 20, cy + 100, cellW - 30, 28, 4)
+      wrapText(ctx, content, cx + 20, cy + 95, cellW - 30, 26, 4)
     } else {
       ctx.fillStyle = '#bfae9e'
-      ctx.font = 'italic 20px Arial, sans-serif'
-      ctx.fillText('—', cx + 20, cy + 100)
+      ctx.font = 'italic 19px Arial, sans-serif'
+      ctx.fillText('—', cx + 20, cy + 95)
     }
   })
 
-  // Lingering thought banner
+  const gridBottomY = rows[1] + cellH
+
+  // Lingering thought
   if (entry.lingering_thought) {
-    const bannerY = rows[1] + cellH + 36
-    const bannerH = 100
+    const bannerY = gridBottomY + 32
+    const bannerH = 90
     roundRect(ctx, 60, bannerY, W - 120, bannerH, 12)
     const bannerGrad = ctx.createLinearGradient(60, bannerY, W - 60, bannerY)
     bannerGrad.addColorStop(0, 'rgba(157,79,20,0.08)')
@@ -199,18 +206,17 @@ function drawCard(canvas, entry, formattedDate) {
     ctx.stroke()
 
     ctx.fillStyle = '#7a4f28'
-    ctx.font = 'italic 26px Georgia, serif'
+    ctx.font = 'italic 24px Georgia, serif'
     ctx.textAlign = 'center'
-    wrapText(ctx, `“${entry.lingering_thought}”`, W / 2, bannerY + 42, W - 180, 34, 2)
+    wrapText(ctx, `"${entry.lingering_thought}"`, W / 2, bannerY + 38, W - 180, 32, 2)
     ctx.textAlign = 'left'
   }
 
-  // Bottom separator
+  // Footer separator
   ctx.strokeStyle = '#e8d8c4'
   ctx.lineWidth = 1.5
   ctx.beginPath(); ctx.moveTo(60, H - 80); ctx.lineTo(W - 60, H - 80); ctx.stroke()
 
-  // Footer
   ctx.fillStyle = '#c0a080'
   ctx.font = '22px Arial, sans-serif'
   ctx.fillText('4H Devotion · ECWA', 60, H - 46)
@@ -220,17 +226,16 @@ function drawCard(canvas, entry, formattedDate) {
   ctx.fillText('✦ selah', W - 60, H - 46)
   ctx.textAlign = 'left'
 
-  // Bottom accent bar
   ctx.fillStyle = topGrad
   ctx.fillRect(0, H - 10, W, 10)
 }
 
-export default function DevotionCardModal({ entry, formattedDate, onClose }) {
+export default function DevotionCardModal({ entry, verseText, formattedDate, onClose }) {
   const canvasRef = useRef(null)
 
   const handleDownload = () => {
     const canvas = canvasRef.current
-    drawCard(canvas, entry, formattedDate)
+    drawCard(canvas, entry, verseText, formattedDate)
     const link = document.createElement('a')
     const slug = (entry.scripture_reference || 'devotion').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()
     link.download = `selah-${slug}.png`
@@ -248,7 +253,6 @@ export default function DevotionCardModal({ entry, formattedDate, onClose }) {
           <button className="dcard-close" onClick={onClose} aria-label="Close">✕</button>
         </div>
 
-        {/* Card preview */}
         <div className="dcard-preview">
           <div className="dcard-accent-bar" />
 
@@ -263,8 +267,15 @@ export default function DevotionCardModal({ entry, formattedDate, onClose }) {
             <span className="dcard-ref-pill">{entry.scripture_reference.toUpperCase()}</span>
           )}
 
-          <h2 className="dcard-title">{entry.title || 'Devotional Entry'}</h2>
+          {verseText && (
+            <p className="dcard-verse-text">&ldquo;{verseText}&rdquo;</p>
+          )}
+
           <div className="dcard-underline" />
+
+          {entry.title && (
+            <p className="dcard-subtitle">{entry.title}</p>
+          )}
 
           <div className="dcard-grid">
             {pillars.map((p, i) => (

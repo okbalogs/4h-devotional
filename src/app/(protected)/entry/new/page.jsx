@@ -39,6 +39,7 @@ export default function NewEntry() {
     user_id: user.id,
     title,
     scripture_reference: scriptureRef,
+    verse_text: verseText,
     hear,
     heed,
     hold,

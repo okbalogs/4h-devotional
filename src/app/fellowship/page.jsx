@@ -1,7 +1,9 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { supabase } from '@/utils/supabase'
+import { useAuth } from '@/context/AuthContext'
 
 const testimonials = [
   {
@@ -27,16 +29,36 @@ const testimonials = [
 const cities = ['Lagos', 'Abuja', 'Port Harcourt', 'Kano', 'Ibadan', 'Enugu', 'Kaduna', 'Benin City']
 
 export default function Fellowship() {
+  const { user } = useAuth()
   const [searchCity, setSearchCity] = useState('')
   const [searched, setSearched] = useState(false)
+  const [groups, setGroups] = useState([])
+  const [groupsLoading, setGroupsLoading] = useState(false)
+
+  const fetchGroups = async (city) => {
+    if (!city.trim()) return
+    setGroupsLoading(true)
+    const { data } = await supabase
+      .from('small_groups')
+      .select('id, name, church, city, leader_name, description')
+      .ilike('city', `%${city.trim()}%`)
+      .order('created_at', { ascending: false })
+      .limit(6)
+    setGroups(data || [])
+    setGroupsLoading(false)
+  }
 
   const handleSearch = () => {
-    if (searchCity.trim()) setSearched(true)
+    if (searchCity.trim()) {
+      setSearched(true)
+      fetchGroups(searchCity)
+    }
   }
 
   const handleCityPill = (city) => {
     setSearchCity(city)
     setSearched(true)
+    fetchGroups(city)
   }
 
   const handleKeyDown = (e) => {
@@ -162,17 +184,72 @@ export default function Fellowship() {
             </div>
 
             {searched && searchCity.trim() && (
-              <div style={{
-                padding: '24px', background: 'var(--clr-cream)', borderRadius: '12px',
-                border: '1px dashed var(--clr-border)', textAlign: 'center',
-              }}>
-                <p style={{ color: 'var(--clr-text-muted)', fontSize: '0.95rem', marginBottom: '12px' }}>
-                  No registered groups found in <strong>{searchCity}</strong> yet.
-                </p>
-                <p style={{ color: 'var(--clr-primary)', fontSize: '0.88rem', fontWeight: 600 }}>
-                  Be the first — start a 4H group at your local ECWA church and we will list it here.
-                </p>
-              </div>
+              groupsLoading ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--clr-text-muted)', fontSize: '0.9rem' }}>
+                  Searching…
+                </div>
+              ) : groups.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {groups.map(grp => (
+                    <div
+                      key={grp.id}
+                      style={{
+                        padding: '20px 24px', background: 'var(--clr-cream)', borderRadius: '12px',
+                        border: '1px solid var(--clr-border)',
+                      }}
+                    >
+                      <p style={{ margin: '0 0 4px', fontFamily: 'var(--font-serif)', fontSize: '1.05rem', color: 'var(--clr-dark)', fontWeight: 700 }}>
+                        {grp.name}
+                      </p>
+                      {grp.church && (
+                        <p style={{ margin: '0 0 2px', fontSize: '0.82rem', color: 'var(--clr-text-muted)' }}>{grp.church}</p>
+                      )}
+                      <p style={{ margin: '0 0 6px', fontSize: '0.75rem', fontWeight: 700, color: 'var(--clr-primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        {grp.city}
+                      </p>
+                      {grp.description && (
+                        <p style={{ margin: '0 0 8px', fontSize: '0.85rem', color: 'var(--clr-text-muted)', lineHeight: '1.5' }}>{grp.description}</p>
+                      )}
+                      <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--clr-text-muted)' }}>
+                        Led by {grp.leader_name || 'unknown'}
+                      </p>
+                    </div>
+                  ))}
+                  {user ? (
+                    <Link
+                      href="/community?tab=groups"
+                      style={{ display: 'block', textAlign: 'center', padding: '12px', color: 'var(--clr-primary)', fontSize: '0.88rem', fontWeight: 600, textDecoration: 'none' }}
+                    >
+                      Join a group or create your own →
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/signup"
+                      style={{ display: 'block', textAlign: 'center', padding: '12px', color: 'var(--clr-primary)', fontSize: '0.88rem', fontWeight: 600, textDecoration: 'none' }}
+                    >
+                      Sign up to join a group →
+                    </Link>
+                  )}
+                </div>
+              ) : (
+                <div style={{
+                  padding: '24px', background: 'var(--clr-cream)', borderRadius: '12px',
+                  border: '1px dashed var(--clr-border)', textAlign: 'center',
+                }}>
+                  <p style={{ color: 'var(--clr-text-muted)', fontSize: '0.95rem', marginBottom: '12px' }}>
+                    No registered groups found in <strong>{searchCity}</strong> yet.
+                  </p>
+                  {user ? (
+                    <Link href="/community?tab=groups" style={{ color: 'var(--clr-primary)', fontSize: '0.88rem', fontWeight: 600 }}>
+                      Be the first — start a group →
+                    </Link>
+                  ) : (
+                    <p style={{ color: 'var(--clr-primary)', fontSize: '0.88rem', fontWeight: 600 }}>
+                      Be the first — start a 4H group at your local ECWA church and we will list it here.
+                    </p>
+                  )}
+                </div>
+              )
             )}
           </div>
         </div>
@@ -188,9 +265,15 @@ export default function Fellowship() {
             Share your devotion streak with someone you trust — a friend, a spouse, a pastor.
             Consistent journalling is far easier when someone is journalling alongside you.
           </p>
-          <Link href="/signup" className="btn-primary btn-lg">
-            Get Started Free
-          </Link>
+          {user ? (
+            <Link href="/community?tab=partners" className="btn-primary btn-lg">
+              Open Community →
+            </Link>
+          ) : (
+            <Link href="/signup" className="btn-primary btn-lg">
+              Get Started Free
+            </Link>
+          )}
         </div>
       </section>
     </main>

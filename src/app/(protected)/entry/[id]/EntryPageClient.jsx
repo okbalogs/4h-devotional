@@ -14,6 +14,18 @@ export default function ReadingRecord() {
   const [deleting, setDeleting] = useState(false)
   const [showCard, setShowCard] = useState(false)
 
+  const [verseText, setVerseText] = useState('')
+
+  useEffect(() => {
+    if (!entry) return
+    if (entry.verse_text) { setVerseText(entry.verse_text); return }
+    if (!entry.scripture_reference) return
+    fetch(`https://bible-api.com/${encodeURIComponent(entry.scripture_reference)}`)
+      .then(r => r.json())
+      .then(json => { if (json.text) setVerseText(json.text.trim().replace(/\n/g, ' ')) })
+      .catch(() => {})
+  }, [entry])
+
   // Edit state
   const [isEditing, setIsEditing] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -107,6 +119,7 @@ export default function ReadingRecord() {
       {showCard && (
         <DevotionCardModal
           entry={entry}
+          verseText={verseText}
           formattedDate={formattedDate}
           onClose={() => setShowCard(false)}
         />
@@ -159,16 +172,18 @@ export default function ReadingRecord() {
             entry.scripture_reference && <span className="verse-ref">{entry.scripture_reference}</span>
           )}
         </div>
+        {verseText && <p className="scripture-text">{verseText}</p>}
+
         {isEditing ? (
           <input
             type="text"
             value={draft.title}
             onChange={set('title')}
             placeholder="Entry title…"
-            style={{ fontFamily: 'Georgia, serif', fontSize: '2.4rem', lineHeight: 1.15, color: '#333', background: 'transparent', border: 'none', borderBottom: '1.5px solid #e8d8c4', outline: 'none', width: '100%', padding: '4px 0', marginBottom: '40px', fontWeight: 400 }}
+            style={{ fontFamily: 'Georgia, serif', fontSize: '1rem', lineHeight: 1.15, color: '#333', background: 'transparent', border: 'none', borderBottom: '1.5px solid #e8d8c4', outline: 'none', width: '100%', padding: '4px 0', marginBottom: '40px', fontWeight: 400, marginTop: '16px' }}
           />
         ) : (
-          <h1 className="scripture-text">{entry.title || 'Untitled Entry'}</h1>
+          entry.title && <h2 style={{ marginTop: '16px', fontFamily: 'inherit', fontSize: '1rem', color: '#7a6555', fontWeight: 500 }}>{entry.title}</h2>
         )}
       </div>
 

@@ -6,7 +6,7 @@ import Footer from "@/components/Footer"
 import { useAuth } from "@/context/AuthContext"
 
 const AUTH_ROUTES = ["/signin", "/signup", "/forgot-password"]
-const PROTECTED_ROUTES = ["/today", "/history", "/settings", "/entry"]
+const PROTECTED_ROUTES = ["/today", "/history", "/settings", "/entry", "/community"]
 
 export default function ShellWrapper({ children }) {
   const pathname = usePathname()

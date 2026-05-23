@@ -458,13 +458,18 @@
   color: #9d4f14;
   letter-spacing: 1px;
 }
-.dcard-title {
+.dcard-verse-text {
   font-family: Georgia, serif;
-  font-size: 1.35rem;
-  line-height: 1.3;
+  font-size: 1.05rem;
+  font-style: italic;
+  line-height: 1.55;
   color: #2a1f14;
   margin: 10px 20px 0;
-  font-weight: 400;
+}
+.dcard-subtitle {
+  font-size: 0.82rem;
+  color: #7a4f28;
+  margin: 6px 20px 0;
 }
 .dcard-underline {
   width: 48px;
