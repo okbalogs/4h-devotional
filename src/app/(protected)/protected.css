@@ -355,6 +355,21 @@
   background: #9d4f14;
   border-radius: 4px 0 0 4px;
 }
+.sidebar-badge {
+  margin-left: auto;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: #c0392b;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
 
 /* Hide profile tab from desktop nav — it lives in sidebar-footer there */
 @media (min-width: 769px) {

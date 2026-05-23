@@ -62,6 +62,24 @@ function makeCacheable(response) {
   })
 }
 
+// ─── Push: show notification ───
+self.addEventListener('push', (event) => {
+  let data = { title: '4H Devotion', body: 'You have a new notification', url: '/community?tab=partners' }
+  if (event.data) {
+    try { data = { ...data, ...JSON.parse(event.data.text()) } } catch {}
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-96.png',
+      data: { url: data.url },
+      tag: 'selah-notification',
+      renotify: true,
+    })
+  )
+})
+
 // ─── Notification click: focus existing tab or open /today ───
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()

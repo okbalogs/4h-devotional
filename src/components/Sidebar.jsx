@@ -98,6 +98,7 @@ export default function Sidebar() {
   const [streak, setStreak] = useState(0)
   const [profileOpen, setProfileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
     if (!user) return
@@ -118,6 +119,33 @@ export default function Sidebar() {
         while (days.has(d.toISOString().slice(0, 10))) { count++; d.setDate(d.getDate() - 1) }
         setStreak(count)
       })
+  }, [user])
+
+  useEffect(() => {
+    if (!user) return
+
+    const fetchUnread = async () => {
+      const { count } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false)
+      setUnreadCount(count || 0)
+    }
+
+    fetchUnread()
+
+    const channel = supabase
+      .channel(`sidebar-notifs-${user.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`,
+      }, fetchUnread)
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
   }, [user])
 
   const name = user?.user_metadata?.full_name || 'Devotee'
@@ -175,6 +203,9 @@ export default function Sidebar() {
               >
                 <span className="sidebar-icon">{item.icon}</span>
                 {item.name}
+                {item.name === 'Community' && unreadCount > 0 && (
+                  <span className="sidebar-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                )}
               </Link>
             )
           })}

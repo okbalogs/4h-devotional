@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import '../entry.css'
 import { supabase } from '@/utils/supabase'
 import { useAuth } from '@/context/AuthContext'
+import { notifyUser } from '@/utils/pushManager'
 import DevotionCardModal from '@/components/DevotionCardModal'
 
 export default function ReadingRecord() {
@@ -103,16 +104,26 @@ export default function ReadingRecord() {
 
   const handleShareNote = async () => {
     if (!activePartnership || !entry.lingering_thought) return
+    const senderName = user?.user_metadata?.full_name || 'Devotee'
     const { error: err } = await supabase.from('partner_messages').insert({
       partnership_id: activePartnership.id,
       sender_id: user.id,
-      sender_name: user?.user_metadata?.full_name || 'Devotee',
+      sender_name: senderName,
       type: 'note',
       content: entry.lingering_thought,
     })
     if (!err) {
       setSharedNote(true)
       setTimeout(() => setSharedNote(false), 3000)
+      const { data: ap } = await supabase
+        .from('accountability_partners')
+        .select('requester_id, partner_id')
+        .eq('id', activePartnership.id)
+        .single()
+      if (ap) {
+        const partnerId = ap.requester_id === user.id ? ap.partner_id : ap.requester_id
+        if (partnerId) notifyUser(partnerId, 'note', '📖 Devotion note shared', `${senderName} shared a lingering thought with you`, '/community?tab=partners')
+      }
     }
   }
 

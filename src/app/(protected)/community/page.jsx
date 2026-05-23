@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/utils/supabase'
+import { subscribeToPush, notifyUser } from '@/utils/pushManager'
 import './community.css'
 
 const CITIES = ['Lagos', 'Abuja', 'Port Harcourt', 'Kano', 'Ibadan', 'Enugu', 'Kaduna', 'Benin City']
@@ -99,6 +100,11 @@ function PrayerTab({ user }) {
       await supabase.from('prayer_responses').insert({ request_id: requestId, user_id: user.id })
       setMyPrayers(prev => new Set([...prev, requestId]))
       setPrayerCounts(prev => ({ ...prev, [requestId]: (prev[requestId] || 0) + 1 }))
+
+      const req = requests.find(r => r.id === requestId)
+      if (req && req.user_id !== user.id) {
+        notifyUser(req.user_id, 'prayer_prayed', '🙏 Someone prayed', `${userName} prayed for your request`, '/community?tab=prayer')
+      }
     }
   }
 
@@ -521,6 +527,9 @@ function PartnersTab({ user }) {
 
   useEffect(() => { fetchPartners() }, [fetchPartners])
 
+  const getPartnerId = () =>
+    activePartner.requester_id === user.id ? activePartner.partner_id : activePartner.requester_id
+
   const sendNudge = async () => {
     if (!activePartner) return
     setNudging(true)
@@ -531,6 +540,8 @@ function PartnersTab({ user }) {
       type: 'nudge',
       content: null,
     })
+    const pid = getPartnerId()
+    if (pid) notifyUser(pid, 'nudge', '👋 Check-in', `${userName} sent you a check-in`, '/community?tab=partners')
     setNudging(false)
     fetchMessages(activePartner.id)
   }
@@ -545,6 +556,8 @@ function PartnersTab({ user }) {
       type: 'prayer',
       content: newPrayer.trim(),
     })
+    const pid = getPartnerId()
+    if (pid) notifyUser(pid, 'prayer', '🙏 Prayer request', `${userName} shared a prayer with you`, '/community?tab=partners')
     setNewPrayer('')
     setPostingPrayer(false)
     fetchMessages(activePartner.id)
@@ -585,6 +598,9 @@ function PartnersTab({ user }) {
     await supabase.from('accountability_partners')
       .update({ partner_id: user.id, partner_name: userName, status: 'active' })
       .eq('id', id)
+    if (receivedRequest?.requester_id) {
+      notifyUser(receivedRequest.requester_id, 'accepted', '🤝 Partnership accepted', `${userName} accepted your accountability partner invite`, '/community?tab=partners')
+    }
     fetchPartners()
   }
 
@@ -831,16 +847,89 @@ function PartnersTab({ user }) {
 // ─────────────────────────────────────────
 // MAIN PAGE
 // ─────────────────────────────────────────
+const TAB_NOTIF_TYPES = {
+  prayer: ['prayer_prayed'],
+  partners: ['nudge', 'prayer', 'note', 'invite', 'accepted'],
+}
+
 export default function Community() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('prayer')
+  const [tabUnread, setTabUnread] = useState({ prayer: 0, partners: 0 })
+  const [showNotifBanner, setShowNotifBanner] = useState(false)
 
-  // Read ?tab= from URL on mount without useSearchParams (no Suspense needed)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const tab = params.get('tab')
     if (tab && ['prayer', 'groups', 'partners'].includes(tab)) setActiveTab(tab)
   }, [])
+
+  // Request push permission banner
+  useEffect(() => {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      setShowNotifBanner(true)
+    }
+  }, [])
+
+  // Auto-subscribe if permission already granted
+  useEffect(() => {
+    if (!user) return
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      subscribeToPush(user.id)
+    }
+  }, [user])
+
+  // Fetch unread counts per tab
+  useEffect(() => {
+    if (!user) return
+
+    const fetchTabUnread = async () => {
+      const { data } = await supabase
+        .from('notifications')
+        .select('type')
+        .eq('user_id', user.id)
+        .eq('is_read', false)
+
+      const counts = { prayer: 0, partners: 0 }
+      for (const n of data || []) {
+        if (TAB_NOTIF_TYPES.prayer.includes(n.type)) counts.prayer++
+        if (TAB_NOTIF_TYPES.partners.includes(n.type)) counts.partners++
+      }
+      setTabUnread(counts)
+    }
+
+    fetchTabUnread()
+
+    const channel = supabase
+      .channel(`community-tabs-${user.id}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'notifications',
+        filter: `user_id=eq.${user.id}`,
+      }, fetchTabUnread)
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
+  }, [user])
+
+  // Mark tab notifications as read when switching to that tab
+  const handleTabChange = async (tab) => {
+    setActiveTab(tab)
+    const types = TAB_NOTIF_TYPES[tab]
+    if (!types || !user) return
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('user_id', user.id)
+      .eq('is_read', false)
+      .in('type', types)
+    setTabUnread(prev => ({ ...prev, [tab]: 0 }))
+  }
+
+  const enableNotifications = async () => {
+    const perm = await Notification.requestPermission()
+    if (perm === 'granted' && user) subscribeToPush(user.id)
+    setShowNotifBanner(false)
+  }
 
   const TABS = [
     { key: 'prayer', label: '🙏 Prayer' },
@@ -854,16 +943,30 @@ export default function Community() {
         <h1 className="page-title">Community</h1>
       </div>
 
+      {showNotifBanner && (
+        <div className="notif-banner">
+          <span>🔔 Enable notifications to get alerts for partner check-ins, prayers, and more.</span>
+          <div className="notif-banner-actions">
+            <button className="notif-banner-yes" onClick={enableNotifications}>Enable</button>
+            <button className="notif-banner-no" onClick={() => setShowNotifBanner(false)}>Not now</button>
+          </div>
+        </div>
+      )}
+
       <div className="tabs">
-        {TABS.map(({ key, label }) => (
-          <button
-            key={key}
-            className={`tab-btn ${activeTab === key ? 'tab-btn--active' : ''}`}
-            onClick={() => setActiveTab(key)}
-          >
-            {label}
-          </button>
-        ))}
+        {TABS.map(({ key, label }) => {
+          const count = tabUnread[key] || 0
+          return (
+            <button
+              key={key}
+              className={`tab-btn ${activeTab === key ? 'tab-btn--active' : ''}`}
+              onClick={() => handleTabChange(key)}
+            >
+              {label}
+              {count > 0 && <span className="tab-badge">{count > 9 ? '9+' : count}</span>}
+            </button>
+          )
+        })}
       </div>
 
       {user && activeTab === 'prayer' && <PrayerTab user={user} />}

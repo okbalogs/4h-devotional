@@ -6,6 +6,7 @@ import { supabase } from '@/utils/supabase'
 import { useAuth } from '@/context/AuthContext'
 import { getTodayVerseForUser } from '@/utils/dailyVerse'
 import { queueEntry } from '@/utils/offlineStorage'
+import { notifyUser } from '@/utils/pushManager'
 
 export default function NewEntry() {
   const router = useRouter()
@@ -82,13 +83,24 @@ export default function NewEntry() {
       if (error) throw error
 
       if (shareWithPartner && activePartnership && lingeringThought.trim()) {
+        const senderName = user?.user_metadata?.full_name || 'Devotee'
         await supabase.from('partner_messages').insert({
           partnership_id: activePartnership.id,
           sender_id: user.id,
-          sender_name: user?.user_metadata?.full_name || 'Devotee',
+          sender_name: senderName,
           type: 'note',
           content: lingeringThought.trim(),
         })
+        // Notify partner — find their user_id
+        const { data: ap } = await supabase
+          .from('accountability_partners')
+          .select('requester_id, partner_id')
+          .eq('id', activePartnership.id)
+          .single()
+        if (ap) {
+          const partnerId = ap.requester_id === user.id ? ap.partner_id : ap.requester_id
+          if (partnerId) notifyUser(partnerId, 'note', '📖 Devotion note shared', `${senderName} shared a lingering thought with you`, '/community?tab=partners')
+        }
       }
 
       router.push(`/entry/${data.id}`)
