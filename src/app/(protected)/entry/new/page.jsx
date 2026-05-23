@@ -34,6 +34,19 @@ export default function NewEntry() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const [savedOffline, setSavedOffline] = useState(false)
+  const [activePartnership, setActivePartnership] = useState(null)
+  const [shareWithPartner, setShareWithPartner] = useState(false)
+
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .from('accountability_partners')
+      .select('id')
+      .or(`requester_id.eq.${user.id},partner_id.eq.${user.id}`)
+      .eq('status', 'active')
+      .maybeSingle()
+      .then(({ data }) => setActivePartnership(data))
+  }, [user])
 
   const entryPayload = () => ({
     user_id: user.id,
@@ -67,6 +80,17 @@ export default function NewEntry() {
         .single()
 
       if (error) throw error
+
+      if (shareWithPartner && activePartnership && lingeringThought.trim()) {
+        await supabase.from('partner_messages').insert({
+          partnership_id: activePartnership.id,
+          sender_id: user.id,
+          sender_name: user?.user_metadata?.full_name || 'Devotee',
+          type: 'note',
+          content: lingeringThought.trim(),
+        })
+      }
+
       router.push(`/entry/${data.id}`)
     } catch (err) {
       // Network error mid-request — queue offline
@@ -205,6 +229,12 @@ export default function NewEntry() {
           onChange={(e) => setLingeringThought(e.target.value)}
           style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: '1.6rem', color: '#666', background: 'rgba(253, 246, 236, 0.8)', border: 'none', borderRadius: '8px', padding: '12px 24px', minWidth: '50%', outline: 'none', textAlign: 'center' }}
         />
+        {activePartnership && lingeringThought.trim() && (
+          <label className="share-partner-check">
+            <input type="checkbox" checked={shareWithPartner} onChange={e => setShareWithPartner(e.target.checked)} />
+            Share this thought with my accountability partner
+          </label>
+        )}
       </div>
     </div>
   )

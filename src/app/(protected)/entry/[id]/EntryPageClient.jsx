@@ -3,16 +3,20 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import '../entry.css'
 import { supabase } from '@/utils/supabase'
+import { useAuth } from '@/context/AuthContext'
 import DevotionCardModal from '@/components/DevotionCardModal'
 
 export default function ReadingRecord() {
   const { id } = useParams()
   const router = useRouter()
+  const { user } = useAuth()
   const [entry, setEntry] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showCard, setShowCard] = useState(false)
+  const [activePartnership, setActivePartnership] = useState(null)
+  const [sharedNote, setSharedNote] = useState(false)
 
   const [verseText, setVerseText] = useState('')
 
@@ -25,6 +29,17 @@ export default function ReadingRecord() {
       .then(json => { if (json.text) setVerseText(json.text.trim().replace(/\n/g, ' ')) })
       .catch(() => {})
   }, [entry])
+
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .from('accountability_partners')
+      .select('id')
+      .or(`requester_id.eq.${user.id},partner_id.eq.${user.id}`)
+      .eq('status', 'active')
+      .maybeSingle()
+      .then(({ data }) => setActivePartnership(data))
+  }, [user])
 
   // Edit state
   const [isEditing, setIsEditing] = useState(false)
@@ -83,6 +98,21 @@ export default function ReadingRecord() {
       setIsEditing(false)
       setDraft(null)
       setSaving(false)
+    }
+  }
+
+  const handleShareNote = async () => {
+    if (!activePartnership || !entry.lingering_thought) return
+    const { error: err } = await supabase.from('partner_messages').insert({
+      partnership_id: activePartnership.id,
+      sender_id: user.id,
+      sender_name: user?.user_metadata?.full_name || 'Devotee',
+      type: 'note',
+      content: entry.lingering_thought,
+    })
+    if (!err) {
+      setSharedNote(true)
+      setTimeout(() => setSharedNote(false), 3000)
     }
   }
 
@@ -234,6 +264,11 @@ export default function ReadingRecord() {
           {!isEditing && (
             <button className="btn-export" onClick={() => setShowCard(true)} title="Download card">
               <span>⬇</span> Download Card
+            </button>
+          )}
+          {!isEditing && activePartnership && entry.lingering_thought && (
+            <button className="btn-export" onClick={handleShareNote} title="Share with partner" disabled={sharedNote}>
+              <span>🤝</span> {sharedNote ? 'Shared!' : 'Share with Partner'}
             </button>
           )}
         </div>

@@ -516,6 +516,256 @@
   gap: 10px;
 }
 
+/* ── Partner active panel ── */
+.partner-panel--active {
+  max-width: 680px;
+}
+
+.partner-stats-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: start;
+  padding: 20px;
+  background: var(--clr-cream);
+  border-radius: 12px;
+}
+
+.partner-stat-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.partner-stat-name {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--clr-dark);
+  margin: 0;
+}
+
+.partner-stat-you {
+  font-weight: 400;
+  color: var(--clr-text-muted);
+  font-size: 0.78rem;
+}
+
+.partner-stat-nums {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.78rem;
+  color: var(--clr-text-muted);
+}
+
+.partner-vs-divider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-top: 12px;
+  font-size: 1.2rem;
+}
+
+.partner-days {
+  font-size: 0.68rem;
+  color: var(--clr-text-muted);
+  white-space: nowrap;
+}
+
+.partner-milestone {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #7a4f28;
+  background: rgba(157, 79, 20, 0.1);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.partner-avatar-alt {
+  background: #4a7c59;
+}
+
+/* ── Partner sections ── */
+.partner-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--clr-border);
+  padding-top: 18px;
+}
+
+.partner-section-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--clr-text-muted);
+  margin: 0;
+}
+
+/* ── Nudge ── */
+.nudge-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-nudge {
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: 1.5px solid var(--clr-primary);
+  background: rgba(157, 79, 20, 0.07);
+  color: var(--clr-primary);
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-nudge:hover {
+  background: rgba(157, 79, 20, 0.15);
+}
+
+.btn-nudge:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.nudge-last-sent {
+  font-size: 0.78rem;
+  color: var(--clr-text-muted);
+}
+
+.nudge-log {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 14px;
+  background: var(--clr-cream);
+  border-radius: 8px;
+  border: 1px solid var(--clr-border);
+}
+
+.nudge-item {
+  font-size: 0.82rem;
+  color: var(--clr-text-muted);
+  line-height: 1.5;
+}
+
+.nudge-time {
+  color: var(--clr-primary);
+}
+
+/* ── Private prayers thread ── */
+.partner-empty-hint {
+  font-size: 0.85rem;
+  color: var(--clr-text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+.partner-msgs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.partner-msg {
+  background: var(--clr-cream);
+  border-radius: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--clr-border);
+}
+
+.partner-msg--mine {
+  background: rgba(157, 79, 20, 0.06);
+  border-color: rgba(157, 79, 20, 0.15);
+}
+
+.partner-msg-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  color: var(--clr-text-muted);
+  margin-bottom: 4px;
+}
+
+.partner-msg-meta strong {
+  color: var(--clr-dark);
+}
+
+.partner-msg-del {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--clr-text-muted);
+  cursor: pointer;
+  font-size: 0.72rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: all 0.1s;
+  font-family: inherit;
+}
+
+.partner-msg-del:hover {
+  background: #ffebe5;
+  color: #c0392b;
+}
+
+.partner-msg-body {
+  font-size: 0.9rem;
+  color: var(--clr-text);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.partner-prayer-form {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.partner-prayer-form .prayer-textarea {
+  flex: 1;
+  min-height: 60px;
+}
+
+/* ── Shared notes ── */
+.partner-notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.partner-note-item {
+  padding: 12px 16px;
+  border-left: 3px solid var(--clr-primary);
+  background: var(--clr-cream);
+  border-radius: 0 8px 8px 0;
+}
+
+.partner-note-text {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--clr-dark);
+  margin: 0 0 4px;
+}
+
+.partner-note-meta {
+  font-size: 0.76rem;
+  color: var(--clr-text-muted);
+}
+
 /* ── Responsive ── */
 @media (max-width: 600px) {
   .create-group-row {
@@ -542,6 +792,20 @@
   .groups-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .partner-stats-row {
+    grid-template-columns: 1fr;
+  }
+
+  .partner-vs-divider {
+    flex-direction: row;
+    justify-content: center;
+    padding-top: 0;
+  }
+
+  .partner-prayer-form {
+    flex-direction: column;
   }
 }
 

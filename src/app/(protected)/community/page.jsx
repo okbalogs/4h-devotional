@@ -441,20 +441,50 @@ function PartnersTab({ user }) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  const [myStats, setMyStats] = useState(null)
+  const [partnerStats, setPartnerStats] = useState(null)
+  const [messages, setMessages] = useState([])
+  const [newPrayer, setNewPrayer] = useState('')
+  const [postingPrayer, setPostingPrayer] = useState(false)
+  const [nudging, setNudging] = useState(false)
+
   const userName = user?.user_metadata?.full_name || 'Devotee'
+
+  const fetchStats = useCallback(async (userId) => {
+    const { data } = await supabase
+      .from('entries')
+      .select('id, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+    if (!data) return { total: 0, thisMonth: 0, lastEntry: null }
+    const now = new Date()
+    const thisMonth = data.filter(e => {
+      const d = new Date(e.created_at)
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+    }).length
+    return { total: data.length, thisMonth, lastEntry: data[0]?.created_at || null }
+  }, [])
+
+  const fetchMessages = useCallback(async (partnershipId) => {
+    const { data } = await supabase
+      .from('partner_messages')
+      .select('*')
+      .eq('partnership_id', partnershipId)
+      .order('created_at', { ascending: false })
+      .limit(60)
+    setMessages(data || [])
+  }, [])
 
   const fetchPartners = useCallback(async () => {
     setLoading(true)
 
-    // Claim any pending invites sent to this user's email
     await supabase
       .from('accountability_partners')
-      .update({ partner_id: user.id })
+      .update({ partner_id: user.id, partner_name: userName })
       .eq('partner_email', user.email)
       .eq('status', 'pending')
       .is('partner_id', null)
 
-    // Fetch all records involving this user
     const { data } = await supabase
       .from('accountability_partners')
       .select('*')
@@ -462,12 +492,8 @@ function PartnersTab({ user }) {
       .order('created_at', { ascending: false })
 
     let active = null, sent = null, received = null
-
     for (const record of data || []) {
-      if (record.status === 'active') {
-        active = record
-        break
-      }
+      if (record.status === 'active') { active = record; break }
       if (record.status === 'pending') {
         if (record.requester_id === user.id) sent = record
         else received = record
@@ -477,10 +503,57 @@ function PartnersTab({ user }) {
     setActivePartner(active)
     setSentRequest(sent)
     setReceivedRequest(received)
+
+    if (active) {
+      const isRequester = active.requester_id === user.id
+      const partnerId = isRequester ? active.partner_id : active.requester_id
+      const [myS, partnerS] = await Promise.all([
+        fetchStats(user.id),
+        partnerId ? fetchStats(partnerId) : Promise.resolve({ total: 0, thisMonth: 0, lastEntry: null }),
+      ])
+      setMyStats(myS)
+      setPartnerStats(partnerS)
+      await fetchMessages(active.id)
+    }
+
     setLoading(false)
-  }, [user])
+  }, [user, userName, fetchStats, fetchMessages])
 
   useEffect(() => { fetchPartners() }, [fetchPartners])
+
+  const sendNudge = async () => {
+    if (!activePartner) return
+    setNudging(true)
+    await supabase.from('partner_messages').insert({
+      partnership_id: activePartner.id,
+      sender_id: user.id,
+      sender_name: userName,
+      type: 'nudge',
+      content: null,
+    })
+    setNudging(false)
+    fetchMessages(activePartner.id)
+  }
+
+  const postPrayer = async () => {
+    if (!newPrayer.trim() || !activePartner) return
+    setPostingPrayer(true)
+    await supabase.from('partner_messages').insert({
+      partnership_id: activePartner.id,
+      sender_id: user.id,
+      sender_name: userName,
+      type: 'prayer',
+      content: newPrayer.trim(),
+    })
+    setNewPrayer('')
+    setPostingPrayer(false)
+    fetchMessages(activePartner.id)
+  }
+
+  const deleteMessage = async (msgId) => {
+    await supabase.from('partner_messages').delete().eq('id', msgId)
+    setMessages(prev => prev.filter(m => m.id !== msgId))
+  }
 
   const sendInvite = async () => {
     if (!inviteEmail.trim()) return
@@ -509,7 +582,9 @@ function PartnersTab({ user }) {
   }
 
   const acceptRequest = async (id) => {
-    await supabase.from('accountability_partners').update({ partner_id: user.id, status: 'active' }).eq('id', id)
+    await supabase.from('accountability_partners')
+      .update({ partner_id: user.id, partner_name: userName, status: 'active' })
+      .eq('id', id)
     fetchPartners()
   }
 
@@ -522,6 +597,9 @@ function PartnersTab({ user }) {
     if (!confirm('End this accountability partnership?')) return
     await supabase.from('accountability_partners').delete().eq('id', id)
     setActivePartner(null)
+    setMyStats(null)
+    setPartnerStats(null)
+    setMessages([])
   }
 
   const cancelRequest = async (id) => {
@@ -537,24 +615,140 @@ function PartnersTab({ user }) {
     )
   }
 
-  // Active partnership
   if (activePartner) {
     const isRequester = activePartner.requester_id === user.id
-    const partnerName = isRequester ? activePartner.partner_email : activePartner.requester_name
+    const partnerName = isRequester
+      ? (activePartner.partner_name || activePartner.partner_email)
+      : (activePartner.requester_name || 'Partner')
     const days = daysSince(activePartner.created_at)
+    const partnerFirstName = partnerName.split(' ')[0] || partnerName
+
+    const MILESTONES = [7, 30, 100, 365]
+    const partnerMilestone = partnerStats ? MILESTONES.filter(m => partnerStats.total >= m).pop() : null
+
+    const lastActiveLabel = (dateStr) => {
+      if (!dateStr) return 'No entries yet'
+      const d = daysSince(dateStr)
+      if (d === 0) return 'Today'
+      if (d === 1) return 'Yesterday'
+      return `${d} days ago`
+    }
+
+    const prayers = messages.filter(m => m.type === 'prayer')
+    const notes = messages.filter(m => m.type === 'note')
+    const nudges = messages.filter(m => m.type === 'nudge').slice(0, 5)
+    const myLastNudge = messages.find(m => m.type === 'nudge' && m.sender_id === user.id)
+
     return (
-      <div className="partner-panel">
-        <div className="partner-head">
-          <div className="partner-avatar-lg">{nameInitials(partnerName)}</div>
-          <div className="partner-info">
-            <p className="partner-name">{partnerName}</p>
-            <p className="partner-since">Partners for {days} day{days !== 1 ? 's' : ''}</p>
+      <div className="partner-panel partner-panel--active">
+
+        {/* Stats */}
+        <div className="partner-stats-row">
+          <div className="partner-stat-side">
+            <div className="partner-avatar-lg">{nameInitials(userName)}</div>
+            <p className="partner-stat-name">{userName} <span className="partner-stat-you">(you)</span></p>
+            <div className="partner-stat-nums">
+              <span>📖 {myStats?.total ?? '…'} total</span>
+              <span>📅 {myStats?.thisMonth ?? '…'} this month</span>
+              <span>🕐 {lastActiveLabel(myStats?.lastEntry)}</span>
+            </div>
+          </div>
+          <div className="partner-vs-divider">
+            <span>⚡</span>
+            <span className="partner-days">{days}d together</span>
+          </div>
+          <div className="partner-stat-side">
+            <div className="partner-avatar-lg partner-avatar-alt">{nameInitials(partnerName)}</div>
+            <p className="partner-stat-name">{partnerName}</p>
+            {partnerMilestone && (
+              <span className="partner-milestone">🌟 {partnerMilestone} entries!</span>
+            )}
+            <div className="partner-stat-nums">
+              <span>📖 {partnerStats?.total ?? '…'} total</span>
+              <span>📅 {partnerStats?.thisMonth ?? '…'} this month</span>
+              <span>🕐 {lastActiveLabel(partnerStats?.lastEntry)}</span>
+            </div>
           </div>
         </div>
-        <p className="partner-desc">
-          You and {partnerName.split(' ')[0] || partnerName} are accountability partners.
-          Encourage each other to stay consistent in your daily 4H devotions.
-        </p>
+
+        {/* Check-in / Nudge */}
+        <div className="partner-section">
+          <p className="partner-section-title">Check-in</p>
+          <div className="nudge-row">
+            <button className="btn-nudge" onClick={sendNudge} disabled={nudging}>
+              👋 {nudging ? 'Sending…' : `Nudge ${partnerFirstName}`}
+            </button>
+            {myLastNudge && (
+              <span className="nudge-last-sent">Last sent {timeAgo(myLastNudge.created_at)}</span>
+            )}
+          </div>
+          {nudges.length > 0 && (
+            <div className="nudge-log">
+              {nudges.map(n => (
+                <div key={n.id} className="nudge-item">
+                  👋 <strong>{n.sender_id === user.id ? 'You' : n.sender_name}</strong> sent a check-in · <span className="nudge-time">{timeAgo(n.created_at)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Private prayers */}
+        <div className="partner-section">
+          <p className="partner-section-title">Private Prayers</p>
+          {prayers.length > 0 && (
+            <div className="partner-msgs">
+              {prayers.slice(0, 12).map(m => (
+                <div key={m.id} className={`partner-msg ${m.sender_id === user.id ? 'partner-msg--mine' : ''}`}>
+                  <div className="partner-msg-meta">
+                    <strong>{m.sender_id === user.id ? 'You' : m.sender_name}</strong>
+                    <span>{timeAgo(m.created_at)}</span>
+                    {m.sender_id === user.id && (
+                      <button className="partner-msg-del" onClick={() => deleteMessage(m.id)}>✕</button>
+                    )}
+                  </div>
+                  <p className="partner-msg-body">{m.content}</p>
+                </div>
+              ))}
+            </div>
+          )}
+          {prayers.length === 0 && (
+            <p className="partner-empty-hint">Share prayer requests privately — only you and {partnerFirstName} can see these.</p>
+          )}
+          <div className="partner-prayer-form">
+            <textarea
+              className="prayer-textarea"
+              rows={2}
+              placeholder="Share a prayer request privately…"
+              value={newPrayer}
+              onChange={e => setNewPrayer(e.target.value)}
+            />
+            <button
+              className="today-begin-btn"
+              style={{ padding: '10px 20px', fontSize: '0.85rem', marginTop: 0, flexShrink: 0 }}
+              onClick={postPrayer}
+              disabled={postingPrayer || !newPrayer.trim()}
+            >
+              {postingPrayer ? 'Sending…' : 'Send'}
+            </button>
+          </div>
+        </div>
+
+        {/* Shared devotion notes */}
+        {notes.length > 0 && (
+          <div className="partner-section">
+            <p className="partner-section-title">Shared Devotion Notes</p>
+            <div className="partner-notes-list">
+              {notes.slice(0, 10).map(n => (
+                <div key={n.id} className="partner-note-item">
+                  <p className="partner-note-text">"{n.content}"</p>
+                  <span className="partner-note-meta">— {n.sender_id === user.id ? 'You' : n.sender_name} · {timeAgo(n.created_at)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <button className="btn-end-partner" onClick={() => endPartnership(activePartner.id)}>
           End partnership
         </button>
@@ -562,7 +756,6 @@ function PartnersTab({ user }) {
     )
   }
 
-  // Pending received request
   if (receivedRequest) {
     return (
       <div className="partner-panel">
@@ -581,7 +774,6 @@ function PartnersTab({ user }) {
     )
   }
 
-  // Pending sent request
   if (sentRequest) {
     return (
       <div className="partner-panel">
@@ -599,7 +791,6 @@ function PartnersTab({ user }) {
     )
   }
 
-  // No partner — show invite form
   return (
     <div className="partner-panel">
       <p style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', color: 'var(--clr-dark)', margin: 0, fontWeight: 700 }}>
