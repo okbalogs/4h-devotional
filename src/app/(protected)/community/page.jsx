@@ -238,7 +238,7 @@ function GroupDetail({ group: initialGroup, user, role, memberCounts, onClose, o
       .then(({ data }) => { setMessages(data || []); setLoadingMsgs(false) })
   }, [group.id, isMember])
 
-  // Realtime: new messages appear live
+  // Realtime: new messages appear live for all members
   useEffect(() => {
     if (!isMember) return
     const channel = supabase
@@ -247,13 +247,14 @@ function GroupDetail({ group: initialGroup, user, role, memberCounts, onClose, o
         event: 'INSERT', schema: 'public', table: 'group_messages',
         filter: `group_id=eq.${group.id}`,
       }, (payload) => {
-        if (payload.new.user_id !== user.id) {
-          setMessages(prev => [...prev, payload.new])
-        }
+        // Deduplicate by ID — own messages are already added optimistically in postMessage
+        setMessages(prev =>
+          prev.some(m => m.id === payload.new.id) ? prev : [...prev, payload.new]
+        )
       })
       .subscribe()
     return () => supabase.removeChannel(channel)
-  }, [group.id, isMember, user.id])
+  }, [group.id, isMember])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
