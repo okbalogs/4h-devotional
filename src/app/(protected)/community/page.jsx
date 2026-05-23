@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/utils/supabase'
 import { subscribeToPush, notifyUser } from '@/utils/pushManager'
@@ -199,6 +199,241 @@ function PrayerTab({ user }) {
 }
 
 // ─────────────────────────────────────────
+// GROUP DETAIL PANEL
+// ─────────────────────────────────────────
+function GroupDetail({ group: initialGroup, user, role, memberCounts, onClose, onJoin, onLeave, onGroupUpdated }) {
+  const [group, setGroup] = useState(initialGroup)
+  const [members, setMembers] = useState([])
+  const [messages, setMessages] = useState([])
+  const [newMsg, setNewMsg] = useState('')
+  const [posting, setPosting] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [editData, setEditData] = useState({ description: initialGroup.description || '', meeting_schedule: initialGroup.meeting_schedule || '' })
+  const [loadingMsgs, setLoadingMsgs] = useState(true)
+  const [removingMember, setRemovingMember] = useState(null)
+  const messagesEndRef = useRef(null)
+
+  const userName = user?.user_metadata?.full_name || 'Devotee'
+  const isLeader = role === 'leader'
+  const isMember = role === 'member' || role === 'leader'
+  const count = memberCounts[group.id] || members.length
+
+  useEffect(() => {
+    supabase
+      .from('group_members')
+      .select('user_id, member_name, role, created_at')
+      .eq('group_id', group.id)
+      .order('created_at', { ascending: true })
+      .then(({ data }) => setMembers(data || []))
+  }, [group.id])
+
+  useEffect(() => {
+    if (!isMember) { setLoadingMsgs(false); return }
+    supabase
+      .from('group_messages')
+      .select('*')
+      .eq('group_id', group.id)
+      .order('created_at', { ascending: true })
+      .limit(60)
+      .then(({ data }) => { setMessages(data || []); setLoadingMsgs(false) })
+  }, [group.id, isMember])
+
+  // Realtime: new messages appear live
+  useEffect(() => {
+    if (!isMember) return
+    const channel = supabase
+      .channel(`group-msgs-${group.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'group_messages',
+        filter: `group_id=eq.${group.id}`,
+      }, (payload) => {
+        if (payload.new.user_id !== user.id) {
+          setMessages(prev => [...prev, payload.new])
+        }
+      })
+      .subscribe()
+    return () => supabase.removeChannel(channel)
+  }, [group.id, isMember, user.id])
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  const postMessage = async () => {
+    if (!newMsg.trim()) return
+    setPosting(true)
+    const content = newMsg.trim()
+    const { data: msg } = await supabase.from('group_messages').insert({
+      group_id: group.id,
+      user_id: user.id,
+      author_name: userName,
+      content,
+    }).select().single()
+    if (msg) setMessages(prev => [...prev, msg])
+    setNewMsg('')
+    setPosting(false)
+    // Notify other members (cap at 15 to avoid spam)
+    const others = members.filter(m => m.user_id !== user.id).slice(0, 15)
+    for (const m of others) {
+      notifyUser(m.user_id, 'group_message', `💬 ${group.name}`, `${userName}: ${content.slice(0, 60)}`, '/community?tab=groups')
+    }
+  }
+
+  const removeMember = async (memberId) => {
+    if (!isLeader || memberId === user.id) return
+    setRemovingMember(memberId)
+    await supabase.from('group_members').delete().eq('group_id', group.id).eq('user_id', memberId)
+    setMembers(prev => prev.filter(m => m.user_id !== memberId))
+    setRemovingMember(null)
+  }
+
+  const saveEdit = async () => {
+    const updates = { description: editData.description.trim(), meeting_schedule: editData.meeting_schedule.trim() }
+    await supabase.from('small_groups').update(updates).eq('id', group.id)
+    const updated = { ...group, ...updates }
+    setGroup(updated)
+    onGroupUpdated(updated)
+    setEditing(false)
+  }
+
+  const deleteGroup = async () => {
+    if (!confirm('Delete this group? All messages will be lost. This cannot be undone.')) return
+    await supabase.from('small_groups').delete().eq('id', group.id)
+    onGroupUpdated(null)
+    onClose()
+  }
+
+  return (
+    <div className="group-detail">
+      <button className="group-detail-back" onClick={onClose}>← Back to Groups</button>
+
+      {/* Header */}
+      <div className="group-detail-head">
+        <div className="group-detail-icon">⛪</div>
+        <div className="group-detail-info">
+          <h2 className="group-detail-name">{group.name}</h2>
+          {group.church && <p className="group-detail-church">{group.church}</p>}
+          <p className="group-detail-city">{group.city.toUpperCase()}</p>
+        </div>
+        {isLeader && (
+          <button className="group-edit-toggle" onClick={() => setEditing(v => !v)}>
+            {editing ? 'Cancel' : '✏️'}
+          </button>
+        )}
+      </div>
+
+      {/* Edit form (leader only) */}
+      {editing && (
+        <div className="group-edit-form">
+          <div>
+            <label className="input-label">Description</label>
+            <input className="input-soft" value={editData.description}
+              onChange={e => setEditData(p => ({ ...p, description: e.target.value }))}
+              placeholder="What's the focus of this group?" />
+          </div>
+          <div>
+            <label className="input-label">Meeting schedule</label>
+            <input className="input-soft" value={editData.meeting_schedule}
+              onChange={e => setEditData(p => ({ ...p, meeting_schedule: e.target.value }))}
+              placeholder="e.g. Sundays at 9am" />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <button className="today-begin-btn" style={{ padding: '8px 20px', fontSize: '0.85rem', marginTop: 0 }} onClick={saveEdit}>
+              Save changes
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Group meta */}
+      {!editing && (
+        <div className="group-detail-meta">
+          {group.description && <p className="group-detail-desc">{group.description}</p>}
+          {group.meeting_schedule && <p className="group-detail-schedule">🗓 {group.meeting_schedule}</p>}
+          <p className="group-detail-stat">{count} member{count !== 1 ? 's' : ''} · Led by {group.leader_name}</p>
+        </div>
+      )}
+
+      {!isMember && (
+        <button className="join-btn join-btn--join" style={{ alignSelf: 'flex-start' }} onClick={onJoin}>
+          Join this group
+        </button>
+      )}
+
+      {/* Members */}
+      <div className="group-section">
+        <p className="group-section-title">Members ({members.length})</p>
+        <div className="group-members-list">
+          {members.map(m => (
+            <div key={m.user_id} className="group-member-row">
+              <div className="group-member-avatar">{nameInitials(m.member_name || 'M')}</div>
+              <span className="group-member-name">{m.member_name || 'Member'}</span>
+              {m.role === 'leader' && <span className="group-member-badge">Leader</span>}
+              {isLeader && m.user_id !== user.id && (
+                <button className="group-member-remove" onClick={() => removeMember(m.user_id)}
+                  disabled={removingMember === m.user_id}>
+                  {removingMember === m.user_id ? '…' : '✕'}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Discussion (members only) */}
+      {isMember ? (
+        <div className="group-section group-section--grow">
+          <p className="group-section-title">Discussion</p>
+          <div className="group-messages">
+            {loadingMsgs ? (
+              <div className="skeleton-block" style={{ height: '60px', borderRadius: '8px' }} />
+            ) : messages.length === 0 ? (
+              <p className="partner-empty-hint">No messages yet. Start the conversation!</p>
+            ) : (
+              messages.map(m => (
+                <div key={m.id} className={`group-msg ${m.user_id === user.id ? 'group-msg--mine' : ''}`}>
+                  <div className="group-msg-meta">
+                    <strong>{m.user_id === user.id ? 'You' : m.author_name}</strong>
+                    <span>{timeAgo(m.created_at)}</span>
+                  </div>
+                  <p className="group-msg-body">{m.content}</p>
+                </div>
+              ))
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+          <div className="group-msg-form">
+            <input className="input-soft" placeholder="Write a message…"
+              value={newMsg} onChange={e => setNewMsg(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); postMessage() } }} />
+            <button className="today-begin-btn"
+              style={{ padding: '10px 18px', fontSize: '0.85rem', marginTop: 0, flexShrink: 0 }}
+              onClick={postMessage} disabled={posting || !newMsg.trim()}>
+              {posting ? '…' : 'Send'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="group-section">
+          <p className="group-section-title">Discussion</p>
+          <p className="partner-empty-hint">Join the group to participate in discussions.</p>
+        </div>
+      )}
+
+      {/* Footer actions */}
+      <div className="group-detail-footer">
+        {isMember && !isLeader && (
+          <button className="btn-end-partner" onClick={onLeave}>Leave group</button>
+        )}
+        {isLeader && (
+          <button className="btn-end-partner" onClick={deleteGroup}>Delete group</button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────
 // GROUPS TAB
 // ─────────────────────────────────────────
 function GroupsTab({ user }) {
@@ -207,19 +442,18 @@ function GroupsTab({ user }) {
   const [membership, setMembership] = useState({})
   const [cityFilter, setCityFilter] = useState('all')
   const [showCreate, setShowCreate] = useState(false)
-  const [newGroup, setNewGroup] = useState({ name: '', church: '', city: '', description: '' })
+  const [newGroup, setNewGroup] = useState({ name: '', church: '', city: '', description: '', meeting_schedule: '' })
   const [creating, setCreating] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [selectedGroup, setSelectedGroup] = useState(null)
 
   const userName = user?.user_metadata?.full_name || 'Devotee'
 
   const fetchGroups = useCallback(async () => {
     setLoading(true)
     let query = supabase.from('small_groups').select('*').order('created_at', { ascending: false })
-    if (cityFilter !== 'all') {
-      query = query.ilike('city', `%${cityFilter}%`)
-    }
+    if (cityFilter !== 'all') query = query.ilike('city', `%${cityFilter}%`)
     const { data: grps, error: grpErr } = await query
     if (grpErr) { setError('Could not load groups.'); setLoading(false); return }
     setGroups(grps || [])
@@ -228,9 +462,7 @@ function GroupsTab({ user }) {
 
     const ids = grps.map(g => g.id)
     const { data: members } = await supabase
-      .from('group_members')
-      .select('group_id, user_id, role')
-      .in('group_id', ids)
+      .from('group_members').select('group_id, user_id, role').in('group_id', ids)
 
     const counts = {}
     const myMembership = {}
@@ -247,29 +479,27 @@ function GroupsTab({ user }) {
 
   const joinGroup = async (groupId) => {
     const { error: err } = await supabase.from('group_members').insert({
-      group_id: groupId,
-      user_id: user.id,
-      member_name: userName,
-      role: 'member',
+      group_id: groupId, user_id: user.id, member_name: userName, role: 'member',
     })
     if (!err) {
       setMembership(prev => ({ ...prev, [groupId]: 'member' }))
       setMemberCounts(prev => ({ ...prev, [groupId]: (prev[groupId] || 0) + 1 }))
+      // Notify leader that someone joined
+      const grp = groups.find(g => g.id === groupId)
+      if (grp?.leader_id && grp.leader_id !== user.id) {
+        notifyUser(grp.leader_id, 'group_join', '⛪ New member', `${userName} joined ${grp.name}`, '/community?tab=groups')
+      }
     }
   }
 
   const leaveGroup = async (groupId) => {
-    await supabase.from('group_members').delete()
-      .eq('group_id', groupId).eq('user_id', user.id)
+    await supabase.from('group_members').delete().eq('group_id', groupId).eq('user_id', user.id)
     setMembership(prev => { const m = { ...prev }; delete m[groupId]; return m })
     setMemberCounts(prev => ({ ...prev, [groupId]: Math.max(0, (prev[groupId] || 1) - 1) }))
   }
 
   const createGroup = async () => {
-    if (!newGroup.name.trim() || !newGroup.city.trim()) {
-      setError('Group name and city are required.')
-      return
-    }
+    if (!newGroup.name.trim() || !newGroup.city.trim()) { setError('Group name and city are required.'); return }
     setCreating(true)
     setError('')
     const { data: grp, error: err } = await supabase.from('small_groups').insert({
@@ -277,6 +507,7 @@ function GroupsTab({ user }) {
       church: newGroup.church.trim(),
       city: newGroup.city.trim(),
       description: newGroup.description.trim(),
+      meeting_schedule: newGroup.meeting_schedule.trim(),
       leader_id: user.id,
       leader_name: userName,
     }).select().single()
@@ -284,51 +515,59 @@ function GroupsTab({ user }) {
     if (err) { setError('Could not create group.'); setCreating(false); return }
 
     await supabase.from('group_members').insert({
-      group_id: grp.id,
-      user_id: user.id,
-      member_name: userName,
-      role: 'leader',
+      group_id: grp.id, user_id: user.id, member_name: userName, role: 'leader',
     })
 
-    setNewGroup({ name: '', church: '', city: '', description: '' })
+    setNewGroup({ name: '', church: '', city: '', description: '', meeting_schedule: '' })
     setShowCreate(false)
     setCreating(false)
     fetchGroups()
   }
 
-  const filteredGroups = groups
+  // If a group is selected, show detail panel
+  if (selectedGroup) {
+    return (
+      <GroupDetail
+        group={selectedGroup}
+        user={user}
+        role={membership[selectedGroup.id]}
+        memberCounts={memberCounts}
+        onClose={() => setSelectedGroup(null)}
+        onJoin={() => {
+          joinGroup(selectedGroup.id)
+          setMembership(prev => ({ ...prev, [selectedGroup.id]: 'member' }))
+        }}
+        onLeave={() => { leaveGroup(selectedGroup.id); setSelectedGroup(null) }}
+        onGroupUpdated={(updatedGroup) => {
+          if (!updatedGroup) {
+            setGroups(prev => prev.filter(g => g.id !== selectedGroup.id))
+            setSelectedGroup(null)
+          } else {
+            setGroups(prev => prev.map(g => g.id === updatedGroup.id ? updatedGroup : g))
+            setSelectedGroup(updatedGroup)
+          }
+        }}
+      />
+    )
+  }
 
   return (
     <div>
-      {/* Header row */}
       <div className="groups-header" style={{ marginBottom: '16px' }}>
         <div className="city-pills">
-          <button
-            className={`city-pill ${cityFilter === 'all' ? 'city-pill--active' : ''}`}
-            onClick={() => setCityFilter('all')}
-          >
-            All
-          </button>
+          <button className={`city-pill ${cityFilter === 'all' ? 'city-pill--active' : ''}`} onClick={() => setCityFilter('all')}>All</button>
           {CITIES.map(city => (
-            <button
-              key={city}
-              className={`city-pill ${cityFilter === city ? 'city-pill--active' : ''}`}
-              onClick={() => setCityFilter(city)}
-            >
+            <button key={city} className={`city-pill ${cityFilter === city ? 'city-pill--active' : ''}`} onClick={() => setCityFilter(city)}>
               {city}
             </button>
           ))}
         </div>
-        <button
-          className="today-begin-btn"
-          style={{ padding: '10px 20px', fontSize: '0.85rem', marginTop: 0, flexShrink: 0 }}
-          onClick={() => setShowCreate(v => !v)}
-        >
+        <button className="today-begin-btn" style={{ padding: '10px 20px', fontSize: '0.85rem', marginTop: 0, flexShrink: 0 }}
+          onClick={() => setShowCreate(v => !v)}>
           {showCreate ? 'Cancel' : '+ Create Group'}
         </button>
       </div>
 
-      {/* Create form */}
       {showCreate && (
         <div className="create-group-form" style={{ marginBottom: '20px' }}>
           <p style={{ margin: 0, fontFamily: 'var(--font-serif)', fontSize: '1rem', color: 'var(--clr-dark)', fontWeight: 700 }}>
@@ -338,55 +577,41 @@ function GroupsTab({ user }) {
           <div className="create-group-row">
             <div>
               <label className="input-label">Group name *</label>
-              <input
-                className="input-soft"
-                placeholder="e.g. Lagos Mainland Cell"
-                value={newGroup.name}
-                onChange={e => setNewGroup(p => ({ ...p, name: e.target.value }))}
-              />
+              <input className="input-soft" placeholder="e.g. Lagos Mainland Cell"
+                value={newGroup.name} onChange={e => setNewGroup(p => ({ ...p, name: e.target.value }))} />
             </div>
             <div>
               <label className="input-label">City *</label>
-              <input
-                className="input-soft"
-                placeholder="e.g. Lagos"
-                value={newGroup.city}
-                onChange={e => setNewGroup(p => ({ ...p, city: e.target.value }))}
-              />
+              <input className="input-soft" placeholder="e.g. Lagos"
+                value={newGroup.city} onChange={e => setNewGroup(p => ({ ...p, city: e.target.value }))} />
+            </div>
+          </div>
+          <div className="create-group-row">
+            <div>
+              <label className="input-label">Church / denomination</label>
+              <input className="input-soft" placeholder="e.g. ECWA Surulere"
+                value={newGroup.church} onChange={e => setNewGroup(p => ({ ...p, church: e.target.value }))} />
+            </div>
+            <div>
+              <label className="input-label">Meeting schedule</label>
+              <input className="input-soft" placeholder="e.g. Sundays at 9am"
+                value={newGroup.meeting_schedule} onChange={e => setNewGroup(p => ({ ...p, meeting_schedule: e.target.value }))} />
             </div>
           </div>
           <div>
-            <label className="input-label">Church / denomination</label>
-            <input
-              className="input-soft"
-              placeholder="e.g. ECWA Surulere"
-              value={newGroup.church}
-              onChange={e => setNewGroup(p => ({ ...p, church: e.target.value }))}
-            />
-          </div>
-          <div>
             <label className="input-label">Description (optional)</label>
-            <input
-              className="input-soft"
-              placeholder="When do you meet? What's the focus?"
-              value={newGroup.description}
-              onChange={e => setNewGroup(p => ({ ...p, description: e.target.value }))}
-            />
+            <input className="input-soft" placeholder="What's the focus of this group?"
+              value={newGroup.description} onChange={e => setNewGroup(p => ({ ...p, description: e.target.value }))} />
           </div>
           <div className="create-group-actions">
-            <button
-              className="today-begin-btn"
-              style={{ padding: '10px 24px', fontSize: '0.88rem', marginTop: 0 }}
-              onClick={createGroup}
-              disabled={creating}
-            >
+            <button className="today-begin-btn" style={{ padding: '10px 24px', fontSize: '0.88rem', marginTop: 0 }}
+              onClick={createGroup} disabled={creating}>
               {creating ? 'Creating…' : 'Create Group'}
             </button>
           </div>
         </div>
       )}
 
-      {/* Groups list */}
       {loading ? (
         <div className="community-loading">
           {[1, 2, 3].map(i => (
@@ -396,7 +621,7 @@ function GroupsTab({ user }) {
             </div>
           ))}
         </div>
-      ) : filteredGroups.length === 0 ? (
+      ) : groups.length === 0 ? (
         <div className="community-empty">
           <span className="community-empty-icon">⛪</span>
           No groups found{cityFilter !== 'all' ? ` in ${cityFilter}` : ''}.<br />
@@ -404,14 +629,15 @@ function GroupsTab({ user }) {
         </div>
       ) : (
         <div className="groups-grid">
-          {filteredGroups.map(grp => {
+          {groups.map(grp => {
             const role = membership[grp.id]
             const count = memberCounts[grp.id] || 0
             return (
-              <div key={grp.id} className="group-card">
+              <div key={grp.id} className="group-card" onClick={() => setSelectedGroup(grp)}>
                 <p className="group-card-name">{grp.name}</p>
                 {grp.church && <p className="group-card-church">{grp.church}</p>}
                 <p className="group-card-city">{grp.city}</p>
+                {grp.meeting_schedule && <p className="group-card-schedule">🗓 {grp.meeting_schedule}</p>}
                 {grp.description && <p className="group-card-desc">{grp.description}</p>}
                 <div className="group-card-foot">
                   <span className="group-member-count">
@@ -420,9 +646,11 @@ function GroupsTab({ user }) {
                   {role === 'leader' ? (
                     <span className="join-btn join-btn--leader">Leader</span>
                   ) : role === 'member' ? (
-                    <button className="join-btn join-btn--leave" onClick={() => leaveGroup(grp.id)}>Leave</button>
+                    <button className="join-btn join-btn--leave"
+                      onClick={e => { e.stopPropagation(); leaveGroup(grp.id) }}>Leave</button>
                   ) : (
-                    <button className="join-btn join-btn--join" onClick={() => joinGroup(grp.id)}>Join</button>
+                    <button className="join-btn join-btn--join"
+                      onClick={e => { e.stopPropagation(); joinGroup(grp.id) }}>Join</button>
                   )}
                 </div>
               </div>
@@ -849,6 +1077,7 @@ function PartnersTab({ user }) {
 // ─────────────────────────────────────────
 const TAB_NOTIF_TYPES = {
   prayer: ['prayer_prayed'],
+  groups: ['group_message', 'group_join'],
   partners: ['nudge', 'prayer', 'note', 'invite', 'accepted'],
 }
 
