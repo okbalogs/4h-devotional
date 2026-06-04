@@ -39,9 +39,8 @@ export default function SignIn() {
       {/* Top bar */}
       <header className="auth-header">
         <Link href="/" className="auth-brand">
-          <em>ECWA Devotions</em>
+          <em>Editorial Devotion</em>
         </Link>
-        <button className="auth-help-btn" aria-label="Help">?</button>
       </header>
 
       {/* Decorative background shape */}
@@ -81,6 +80,7 @@ export default function SignIn() {
                   type="email"
                   placeholder="name@example.com"
                   autoComplete="email"
+                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -106,6 +106,7 @@ export default function SignIn() {
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   autoComplete="current-password"
+                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -142,7 +143,7 @@ export default function SignIn() {
           <Link href="/terms">Terms</Link>
           <Link href="/support">Support</Link>
         </div>
-        <p>© 2024 ECWA Devotional. A Sanctuary for Selah.</p>
+        <p>© {new Date().getFullYear()} Editorial Devotion. A Sanctuary for Selah.</p>
       </footer>
 
       {/* Bottom-right decoration */}

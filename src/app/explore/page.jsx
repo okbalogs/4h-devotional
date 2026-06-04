@@ -1,5 +1,9 @@
 import Link from 'next/link'
-import Image from 'next/image'
+
+export const metadata = {
+  title: 'Explore the 4H Method',
+  description: 'Discover the 4H devotional framework — Head, Heart, Hand, Help — a structured approach to daily scripture engagement.',
+}
 
 const steps = [
   {
@@ -63,10 +67,7 @@ export default function Explore() {
   return (
     <main>
       {/* ─── HEADER ─── */}
-      <section
-        className="hero-section"
-        style={{ gridTemplateColumns: '1fr', textAlign: 'center', paddingBottom: '40px' }}
-      >
+      <section className="hero-section" style={{ gridTemplateColumns: '1fr', textAlign: 'center', paddingBottom: '40px' }}>
         <div className="hero-text" style={{ margin: '0 auto', maxWidth: '680px' }}>
           <span className="section-tag">THE PHILOSOPHY</span>
           <h1 style={{ fontSize: '3.2rem' }}>
@@ -91,10 +92,15 @@ export default function Explore() {
             >
               <div
                 style={{
-                  width: 48, height: 48, borderRadius: '50%',
-                  background: accent ? 'rgba(255,255,255,0.18)' : '#fff',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '1.3rem', marginBottom: '20px',
+                  width: 48,
+                  height: 48,
+                  borderRadius: '50%',
+                  background: accent ? 'rgba(255,255,255,0.18)' : 'var(--clr-card)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.3rem',
+                  marginBottom: '20px',
                   boxShadow: accent ? 'none' : '0 4px 12px rgba(0,0,0,0.06)',
                 }}
               >
@@ -109,8 +115,10 @@ export default function Explore() {
               <h3 style={{ fontSize: '1.9rem' }}>{title}</h3>
               <p
                 style={{
-                  fontSize: '0.88rem', fontStyle: 'italic', marginBottom: '12px',
-                  color: accent ? 'rgba(255,255,255,0.7)' : '#9d4f14',
+                  fontSize: '0.88rem',
+                  fontStyle: 'italic',
+                  marginBottom: '12px',
+                  color: accent ? 'rgba(255,255,255,0.7)' : 'var(--clr-primary)',
                 }}
               >
                 {subtitle}
@@ -124,13 +132,13 @@ export default function Explore() {
       </section>
 
       {/* ─── WHY IT WORKS ─── */}
-      <section style={{ background: '#fdf6ec', padding: '80px 60px' }}>
+      <section className="explore-why-section">
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <span className="section-tag">WHY IT WORKS</span>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '2.4rem', color: '#3d2a1a', margin: '16px 0 20px' }}>
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.4rem', color: 'var(--clr-dark)', margin: '16px 0 20px' }}>
             Built for the way Nigerian believers live
           </h2>
-          <p style={{ color: '#7a6555', fontSize: '1.05rem', lineHeight: '1.8', maxWidth: '700px', marginBottom: '56px' }}>
+          <p style={{ color: 'var(--clr-text-muted)', fontSize: '1.05rem', lineHeight: '1.8', maxWidth: '700px', marginBottom: '56px' }}>
             Many of us grew up in homes where morning devotion was a real, daily practice —
             not a performance, but a genuine first conversation with God before the day began.
             The 4H method gives that practice a spine. It prevents quiet time from drifting into
@@ -140,16 +148,10 @@ export default function Explore() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '24px' }}>
             {features.map(({ icon, title, body }) => (
-              <div
-                key={title}
-                style={{
-                  background: '#fff', borderRadius: '12px', padding: '28px',
-                  boxShadow: '0 4px 16px rgba(157,79,20,0.06)',
-                }}
-              >
+              <div key={title} className="explore-feature-card">
                 <div style={{ fontSize: '1.6rem', marginBottom: '14px' }}>{icon}</div>
-                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#3d2a1a', marginBottom: '8px' }}>{title}</h3>
-                <p style={{ fontSize: '0.88rem', color: '#7a6555', lineHeight: '1.7' }}>{body}</p>
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--clr-dark)', marginBottom: '8px' }}>{title}</h3>
+                <p style={{ fontSize: '0.88rem', color: 'var(--clr-text-muted)', lineHeight: '1.7' }}>{body}</p>
               </div>
             ))}
           </div>

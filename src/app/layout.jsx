@@ -24,7 +24,10 @@ const playfair = Playfair_Display({
 });
 
 export const metadata = {
-  title: "Editorial Devotion — Your 4H Quiet Time Sanctuary",
+  title: {
+    template: '%s | Editorial Devotion',
+    default: 'Editorial Devotion — Your 4H Quiet Time Sanctuary',
+  },
   description:
     "Engage with God through the ECWA 4H framework: Head, Heart, Hand, Help. A digital sanctuary for your daily selah.",
   appleWebApp: {
@@ -38,7 +41,6 @@ export const viewport = {
   themeColor: "#9d4f14",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
 };
 
 export default function RootLayout({ children }) {

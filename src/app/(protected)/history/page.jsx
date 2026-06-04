@@ -220,11 +220,13 @@ export default function DailyArchives() {
                   <span className="reference-pill">{entry.scripture_reference}</span>
                 )}
               </div>
-              <h3>{entry.title || 'Untitled Entry'}</h3>
+              <h3 className={entry.title ? '' : 'entry-title--untitled'}>{entry.title || 'Untitled Entry'}</h3>
               {entry.hear && (
                 <div className="entry-summary">
                   <span className="summary-label">HEAR (SUMMARY)</span>
-                  <p>&ldquo;{entry.hear.length > 140 ? entry.hear.slice(0, 140) + '...' : entry.hear}&rdquo;</p>
+                  <p>&ldquo;{entry.hear.length > 140
+                    ? entry.hear.slice(0, entry.hear.lastIndexOf(' ', 140) > 0 ? entry.hear.lastIndexOf(' ', 140) : 140) + '…'
+                    : entry.hear}&rdquo;</p>
                 </div>
               )}
             </Link>

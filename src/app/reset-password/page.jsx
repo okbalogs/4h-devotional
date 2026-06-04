@@ -34,13 +34,13 @@ export default function ResetPassword() {
     <div className="auth-page">
       <div className="auth-bg-shape auth-bg-shape--top" />
       <header className="auth-header">
-        <Link href="/" className="auth-brand"><em>ECWA Devotions</em></Link>
+        <Link href="/" className="auth-brand"><em>Editorial Devotion</em></Link>
       </header>
 
       <main className="signin-main">
         <div className="auth-card">
           <div className="auth-icon">
-            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#fdf6ec', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9d4f14', fontSize: '1.4rem' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--clr-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--clr-primary)', fontSize: '1.4rem' }}>
               🔐
             </div>
           </div>
@@ -92,9 +92,9 @@ export default function ResetPassword() {
             </button>
           </form>
 
-          <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.85rem', color: '#7a6555' }}>
+          <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.85rem', color: 'var(--clr-text-muted)' }}>
             Remember your password?{' '}
-            <Link href="/signin" style={{ color: '#9d4f14', fontWeight: 600 }}>Sign In</Link>
+            <Link href="/signin" style={{ color: 'var(--clr-primary)', fontWeight: 600 }}>Sign In</Link>
           </p>
         </div>
       </main>

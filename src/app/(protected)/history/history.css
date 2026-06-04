@@ -145,6 +145,10 @@
   margin-bottom: 20px;
   font-style: italic;
 }
+.entry-title--untitled {
+  color: #b0a090;
+  font-weight: 400;
+}
 
 .entry-summary {
   background: #fbf8f5;

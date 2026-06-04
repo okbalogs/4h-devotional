@@ -32,15 +32,14 @@ export default function ForgotPassword() {
 
       <header className="auth-header">
         <Link href="/" className="auth-brand">
-          Editorial<br />Devotion
+          <em>Editorial Devotion</em>
         </Link>
-        <button className="auth-help-btn">?</button>
       </header>
 
       <main className="signin-main">
         <div className="auth-card" style={{ animation: "fadeIn 0.5s ease" }}>
           <div className="auth-icon">
-             <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#fdf6ec', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9d4f14', fontSize: '1.4rem'}}>
+             <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--clr-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--clr-primary)', fontSize: '1.4rem'}}>
                🔑
              </div>
           </div>
@@ -76,8 +75,8 @@ export default function ForgotPassword() {
           </form>
 
           <div style={{ textAlign: 'center', marginTop: '30px', fontSize: '0.85rem' }}>
-            <span style={{ color: '#7a6555' }}>Remember your password?</span>{" "}
-             <Link href="/signin" style={{ color: '#9d4f14', fontWeight: 600 }}>Sign In</Link>
+            <span style={{ color: 'var(--clr-text-muted)' }}>Remember your password?</span>{" "}
+             <Link href="/signin" style={{ color: 'var(--clr-primary)', fontWeight: 600 }}>Sign In</Link>
           </div>
         </div>
       </main>

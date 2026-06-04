@@ -36,22 +36,7 @@ export default function InstallButton() {
   }
 
   return (
-    <button
-      onClick={handleInstall}
-      style={{
-        margin: '0 32px 24px',
-        padding: '12px',
-        background: 'rgba(157, 79, 20, 0.1)',
-        border: '1.5px dashed #9d4f14',
-        borderRadius: '8px',
-        color: '#9d4f14',
-        fontWeight: 600,
-        fontSize: '0.85rem',
-        cursor: 'pointer',
-        width: 'calc(100% - 64px)',
-        textAlign: 'center',
-      }}
-    >
+    <button className="btn-install" onClick={handleInstall}>
       📲 Install App
     </button>
   )

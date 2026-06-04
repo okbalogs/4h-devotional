@@ -2,38 +2,38 @@
 import { useState, useEffect } from 'react'
 
 // Bump this key whenever you ship a new update so returning users see it once.
-const SEEN_KEY = 'changelog_seen_v5'
+const SEEN_KEY = 'changelog_seen_v6'
 
 const UPDATES = [
   {
-    icon: '🔔',
-    title: 'Daily devotion reminders',
-    desc: 'Set a custom reminder time in Settings — fires even offline.',
+    icon: '🎓',
+    title: 'Interactive Courses Hub',
+    desc: 'Search courses and filter by category in real-time with refined UI card layouts.',
+  },
+  {
+    icon: '💾',
+    title: 'Auto-Save Devotions',
+    desc: 'Your active quiet time logs are saved locally as you type to prevent data loss.',
+  },
+  {
+    icon: '⚠️',
+    title: 'Unsaved Work Protection',
+    desc: 'Warns you before navigating away from active edits or unsaved devotional logs.',
+  },
+  {
+    icon: '💌',
+    title: 'Functional Support Form',
+    desc: 'Easily submit support tickets, testaments, or account queries with validate fields.',
   },
   {
     icon: '🔍',
-    title: 'Entry search',
-    desc: 'Search any entry by scripture, title, or reflection. Works offline too.',
+    title: 'Accessibility Boost',
+    desc: 'Re-enabled standard browser pinch-to-zoom and configured SEO title templating.',
   },
   {
-    icon: '⬇',
-    title: 'Export to PDF',
-    desc: 'Save any devotion entry as a clean, printable PDF.',
-  },
-  {
-    icon: '🏆',
-    title: 'Streak badges',
-    desc: 'Earn milestone badges at 3, 7, 14, 30, 100 days and beyond.',
-  },
-  {
-    icon: '📵',
-    title: 'Full offline mode',
-    desc: 'Browse history, start new entries, and sync when back online.',
-  },
-  {
-    icon: '🌙',
-    title: 'Redesigned dark mode & navbar',
-    desc: 'A warmer, more refined look across the entire app.',
+    icon: '📖',
+    title: 'Custom 404 Not Found Page',
+    desc: 'Beautifully styled missing page layout that guides you back to your sanctuary.',
   },
 ]
 

@@ -1,6 +1,5 @@
 "use client"
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/utils/supabase'
 
@@ -12,9 +11,20 @@ const BIBLE_VERSIONS = [
 
 export default function Settings() {
   const { user, logout } = useAuth()
-  const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState(null)
+
+  // Password change state (#6)
+  const [showPasswordForm, setShowPasswordForm] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordMsg, setPasswordMsg] = useState(null)
+  const [changingPassword, setChangingPassword] = useState(false)
+
+  // Track original profile data for discard (#7)
+  const originalProfileRef = useRef(null)
+  // Track original bible version for feedback (#8)
+  const originalBibleVersionRef = useRef('web')
 
   // Profile fields
   const [fullName, setFullName] = useState('')
@@ -55,6 +65,20 @@ export default function Settings() {
         setPublicProfile(data.public_profile ?? false)
         setWeeklySummary(data.weekly_summary ?? true)
         setCommunityPrayers(data.community_prayers ?? false)
+
+        // Store original values for discard (#7)
+        originalProfileRef.current = {
+          fullName: user.user_metadata?.full_name ?? '',
+          church: data.church ?? '',
+          bibleVersion: data.bible_version ?? 'web',
+          reminders: data.reminders_enabled ?? true,
+          reminderTime: data.reminder_time ?? '06:00',
+          publicProfile: data.public_profile ?? false,
+          weeklySummary: data.weekly_summary ?? true,
+          communityPrayers: data.community_prayers ?? false,
+        }
+        // Track original bible version for feedback (#8)
+        originalBibleVersionRef.current = data.bible_version ?? 'web'
       })
   }, [user])
 
@@ -116,8 +140,23 @@ export default function Settings() {
 
     const error = authResult.error || profileResult.error
     setSaving(false)
-    setSaveMsg(error ? error.message : 'Changes saved.')
-    setTimeout(() => setSaveMsg(null), 3000)
+
+    if (error) {
+      setSaveMsg(error.message)
+    } else {
+      // Bible version feedback (#8)
+      const versionChanged = bibleVersion !== originalBibleVersionRef.current
+      setSaveMsg(versionChanged
+        ? 'Changes saved. Your verse will refresh on next visit.'
+        : 'Changes saved.')
+      // Update originals so subsequent discards reflect the saved state
+      originalProfileRef.current = {
+        fullName, church, bibleVersion, reminders, reminderTime,
+        publicProfile, weeklySummary, communityPrayers,
+      }
+      originalBibleVersionRef.current = bibleVersion
+    }
+    setTimeout(() => setSaveMsg(null), 4000)
 
     // Keep localStorage in sync so NotificationScheduler works offline
     if (!error) {
@@ -127,9 +166,52 @@ export default function Settings() {
   }
 
   const handleDiscard = () => {
-    setFullName(user?.user_metadata?.full_name ?? '')
-    setChurch('')
+    const orig = originalProfileRef.current
+    if (orig) {
+      setFullName(orig.fullName)
+      setChurch(orig.church)
+      setBibleVersion(orig.bibleVersion)
+      setReminders(orig.reminders)
+      setReminderTime(orig.reminderTime)
+      setPublicProfile(orig.publicProfile)
+      setWeeklySummary(orig.weeklySummary)
+      setCommunityPrayers(orig.communityPrayers)
+    } else {
+      setFullName(user?.user_metadata?.full_name ?? '')
+      setChurch('')
+    }
     setSaveMsg(null)
+  }
+
+  // In-app password change (#6)
+  const handlePasswordChange = async () => {
+    setPasswordMsg(null)
+    if (!newPassword || !confirmPassword) {
+      setPasswordMsg('Please fill in both fields.')
+      return
+    }
+    if (newPassword.length < 6) {
+      setPasswordMsg('Password must be at least 6 characters.')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordMsg('Passwords do not match.')
+      return
+    }
+    setChangingPassword(true)
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    setChangingPassword(false)
+    if (error) {
+      setPasswordMsg(error.message)
+    } else {
+      setPasswordMsg('Password updated successfully!')
+      setNewPassword('')
+      setConfirmPassword('')
+      setTimeout(() => {
+        setShowPasswordForm(false)
+        setPasswordMsg(null)
+      }, 2500)
+    }
   }
 
   const handleAvatarChange = async (e) => {
@@ -335,18 +417,66 @@ export default function Settings() {
           {/* Account Security */}
           <section className="settings-section">
             <h2 className="section-title">Account Security</h2>
-            <div className="card-strong flex-between">
-              <div className="gap-12">
-                <div className="circle-icon circle-icon-white">🔑</div>
-                <div>
-                  <h3 style={{ fontSize: '1.05rem', color: '#333' }}>Change Your Password</h3>
-                  <p style={{ fontSize: '0.85rem', color: '#666' }}>Update your credentials to keep your journal private.</p>
+            <div className="card-strong">
+              <div className="flex-between">
+                <div className="gap-12">
+                  <div className="circle-icon circle-icon-white">🔑</div>
+                  <div>
+                    <h3 style={{ fontSize: '1.05rem', color: '#333' }}>Update Your Password</h3>
+                    <p style={{ fontSize: '0.85rem', color: '#666' }}>Update your credentials to keep your journal private.</p>
+                  </div>
+                </div>
+                <div className="flex-between gap-12">
+                  <button className="btn-white" onClick={() => setShowPasswordForm(v => !v)}>
+                    {showPasswordForm ? 'Cancel' : 'Update Password'}
+                  </button>
+                  <button className="btn-danger-light" onClick={logout}>↳ Logout</button>
                 </div>
               </div>
-              <div className="flex-between gap-12">
-                <button className="btn-white" onClick={() => router.push('/forgot-password')}>Change Password</button>
-                <button className="btn-danger-light" onClick={logout}>↳ Logout</button>
-              </div>
+
+              {showPasswordForm && (
+                <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(157, 79, 20, 0.15)' }}>
+                  <div className="form-row" style={{ marginBottom: '16px' }}>
+                    <div>
+                      <label className="input-label">New Password</label>
+                      <input
+                        type="password"
+                        className="input-soft"
+                        placeholder="Min. 6 characters"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="input-label">Confirm Password</label>
+                      <input
+                        type="password"
+                        className="input-soft"
+                        placeholder="Re-enter new password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  {passwordMsg && (
+                    <p style={{
+                      fontSize: '0.85rem',
+                      marginBottom: '12px',
+                      color: passwordMsg.includes('successfully') ? '#2b7a3b' : '#c0392b',
+                    }}>
+                      {passwordMsg}
+                    </p>
+                  )}
+                  <button
+                    className="btn-primary"
+                    style={{ border: 'none', padding: '10px 20px', borderRadius: '8px', background: '#9d4f14', color: '#fff', fontWeight: 600 }}
+                    onClick={handlePasswordChange}
+                    disabled={changingPassword}
+                  >
+                    {changingPassword ? 'Updating...' : 'Save New Password'}
+                  </button>
+                </div>
+              )}
             </div>
           </section>
 

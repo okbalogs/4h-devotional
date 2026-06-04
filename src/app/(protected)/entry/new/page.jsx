@@ -8,6 +8,8 @@ import { getTodayVerseForUser } from '@/utils/dailyVerse'
 import { queueEntry } from '@/utils/offlineStorage'
 import { notifyUser } from '@/utils/pushManager'
 
+const DRAFT_KEY = 'devotion_draft'
+
 export default function NewEntry() {
   const router = useRouter()
   const { user } = useAuth()
@@ -37,6 +39,8 @@ export default function NewEntry() {
   const [savedOffline, setSavedOffline] = useState(false)
   const [activePartnership, setActivePartnership] = useState(null)
   const [shareWithPartner, setShareWithPartner] = useState(false)
+  const [draftRestored, setDraftRestored] = useState(false)
+  const [draftSaved, setDraftSaved] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -48,6 +52,53 @@ export default function NewEntry() {
       .maybeSingle()
       .then(({ data }) => setActivePartnership(data))
   }, [user])
+
+  // Restore draft from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY)
+      if (saved) {
+        const draft = JSON.parse(saved)
+        if (draft.title) setTitle(draft.title)
+        if (draft.scriptureRef) setScriptureRef(draft.scriptureRef)
+        if (draft.hear) setHear(draft.hear)
+        if (draft.heed) setHeed(draft.heed)
+        if (draft.hold) setHold(draft.hold)
+        if (draft.help) setHelp(draft.help)
+        if (draft.lingeringThought) setLingeringThought(draft.lingeringThought)
+        setDraftRestored(true)
+      }
+    } catch {}
+  }, [])
+
+  // Unsaved changes protection
+  useEffect(() => {
+    const hasContent = [hear, heed, hold, help, title, scriptureRef, lingeringThought].some(v => v && v.trim())
+    const handler = (e) => {
+      if (hasContent) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    if (hasContent) {
+      window.addEventListener('beforeunload', handler)
+    }
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [hear, heed, hold, help, title, scriptureRef, lingeringThought])
+
+  // Auto-save to localStorage every 2 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const fields = { title, scriptureRef, hear, heed, hold, help, lingeringThought }
+      const hasContent = Object.values(fields).some(v => v && v.trim())
+      if (hasContent) {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(fields))
+        setDraftSaved(true)
+        setTimeout(() => setDraftSaved(false), 2000)
+      }
+    }, 2000)
+    return () => clearTimeout(timer)
+  }, [title, scriptureRef, hear, heed, hold, help, lingeringThought])
 
   const entryPayload = () => ({
     user_id: user.id,
@@ -68,6 +119,7 @@ export default function NewEntry() {
     // Offline — queue locally and show confirmation
     if (!navigator.onLine) {
       queueEntry(entryPayload())
+      localStorage.removeItem(DRAFT_KEY)
       setSaving(false)
       setSavedOffline(true)
       return
@@ -81,6 +133,8 @@ export default function NewEntry() {
         .single()
 
       if (error) throw error
+
+      localStorage.removeItem(DRAFT_KEY)
 
       if (shareWithPartner && activePartnership && lingeringThought.trim()) {
         const senderName = user?.user_metadata?.full_name || 'Devotee'
@@ -108,6 +162,7 @@ export default function NewEntry() {
       // Network error mid-request — queue offline
       if (!navigator.onLine || err.message?.includes('fetch')) {
         queueEntry(entryPayload())
+        localStorage.removeItem(DRAFT_KEY)
         setSaving(false)
         setSavedOffline(true)
       } else {
@@ -119,11 +174,19 @@ export default function NewEntry() {
 
   return (
     <div className="entry-page">
+      {draftRestored && (
+        <div style={{ background: 'var(--clr-card)', padding: '10px 16px', borderRadius: '8px', fontSize: '0.85rem', color: 'var(--clr-text-muted)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <span>📝 Draft restored from your last session</span>
+          <button onClick={() => { setTitle(''); setScriptureRef(''); setHear(''); setHeed(''); setHold(''); setHelp(''); setLingeringThought(''); localStorage.removeItem(DRAFT_KEY); setDraftRestored(false) }} style={{ background: 'none', border: 'none', color: 'var(--clr-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem' }}>Discard</button>
+        </div>
+      )}
+
       <div className="entry-top-bar">
         <div className="entry-top-left">
           NEW ENTRY <span style={{margin: '0 6px'}}>•</span> <span className="date">{currentDate}</span>
         </div>
         <div className="entry-top-right">
+          {draftSaved && <span style={{ fontSize: '0.78rem', color: 'var(--clr-text-muted)', marginRight: '12px' }}>Draft saved ✓</span>}
           {error && <span style={{ color: '#c0392b', fontSize: '0.85rem', marginRight: '12px' }}>{error}</span>}
           {savedOffline && (
             <span style={{ color: '#7a6555', fontSize: '0.85rem', marginRight: '12px' }}>

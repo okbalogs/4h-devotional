@@ -1,10 +1,40 @@
 "use client"
 import Link from "next/link"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useAuth } from "@/context/AuthContext"
 import GoogleButton from "@/components/GoogleButton"
 import hero from "../../assets/images/hero.png"
+
+function PasswordStrength({ password }) {
+  const checks = useMemo(() => [
+    { label: "8+ characters", met: password.length >= 8 },
+    { label: "Uppercase letter", met: /[A-Z]/.test(password) },
+    { label: "Number", met: /\d/.test(password) },
+  ], [password])
+
+  const metCount = checks.filter(c => c.met).length
+
+  return (
+    <div className="pw-strength">
+      <div className="pw-strength-bar">
+        {checks.map((_, i) => (
+          <div
+            key={i}
+            className={`pw-strength-segment${i < metCount ? " filled" : ""}${metCount === checks.length ? " strong" : ""}`}
+          />
+        ))}
+      </div>
+      <span className="pw-strength-label">
+        {checks.map(c => (
+          <span key={c.label} style={{ marginRight: 10, color: c.met ? '#2b7a3b' : undefined }}>
+            {c.met ? "✓" : "○"} {c.label}
+          </span>
+        ))}
+      </span>
+    </div>
+  )
+}
 
 export default function SignUp() {
   const [showPw, setShowPw] = useState(false)
@@ -48,9 +78,8 @@ export default function SignUp() {
       {/* Top bar */}
       <header className="auth-header">
         <Link href="/" className="auth-brand">
-          <em>ECWA Devotions</em>
+          <em>Editorial Devotion</em>
         </Link>
-        <button className="auth-help-btn" aria-label="Help">?</button>
       </header>
 
       {/* Decorative background shape */}
@@ -131,6 +160,7 @@ export default function SignUp() {
                   type="text"
                   placeholder="John Doe"
                   autoComplete="name"
+                  required
                   className="auth-input--has-left-icon"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -152,6 +182,7 @@ export default function SignUp() {
                   type="email"
                   placeholder="john@example.com"
                   autoComplete="email"
+                  required
                   className="auth-input--has-left-icon"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -174,6 +205,8 @@ export default function SignUp() {
                     type={showPw ? "text" : "password"}
                     placeholder="••••••••"
                     autoComplete="new-password"
+                    required
+                    minLength={8}
                     className="auth-input--has-left-icon"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -182,6 +215,7 @@ export default function SignUp() {
                     {showPw ? "🙈" : "👁️"}
                   </button>
                 </div>
+                {password && <PasswordStrength password={password} />}
               </div>
 
               <div className="auth-field">
@@ -198,6 +232,7 @@ export default function SignUp() {
                     type={showConfirm ? "text" : "password"}
                     placeholder="••••••••"
                     autoComplete="new-password"
+                    required
                     className="auth-input--has-left-icon"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -229,7 +264,7 @@ export default function SignUp() {
           <Link href="/terms">Terms</Link>
           <Link href="/support">Support</Link>
         </div>
-        <p>© 2024 ECWA Devotional. A Sanctuary for Selah.</p>
+        <p>© {new Date().getFullYear()} Editorial Devotion. A Sanctuary for Selah.</p>
       </footer>
 
       {/* Bottom-right decoration */}

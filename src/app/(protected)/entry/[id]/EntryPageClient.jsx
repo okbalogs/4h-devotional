@@ -48,6 +48,30 @@ export default function ReadingRecord() {
   const [saveError, setSaveError] = useState(null)
   const [draft, setDraft] = useState(null)
 
+  // Unsaved changes protection in edit mode
+  useEffect(() => {
+    if (!isEditing || !draft) return
+    const hasChanges = entry && (
+      draft.title !== (entry.title ?? '') ||
+      draft.scripture_reference !== (entry.scripture_reference ?? '') ||
+      draft.hear !== (entry.hear ?? '') ||
+      draft.heed !== (entry.heed ?? '') ||
+      draft.hold !== (entry.hold ?? '') ||
+      draft.help !== (entry.help ?? '') ||
+      draft.lingering_thought !== (entry.lingering_thought ?? '')
+    )
+    const handler = (e) => {
+      if (hasChanges) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    if (hasChanges) {
+      window.addEventListener('beforeunload', handler)
+    }
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [isEditing, draft, entry])
+
   useEffect(() => {
     supabase
       .from('entries')
