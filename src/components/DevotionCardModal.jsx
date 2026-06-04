@@ -72,23 +72,80 @@ function roundRect(ctx, x, y, w, h, r) {
 
 function drawCard(canvas, entry, verseText, formattedDate) {
   const W = 1080
-  const H = 1350
-  canvas.width = W
-  canvas.height = H
   const ctx = canvas.getContext('2d')
 
+  // We need to calculate how much vertical space we need first.
+  let cursorY = 150
+  
+  // Calculate verse height
+  let verseLines = 0
+  if (verseText) {
+    ctx.font = 'italic 40px Georgia, serif'
+    // Temporary dry run to measure lines
+    verseLines = wrapText(ctx, verseText, 60, cursorY, W - 120, 54)
+    cursorY += verseLines * 54 + 16
+  }
+
+  // Underline + Title
+  cursorY += 24
+  if (entry.title) {
+    ctx.font = '28px Arial, sans-serif'
+    const titleLines = wrapText(ctx, entry.title, 60, cursorY, W - 120, 38)
+    cursorY += titleLines * 38 + 16
+  }
+  cursorY += 16
+
+  // Now calculate cell heights for the 4H quadrants
+  const cellW = (W - 120 - 20) / 2
+  ctx.font = '19px Arial, sans-serif'
+  
+  // Helper to pre-calculate heights for quadrants
+  const quadrantLineCounts = PILLARS.map(pillar => {
+    const content = entry[pillar.key] || ''
+    if (!content) return 0
+    return wrapText(ctx, content, 0, 0, cellW - 40, 26) // dry run measuring width
+  })
+
+  // The grid has two rows. Find max height needed for each row.
+  const row1MaxLines = Math.max(quadrantLineCounts[0], quadrantLineCounts[1])
+  const row2MaxLines = Math.max(quadrantLineCounts[2], quadrantLineCounts[3])
+  
+  // Cell base height (header space is around 95px, padding bottom 20px)
+  const cell1H = Math.max(200, 95 + row1MaxLines * 26 + 20)
+  const cell2H = Math.max(200, 95 + row2MaxLines * 26 + 20)
+
+  const gridRow1Y = cursorY
+  const gridRow2Y = gridRow1Y + cell1H + 20
+  const gridBottomY = gridRow2Y + cell2H
+
+  // Lingering thought calculation
+  let lingeringY = gridBottomY + 32
+  let lingeringH = 90
+  let lingeringLines = 0
+  if (entry.lingering_thought) {
+    ctx.font = 'italic 24px Georgia, serif'
+    lingeringLines = wrapText(ctx, `"${entry.lingering_thought}"`, 0, 0, W - 180, 32)
+    lingeringH = Math.max(90, 30 + lingeringLines * 32 + 30)
+  }
+
+  // Calculate final height: lingering bottom + padding + footer (120px)
+  const finalH = lingeringY + lingeringH + 140
+  canvas.height = finalH
+  canvas.width = W
+
+  // --- Start Drawing ---
   // Background gradient
-  const bg = ctx.createLinearGradient(0, 0, 0, H)
+  const bg = ctx.createLinearGradient(0, 0, 0, finalH)
   bg.addColorStop(0, '#fdf6ec')
   bg.addColorStop(0.5, '#faf0e4')
   bg.addColorStop(1, '#f5e6d3')
   ctx.fillStyle = bg
-  ctx.fillRect(0, 0, W, H)
+  ctx.fillRect(0, 0, W, finalH)
 
   // Subtle texture lines
   ctx.strokeStyle = 'rgba(157,79,20,0.04)'
   ctx.lineWidth = 1
-  for (let i = 0; i < H; i += 40) {
+  for (let i = 0; i < finalH; i += 40) {
     ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(W, i); ctx.stroke()
   }
 
@@ -118,7 +175,7 @@ function drawCard(canvas, entry, verseText, formattedDate) {
   ctx.beginPath(); ctx.moveTo(60, 105); ctx.lineTo(W - 60, 105); ctx.stroke()
 
   // Scripture reference pill
-  let cursorY = 150
+  cursorY = 150
   if (entry.scripture_reference) {
     const refText = entry.scripture_reference.toUpperCase()
     ctx.font = 'bold 20px Arial, sans-serif'
@@ -138,8 +195,8 @@ function drawCard(canvas, entry, verseText, formattedDate) {
   if (verseText) {
     ctx.fillStyle = '#2a1f14'
     ctx.font = 'italic 40px Georgia, serif'
-    const lines = wrapText(ctx, verseText, 60, cursorY, W - 120, 54, 4)
-    cursorY += lines * 54 + 16
+    wrapText(ctx, verseText, 60, cursorY, W - 120, 54)
+    cursorY += verseLines * 54 + 16
   }
 
   // Decorative underline after verse
@@ -153,24 +210,20 @@ function drawCard(canvas, entry, verseText, formattedDate) {
   if (entry.title) {
     ctx.fillStyle = '#7a4f28'
     ctx.font = '28px Arial, sans-serif'
-    wrapText(ctx, entry.title, 60, cursorY, W - 120, 38, 2)
-    cursorY += 56
+    wrapText(ctx, entry.title, 60, cursorY, W - 120, 38)
+    cursorY += (entry.title.split('\n').length || 1) * 38 + 16
   }
 
-  cursorY += 16
-
-  // 4H grid
-  const cellW = (W - 120 - 20) / 2
-  const cellH = 230
+  // 4H grid drawing
   const cols = [60, 60 + cellW + 20]
-  const rows = [cursorY, cursorY + cellH + 20]
   const pillarColors = ['#9d4f14', '#c0783a', '#7a4f28', '#4a7c59']
 
   PILLARS.forEach((pillar, i) => {
     const cx = cols[i % 2]
-    const cy = rows[Math.floor(i / 2)]
+    const cy = i < 2 ? gridRow1Y : gridRow2Y
+    const currentCellH = i < 2 ? cell1H : cell2H
 
-    roundRect(ctx, cx, cy, cellW, cellH, 16)
+    roundRect(ctx, cx, cy, cellW, currentCellH, 16)
     ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.65)' : 'rgba(253,246,236,0.8)'
     ctx.fill()
     ctx.strokeStyle = 'rgba(232,216,196,0.7)'
@@ -178,7 +231,7 @@ function drawCard(canvas, entry, verseText, formattedDate) {
     ctx.stroke()
 
     ctx.fillStyle = pillarColors[i]
-    roundRect(ctx, cx, cy, 5, cellH, 3)
+    roundRect(ctx, cx, cy, 5, currentCellH, 3)
     ctx.fill()
 
     const iconR = 22
@@ -204,7 +257,7 @@ function drawCard(canvas, entry, verseText, formattedDate) {
     ctx.font = '19px Arial, sans-serif'
     const content = entry[pillar.key] || ''
     if (content) {
-      wrapText(ctx, content, cx + 20, cy + 95, cellW - 30, 26, 4)
+      wrapText(ctx, content, cx + 20, cy + 95, cellW - 40, 26)
     } else {
       ctx.fillStyle = '#bfae9e'
       ctx.font = 'italic 19px Arial, sans-serif'
@@ -212,14 +265,10 @@ function drawCard(canvas, entry, verseText, formattedDate) {
     }
   })
 
-  const gridBottomY = rows[1] + cellH
-
   // Lingering thought
   if (entry.lingering_thought) {
-    const bannerY = gridBottomY + 32
-    const bannerH = 90
-    roundRect(ctx, 60, bannerY, W - 120, bannerH, 12)
-    const bannerGrad = ctx.createLinearGradient(60, bannerY, W - 60, bannerY)
+    roundRect(ctx, 60, lingeringY, W - 120, lingeringH, 12)
+    const bannerGrad = ctx.createLinearGradient(60, lingeringY, W - 60, lingeringY)
     bannerGrad.addColorStop(0, 'rgba(157,79,20,0.08)')
     bannerGrad.addColorStop(1, 'rgba(192,120,58,0.06)')
     ctx.fillStyle = bannerGrad
@@ -231,28 +280,26 @@ function drawCard(canvas, entry, verseText, formattedDate) {
     ctx.fillStyle = '#7a4f28'
     ctx.font = 'italic 24px Georgia, serif'
     ctx.textAlign = 'center'
-    wrapText(ctx, `"${entry.lingering_thought}"`, W / 2, bannerY + 38, W - 180, 32, 2)
+    wrapText(ctx, `"${entry.lingering_thought}"`, W / 2, lingeringY + 45, W - 180, 32)
     ctx.textAlign = 'left'
   }
 
   // Footer separator
   ctx.strokeStyle = '#e8d8c4'
   ctx.lineWidth = 1.5
-  ctx.beginPath(); ctx.moveTo(60, H - 80); ctx.lineTo(W - 60, H - 80); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(60, finalH - 80); ctx.lineTo(W - 60, finalH - 80); ctx.stroke()
 
   ctx.fillStyle = '#c0a080'
   ctx.font = '22px Arial, sans-serif'
-  ctx.fillText('4H Devotion · ECWA', 60, H - 46)
+  ctx.fillText('4H Devotion · ECWA', 60, finalH - 46)
   ctx.textAlign = 'right'
   ctx.fillStyle = '#9d4f14'
   ctx.font = 'bold 22px Georgia, serif'
-  ctx.fillText('✦ selah', W - 60, H - 46)
+  ctx.fillText('✦ selah', W - 60, finalH - 46)
   ctx.textAlign = 'left'
 
   ctx.fillStyle = topGrad
-  ctx.fillRect(0, H - 10, W, 10)
-}
-
+  ctx.fillRect(0, finalH - 10, W, 10)
 export default function DevotionCardModal({ entry, verseText, formattedDate, onClose }) {
   const canvasRef = useRef(null)
 
