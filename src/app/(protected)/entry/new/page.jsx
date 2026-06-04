@@ -227,19 +227,19 @@ export default function NewEntry() {
           />
         </div>
 
-        {verseText ? (
-          <p className="scripture-text">{verseText}</p>
-        ) : (
-          <p className="scripture-text" style={{ color: '#bbb', fontStyle: 'italic' }}>Loading verse...</p>
-        )}
-
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Give this entry a title..."
-          style={{ marginTop: '16px', background: 'transparent', border: 'none', borderBottom: '1px solid #e8ddd4', outline: 'none', width: '100%', fontSize: '1rem', color: '#555', padding: '6px 0', fontFamily: 'inherit' }}
+          style={{ background: 'transparent', border: 'none', borderBottom: '1px solid #e8ddd4', outline: 'none', width: '100%', fontSize: '1.8rem', fontWeight: 'bold', color: '#3d2a1a', padding: '6px 0', fontFamily: 'Georgia, serif', marginBottom: '24px' }}
         />
+
+        {verseText ? (
+          <p className="scripture-text" style={{ fontSize: '1.25rem', lineHeight: '1.6', color: '#555', fontStyle: 'italic', marginBottom: '16px' }}>{verseText}</p>
+        ) : (
+          <p className="scripture-text" style={{ fontSize: '1.25rem', lineHeight: '1.6', color: '#bbb', fontStyle: 'italic', marginBottom: '16px' }}>Loading verse...</p>
+        )}
       </div>
 
       <div className="quadrants-grid">
