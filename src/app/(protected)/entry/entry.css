@@ -131,6 +131,7 @@
   font-size: 0.95rem;
   position: relative;
   z-index: 2;
+  white-space: pre-wrap;
 }
 
 /* Scenic Banner */
@@ -538,6 +539,7 @@
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  white-space: pre-wrap;
 }
 .dcard-thought {
   margin: 4px 20px 16px;

@@ -9,25 +9,48 @@ const PILLARS = [
 ]
 
 function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
-  const words = (text || '').split(' ')
-  let line = ''
+  const paragraphs = (text || '').split('\n')
   let drawnLines = 0
 
-  for (let n = 0; n <= words.length; n++) {
-    const testLine = n < words.length ? line + words[n] + ' ' : line
-    if ((ctx.measureText(testLine).width > maxWidth && n > 0) || n === words.length) {
-      if (maxLines && drawnLines >= maxLines - 1 && n < words.length) {
-        const truncated = line.trimEnd()
-        ctx.fillText(truncated.length > 3 ? truncated.slice(0, -3) + '…' : truncated, x, y)
+  for (let p = 0; p < paragraphs.length; p++) {
+    const paragraph = paragraphs[p]
+    if (paragraph === '' && p < paragraphs.length - 1) {
+      // Empty line (double return)
+      y += lineHeight
+      drawnLines++
+      if (maxLines && drawnLines >= maxLines) break
+      continue
+    }
+
+    const words = paragraph.split(' ')
+    let line = ''
+
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + ' '
+      const testWidth = ctx.measureText(testLine).width
+
+      if (testWidth > maxWidth && n > 0) {
+        if (maxLines && drawnLines >= maxLines - 1) {
+          const truncated = line.trimEnd()
+          ctx.fillText(truncated.length > 3 ? truncated.slice(0, -3) + '…' : truncated, x, y)
+          drawnLines++
+          return drawnLines
+        }
+        ctx.fillText(line.trimEnd(), x, y)
         drawnLines++
-        break
+        y += lineHeight
+        line = words[n] + ' '
+        if (maxLines && drawnLines >= maxLines) return drawnLines
+      } else {
+        line = testLine
       }
+    }
+
+    if (line) {
       ctx.fillText(line.trimEnd(), x, y)
       drawnLines++
       y += lineHeight
-      line = n < words.length ? words[n] + ' ' : ''
-    } else {
-      line = testLine
+      if (maxLines && drawnLines >= maxLines) break
     }
   }
   return drawnLines
