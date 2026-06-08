@@ -24,7 +24,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://editorial-devotion.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://4h-devotional.vercel.app'),
   title: {
     template: '%s | Editorial Devotion',
     default: 'Editorial Devotion — Your 4H Quiet Time Sanctuary',

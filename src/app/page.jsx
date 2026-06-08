@@ -25,7 +25,7 @@ const websiteJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'Editorial Devotion',
-  url: 'https://editorial-devotion.vercel.app',
+  url: 'https://4h-devotional.vercel.app',
   description: 'Your 4H Quiet Time Sanctuary. Engage with God through the ECWA 4H framework: Head, Heart, Hand, Help.',
 };
 
@@ -33,8 +33,8 @@ const organizationJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Editorial Devotion',
-  url: 'https://editorial-devotion.vercel.app',
-  logo: 'https://editorial-devotion.vercel.app/icons/icon-512.png',
+  url: 'https://4h-devotional.vercel.app',
+  logo: 'https://4h-devotional.vercel.app/icons/icon-512.png',
   description: 'A digital sanctuary for daily selah using the 4H framework (Head, Heart, Hand, Help) for ECWA and global believers.',
 };
 

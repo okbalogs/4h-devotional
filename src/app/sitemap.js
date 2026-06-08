@@ -1,5 +1,5 @@
 export default function sitemap() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://editorial-devotion.vercel.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://4h-devotional.vercel.app';
   
   // Public crawlable pages
   const routes = [
