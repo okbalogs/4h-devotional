@@ -25,9 +25,10 @@ const playfair = Playfair_Display({
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://4h-devotional.vercel.app'),
+  applicationName: '4H Devotional',
   title: {
-    template: '%s | Editorial Devotion',
-    default: 'Editorial Devotion — Your 4H Quiet Time Sanctuary',
+    template: '%s | 4H Devotional',
+    default: '4H Devotional — Your Quiet Time Sanctuary',
   },
   description:
     "Engage with God through the ECWA 4H framework: Head, Heart, Hand, Help. A digital sanctuary for your daily selah.",
@@ -42,7 +43,7 @@ export const metadata = {
     "Bible Study Nigeria",
     "Devotional Tracker",
   ],
-  authors: [{ name: "Editorial Devotion Team" }],
+  authors: [{ name: "4H Devotional Team" }],
   verification: {
     google: 'Ykcg3U3qh9erCb9MXomRUBaPeGXaz7zIPXWlqyrScnw',
     other: {
@@ -50,16 +51,16 @@ export const metadata = {
     },
   },
   openGraph: {
-    title: 'Editorial Devotion — Your 4H Quiet Time Sanctuary',
+    title: '4H Devotional — Your Quiet Time Sanctuary',
     description: 'Engage with God through the ECWA 4H framework: Head, Heart, Hand, Help. A digital sanctuary for your daily selah.',
     url: '/',
-    siteName: 'Editorial Devotion',
+    siteName: '4H Devotional',
     images: [
       {
         url: '/icons/icon-512.png',
         width: 512,
         height: 512,
-        alt: 'Editorial Devotion Logo',
+        alt: '4H Devotional Logo',
       },
     ],
     locale: 'en_US',
@@ -67,14 +68,23 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Editorial Devotion — Your 4H Quiet Time Sanctuary',
+    title: '4H Devotional — Your Quiet Time Sanctuary',
     description: 'Engage with God through the ECWA 4H framework: Head, Heart, Hand, Help. A digital sanctuary for your daily selah.',
     images: ['/icons/icon-512.png'],
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Editorial Devotion",
+    title: "4H Devotional",
+  },
+  icons: {
+    icon: '/icons/icon-192.png',
+    shortcut: '/icons/icon-192.png',
+    apple: '/icons/icon-192.png',
+    other: {
+      rel: 'apple-touch-icon-precomposed',
+      url: '/icons/icon-192.png',
+    },
   },
 };
 
@@ -92,6 +102,18 @@ export default function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} antialiased`}>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "4H Devotional",
+              "alternateName": "4H Devotion Tracker",
+              "url": "https://4h-devotional.vercel.app/"
+            })
+          }}
+        />
         {/* Prevent flash of wrong theme on load */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t)})()` }} />
       </head>
