@@ -21,6 +21,25 @@ const DEMO_PROMPTS = {
 }
 const DEMO_VERSE = 'Psalm 46:10 — "Be still, and know that I am God."'
 
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Editorial Devotion',
+  url: 'https://editorial-devotion.vercel.app',
+  description: 'Your 4H Quiet Time Sanctuary. Engage with God through the ECWA 4H framework: Head, Heart, Hand, Help.',
+};
+
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Editorial Devotion',
+  url: 'https://editorial-devotion.vercel.app',
+  logo: 'https://editorial-devotion.vercel.app/icons/icon-512.png',
+  description: 'A digital sanctuary for daily selah using the 4H framework (Head, Heart, Hand, Help) for ECWA and global believers.',
+};
+
+const jsonLd = [websiteJsonLd, organizationJsonLd];
+
 export default function Landing() {
   const pillarsRef = useScrollReveal()
   const ctaRef = useScrollReveal()
@@ -33,6 +52,12 @@ export default function Landing() {
 
   return (
     <main>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
+        }}
+      />
       {/* ─── HERO ─── */}
       <section className="hero-section">
         <div className="hero-text">

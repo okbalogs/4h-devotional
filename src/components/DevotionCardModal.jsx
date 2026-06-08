@@ -300,6 +300,8 @@ function drawCard(canvas, entry, verseText, formattedDate) {
 
   ctx.fillStyle = topGrad
   ctx.fillRect(0, finalH - 10, W, 10)
+}
+
 export default function DevotionCardModal({ entry, verseText, formattedDate, onClose }) {
   const canvasRef = useRef(null)
 

@@ -24,12 +24,47 @@ const playfair = Playfair_Display({
 });
 
 export const metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://editorial-devotion.vercel.app'),
   title: {
     template: '%s | Editorial Devotion',
     default: 'Editorial Devotion — Your 4H Quiet Time Sanctuary',
   },
   description:
     "Engage with God through the ECWA 4H framework: Head, Heart, Hand, Help. A digital sanctuary for your daily selah.",
+  keywords: [
+    "ECWA",
+    "Quiet Time",
+    "4H Framework",
+    "Daily Devotion",
+    "Selah",
+    "Head Heart Hand Help",
+    "Christian Journal",
+    "Bible Study Nigeria",
+    "Devotional Tracker",
+  ],
+  authors: [{ name: "Editorial Devotion Team" }],
+  openGraph: {
+    title: 'Editorial Devotion — Your 4H Quiet Time Sanctuary',
+    description: 'Engage with God through the ECWA 4H framework: Head, Heart, Hand, Help. A digital sanctuary for your daily selah.',
+    url: '/',
+    siteName: 'Editorial Devotion',
+    images: [
+      {
+        url: '/icons/icon-512.png',
+        width: 512,
+        height: 512,
+        alt: 'Editorial Devotion Logo',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Editorial Devotion — Your 4H Quiet Time Sanctuary',
+    description: 'Engage with God through the ECWA 4H framework: Head, Heart, Hand, Help. A digital sanctuary for your daily selah.',
+    images: ['/icons/icon-512.png'],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
