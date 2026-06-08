@@ -45,6 +45,9 @@ export const metadata = {
   authors: [{ name: "Editorial Devotion Team" }],
   verification: {
     google: 'Ykcg3U3qh9erCb9MXomRUBaPeGXaz7zIPXWlqyrScnw',
+    other: {
+      'msvalidate.01': '1FEA02B66374EDE7B489A87F535D4982',
+    },
   },
   openGraph: {
     title: 'Editorial Devotion — Your 4H Quiet Time Sanctuary',
