@@ -212,7 +212,10 @@ function GroupDetail({ group: initialGroup, user, role, memberCounts, onClose, o
   const [editData, setEditData] = useState({ description: initialGroup.description || '', meeting_schedule: initialGroup.meeting_schedule || '' })
   const [loadingMsgs, setLoadingMsgs] = useState(true)
   const [removingMember, setRemovingMember] = useState(null)
+  const [typingUsers, setTypingUsers] = useState([])
   const messagesEndRef = useRef(null)
+  const channelRef = useRef(null)
+  const typingTimeoutRef = useRef(null)
 
   const userName = user?.user_metadata?.full_name || 'Devotee'
   const isLeader = role === 'leader'
@@ -239,11 +242,13 @@ function GroupDetail({ group: initialGroup, user, role, memberCounts, onClose, o
       .then(({ data }) => { setMessages(data || []); setLoadingMsgs(false) })
   }, [group.id, isMember])
 
-  // Realtime: new messages appear live for all members
+  // Realtime: new messages appear live for all members, plus typing indicators
   useEffect(() => {
     if (!isMember) return
-    const channel = supabase
-      .channel(`group-msgs-${group.id}`)
+    const channel = supabase.channel(`group-msgs-${group.id}`)
+    channelRef.current = channel
+
+    channel
       .on('postgres_changes', {
         event: 'INSERT', schema: 'public', table: 'group_messages',
         filter: `group_id=eq.${group.id}`,
@@ -253,13 +258,26 @@ function GroupDetail({ group: initialGroup, user, role, memberCounts, onClose, o
           prev.some(m => m.id === payload.new.id) ? prev : [...prev, payload.new]
         )
       })
+      .on('broadcast', { event: 'typing' }, (payload) => {
+        const { userName: typingUser, isTyping } = payload.payload
+        if (typingUser === userName) return // ignore own typing
+        if (isTyping) {
+          setTypingUsers(prev => prev.includes(typingUser) ? prev : [...prev, typingUser])
+        } else {
+          setTypingUsers(prev => prev.filter(u => u !== typingUser))
+        }
+      })
       .subscribe()
-    return () => supabase.removeChannel(channel)
-  }, [group.id, isMember])
+      
+    return () => {
+      supabase.removeChannel(channel)
+      channelRef.current = null
+    }
+  }, [group.id, isMember, userName])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, typingUsers])
 
   const postMessage = async () => {
     if (!newMsg.trim()) return
@@ -274,10 +292,44 @@ function GroupDetail({ group: initialGroup, user, role, memberCounts, onClose, o
     if (msg) setMessages(prev => [...prev, msg])
     setNewMsg('')
     setPosting(false)
+    
+    // Clear own typing state immediately
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
+    if (channelRef.current) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: { userName, isTyping: false }
+      })
+    }
+
     // Notify other members (cap at 15 to avoid spam)
     const others = members.filter(m => m.user_id !== user.id).slice(0, 15)
     for (const m of others) {
       notifyUser(m.user_id, 'group_message', `💬 ${group.name}`, `${userName}: ${content.slice(0, 60)}`, '/community?tab=groups')
+    }
+  }
+
+  const handleTyping = (e) => {
+    setNewMsg(e.target.value)
+    
+    if (channelRef.current) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: { userName, isTyping: true }
+      })
+
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
+      typingTimeoutRef.current = setTimeout(() => {
+        if (channelRef.current) {
+          channelRef.current.send({
+            type: 'broadcast',
+            event: 'typing',
+            payload: { userName, isTyping: false }
+          })
+        }
+      }, 2000)
     }
   }
 
@@ -402,11 +454,16 @@ function GroupDetail({ group: initialGroup, user, role, memberCounts, onClose, o
                 </div>
               ))
             )}
+            {typingUsers.length > 0 && (
+              <div style={{ fontSize: '0.85rem', color: 'var(--clr-text-muted)', padding: '4px 12px', fontStyle: 'italic' }}>
+                {typingUsers.join(', ')} {typingUsers.length > 1 ? 'are' : 'is'} typing...
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
           <div className="group-msg-form">
             <input className="input-soft" placeholder="Write a message…"
-              value={newMsg} onChange={e => setNewMsg(e.target.value)}
+              value={newMsg} onChange={handleTyping}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); postMessage() } }} />
             <button className="today-begin-btn"
               style={{ padding: '10px 18px', fontSize: '0.85rem', marginTop: 0, flexShrink: 0 }}

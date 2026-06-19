@@ -53,7 +53,6 @@ export default function ReadingRecord() {
   useEffect(() => {
     if (!isEditing || !draft) return
     const hasChanges = entry && (
-      draft.title !== (entry.title ?? '') ||
       draft.scripture_reference !== (entry.scripture_reference ?? '') ||
       draft.hear !== (entry.hear ?? '') ||
       draft.heed !== (entry.heed ?? '') ||
@@ -91,7 +90,6 @@ export default function ReadingRecord() {
 
   const startEditing = () => {
     setDraft({
-      title: entry.title ?? '',
       scripture_reference: entry.scripture_reference ?? '',
       hear: entry.hear ?? '',
       heed: entry.heed ?? '',
@@ -238,17 +236,6 @@ export default function ReadingRecord() {
             entry.scripture_reference && <span className="verse-ref">{entry.scripture_reference}</span>
           )}
         </div>
-        {isEditing ? (
-          <input
-            type="text"
-            value={draft.title}
-            onChange={set('title')}
-            placeholder="Entry title…"
-            style={{ fontFamily: 'Georgia, serif', fontSize: '1.8rem', lineHeight: 1.15, color: '#3d2a1a', background: 'transparent', border: 'none', borderBottom: '1.5px solid #e8d8c4', outline: 'none', width: '100%', padding: '4px 0', marginBottom: '24px', fontWeight: 'bold' }}
-          />
-        ) : (
-          entry.title && <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '1.8rem', color: '#3d2a1a', fontWeight: 'bold', marginBottom: '24px' }}>{entry.title}</h2>
-        )}
 
         {verseText && <p className="scripture-text" style={{ fontSize: '1.25rem', lineHeight: '1.6', color: '#555', fontStyle: 'italic', marginBottom: '16px' }}>{verseText}</p>}
       </div>

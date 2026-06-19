@@ -19,7 +19,6 @@ export default function NewEntry() {
     month: 'long', day: 'numeric', year: 'numeric'
   })
 
-  const [title, setTitle] = useState('')
   const [scriptureRef, setScriptureRef] = useState('')
   const [verseText, setVerseText] = useState('')
 
@@ -60,7 +59,6 @@ export default function NewEntry() {
       const saved = localStorage.getItem(DRAFT_KEY)
       if (saved) {
         const draft = JSON.parse(saved)
-        if (draft.title) setTitle(draft.title)
         if (draft.scriptureRef) setScriptureRef(draft.scriptureRef)
         if (draft.hear) setHear(draft.hear)
         if (draft.heed) setHeed(draft.heed)
@@ -74,7 +72,7 @@ export default function NewEntry() {
 
   // Unsaved changes protection
   useEffect(() => {
-    const hasContent = [hear, heed, hold, help, title, scriptureRef, lingeringThought].some(v => v && v.trim())
+    const hasContent = [hear, heed, hold, help, scriptureRef, lingeringThought].some(v => v && v.trim())
     const handler = (e) => {
       if (hasContent) {
         e.preventDefault()
@@ -85,12 +83,12 @@ export default function NewEntry() {
       window.addEventListener('beforeunload', handler)
     }
     return () => window.removeEventListener('beforeunload', handler)
-  }, [hear, heed, hold, help, title, scriptureRef, lingeringThought])
+  }, [hear, heed, hold, help, scriptureRef, lingeringThought])
 
   // Auto-save to localStorage every 2 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
-      const fields = { title, scriptureRef, hear, heed, hold, help, lingeringThought }
+      const fields = { scriptureRef, hear, heed, hold, help, lingeringThought }
       const hasContent = Object.values(fields).some(v => v && v.trim())
       if (hasContent) {
         localStorage.setItem(DRAFT_KEY, JSON.stringify(fields))
@@ -99,11 +97,10 @@ export default function NewEntry() {
       }
     }, 2000)
     return () => clearTimeout(timer)
-  }, [title, scriptureRef, hear, heed, hold, help, lingeringThought])
+  }, [scriptureRef, hear, heed, hold, help, lingeringThought])
 
   const entryPayload = () => ({
     user_id: user.id,
-    title,
     scripture_reference: scriptureRef,
     verse_text: verseText,
     hear,
@@ -178,7 +175,7 @@ export default function NewEntry() {
       {draftRestored && (
         <div style={{ background: 'var(--clr-card)', padding: '10px 16px', borderRadius: '8px', fontSize: '0.85rem', color: 'var(--clr-text-muted)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <span className="flex items-center gap-2"><FileText size={16} /> Draft restored from your last session</span>
-          <button onClick={() => { setTitle(''); setScriptureRef(''); setHear(''); setHeed(''); setHold(''); setHelp(''); setLingeringThought(''); localStorage.removeItem(DRAFT_KEY); setDraftRestored(false) }} style={{ background: 'none', border: 'none', color: 'var(--clr-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem' }}>Discard</button>
+          <button onClick={() => { setScriptureRef(''); setHear(''); setHeed(''); setHold(''); setHelp(''); setLingeringThought(''); localStorage.removeItem(DRAFT_KEY); setDraftRestored(false) }} style={{ background: 'none', border: 'none', color: 'var(--clr-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem' }}>Discard</button>
         </div>
       )}
 
@@ -228,13 +225,7 @@ export default function NewEntry() {
           />
         </div>
 
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Give this entry a title..."
-          style={{ background: 'transparent', border: 'none', borderBottom: '1px solid #e8ddd4', outline: 'none', width: '100%', fontSize: '1.8rem', fontWeight: 'bold', color: '#3d2a1a', padding: '6px 0', fontFamily: 'Georgia, serif', marginBottom: '24px' }}
-        />
+
 
         {verseText ? (
           <p className="scripture-text" style={{ fontSize: '1.25rem', lineHeight: '1.6', color: '#555', fontStyle: 'italic', marginBottom: '16px' }}>{verseText}</p>

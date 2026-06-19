@@ -49,7 +49,7 @@ export default function DailyArchives() {
 
     supabase
       .from('entries')
-      .select('id, title, scripture_reference, hear, created_at')
+      .select('id, scripture_reference, hear, created_at')
       .eq('user_id', user.id)
       .gte('created_at', start)
       .lte('created_at', end)
@@ -220,7 +220,7 @@ export default function DailyArchives() {
                   <span className="reference-pill">{entry.scripture_reference}</span>
                 )}
               </div>
-              <h3 className={entry.title ? '' : 'entry-title--untitled'}>{entry.title || 'Untitled Entry'}</h3>
+
               {entry.hear && (
                 <div className="entry-summary">
                   <span className="summary-label">HEAR (SUMMARY)</span>
