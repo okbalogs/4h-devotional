@@ -2,7 +2,7 @@
 
 /* ─── VARIABLES ─── */
 :root {
-  --font-serif: var(--font-playfair), Georgia, "Times New Roman", serif;
+  --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
   --clr-primary: #9d4f14;
   --clr-primary-hover: #df9f38;
   --clr-accent: #6b3410;
@@ -440,7 +440,7 @@ html {
 body {
   background: var(--clr-cream);
   color: var(--clr-text);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-lora), Georgia, "Times New Roman", serif;
   font-size: 1rem;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { getTodayVerseForUser, getJourneyDay, getGreeting, getStreakAndCount } from '@/utils/dailyVerse'
 import BadgeModal, { getNewBadge } from '@/components/BadgeModal'
+import { BookOpen, Heart, Hand, Handshake, Flame, BookDashed, Sparkles } from 'lucide-react'
 import './today.css'
 
 const H4_PILLARS = [
@@ -11,28 +12,28 @@ const H4_PILLARS = [
     key: 'hear',
     label: 'Head',
     sub: 'What does the Word say?',
-    icon: '📖',
+    icon: <BookOpen size={24} />,
     color: 'var(--clr-primary)',
   },
   {
     key: 'heed',
     label: 'Heart',
     sub: 'What does it mean for me?',
-    icon: '❤️',
+    icon: <Heart size={24} />,
     color: '#c0783a',
   },
   {
     key: 'hold',
     label: 'Hand',
     sub: 'What will I do today?',
-    icon: '✋',
+    icon: <Hand size={24} />,
     color: '#7a4f28',
   },
   {
     key: 'help',
     label: 'Help',
     sub: 'Who can I share this with?',
-    icon: '🤝',
+    icon: <Handshake size={24} />,
     color: '#4a7c59',
   },
 ]
@@ -104,7 +105,7 @@ export default function Today() {
       {/* ── Verse Card ── */}
       <div className="today-verse-card">
         <div className="today-verse-card-inner">
-          <span className="today-verse-glyph">✦</span>
+          <span className="today-verse-glyph"><Sparkles size={24} className="mx-auto text-[#9d4f14] opacity-50" /></span>
 
           {verseLoading ? (
             <div className="today-verse-skeleton">
@@ -162,7 +163,7 @@ export default function Today() {
       {/* ── Quick Stats ── */}
       <div className="today-stats-row">
         <div className="today-stat">
-          <span className="today-stat-icon">🔥</span>
+          <span className="today-stat-icon flex items-center justify-center"><Flame size={20} /></span>
           <div>
             <strong className="today-stat-val">
               {streak === null ? '—' : streak}
@@ -172,7 +173,7 @@ export default function Today() {
         </div>
         <div className="today-stat-divider" />
         <div className="today-stat">
-          <span className="today-stat-icon">📓</span>
+          <span className="today-stat-icon flex items-center justify-center"><BookDashed size={20} /></span>
           <div>
             <strong className="today-stat-val">
               {totalEntries === null ? '—' : totalEntries}
@@ -182,7 +183,7 @@ export default function Today() {
         </div>
         <div className="today-stat-divider" />
         <div className="today-stat">
-          <span className="today-stat-icon">✦</span>
+          <span className="today-stat-icon flex items-center justify-center"><Sparkles size={20} /></span>
           <div>
             <strong className="today-stat-val">Day {journeyDay ?? '—'}</strong>
             <span className="today-stat-label">of your journey</span>

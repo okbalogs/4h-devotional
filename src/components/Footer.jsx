@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { BookOpen, GraduationCap, Handshake, MessageCircle } from "lucide-react"
 
 export default function Footer() {
   return (
@@ -48,19 +49,19 @@ export default function Footer() {
 
         <div className="footer-mobile-nav">
           <Link href="/explore" className="footer-mobile-link">
-            <span className="footer-mobile-link-icon">📖</span>
+            <span className="footer-mobile-link-icon flex items-center justify-center"><BookOpen size={16} /></span>
             Explore
           </Link>
           <Link href="/courses" className="footer-mobile-link">
-            <span className="footer-mobile-link-icon">🎓</span>
+            <span className="footer-mobile-link-icon flex items-center justify-center"><GraduationCap size={16} /></span>
             Courses
           </Link>
           <Link href="/fellowship" className="footer-mobile-link">
-            <span className="footer-mobile-link-icon">🤝</span>
+            <span className="footer-mobile-link-icon flex items-center justify-center"><Handshake size={16} /></span>
             Fellowship
           </Link>
           <Link href="/support" className="footer-mobile-link">
-            <span className="footer-mobile-link-icon">💬</span>
+            <span className="footer-mobile-link-icon flex items-center justify-center"><MessageCircle size={16} /></span>
             Support
           </Link>
         </div>

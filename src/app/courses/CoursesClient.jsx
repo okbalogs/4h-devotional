@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { Search, Clock, BookOpen } from 'lucide-react'
 
 const courses = [
   {
@@ -118,7 +119,7 @@ export default function CoursesClient() {
       {/* ─── CONTROLS (SEARCH & FILTERS) ─── */}
       <div className="course-controls">
         <div className="course-search-container">
-          <span className="course-search-icon">🔍</span>
+          <span className="course-search-icon flex items-center justify-center"><Search size={16} /></span>
           <input
             type="text"
             className="course-search-input"
@@ -165,7 +166,7 @@ export default function CoursesClient() {
                   </div>
                   <p className="course-desc">{desc}</p>
                   <div className="course-footer">
-                    <span className="course-duration">⏱️ {duration}</span>
+                    <span className="course-duration flex items-center gap-1"><Clock size={14} /> {duration}</span>
                     <button onClick={() => handleView(title)} className="course-view-btn">
                       View Course <span>→</span>
                     </button>
@@ -183,7 +184,7 @@ export default function CoursesClient() {
               maxWidth: '600px',
               margin: '0 auto',
             }}>
-              <p style={{ fontSize: '2.5rem', margin: '0 0 16px' }}>📖</p>
+              <div className="flex justify-center mb-4"><BookOpen size={48} className="text-[#9d4f14]" /></div>
               <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.3rem', color: 'var(--clr-dark)', marginBottom: '8px' }}>No Courses Found</h3>
               <p style={{ color: 'var(--clr-text-muted)', fontSize: '0.92rem', margin: 0 }}>
                 We couldn't find any courses matching your search criteria. Try modifying your search keywords or choosing a different category.

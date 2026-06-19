@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect } from 'react'
+import { Smartphone } from 'lucide-react'
 
 export default function InstallPopup() {
   const [prompt, setPrompt] = useState(null)
@@ -58,8 +59,8 @@ export default function InstallPopup() {
       </div>
 
       <div className="pwa-popup-actions">
-        <button className="pwa-popup-btn-install" onClick={handleInstall}>
-          Install Now 📲
+        <button className="pwa-popup-btn-install flex items-center justify-center gap-1" onClick={handleInstall}>
+          Install Now <Smartphone size={16} />
         </button>
         <button className="pwa-popup-btn-dismiss" onClick={handleDismiss}>
           Maybe later

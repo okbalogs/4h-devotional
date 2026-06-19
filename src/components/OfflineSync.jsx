@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/utils/supabase'
 import { useAuth } from '@/context/AuthContext'
 import { getPendingEntries, removePendingEntry } from '@/utils/offlineStorage'
+import { RefreshCcw, CheckCircle2, AlertTriangle, X } from 'lucide-react'
 
 export default function OfflineSync() {
   const { user } = useAuth()
@@ -61,15 +62,15 @@ export default function OfflineSync() {
   if (status === 'idle') return null
 
   const label =
-    status === 'syncing' ? `🔄 Syncing ${syncCount} offline ${syncCount === 1 ? 'entry' : 'entries'}…` :
-    status === 'done'    ? `✓ ${syncCount} ${syncCount === 1 ? 'entry' : 'entries'} synced to your account` :
-                           '⚠️ Some entries failed to sync — will retry when online.'
+    status === 'syncing' ? <span className="flex items-center gap-1"><RefreshCcw size={14} className="animate-spin" /> Syncing {syncCount} offline {syncCount === 1 ? 'entry' : 'entries'}…</span> :
+    status === 'done'    ? <span className="flex items-center gap-1"><CheckCircle2 size={14} /> {syncCount} {syncCount === 1 ? 'entry' : 'entries'} synced to your account</span> :
+                           <span className="flex items-center gap-1"><AlertTriangle size={14} /> Some entries failed to sync — will retry when online.</span>
 
   return (
     <div className={`sync-toast sync-toast--${status}`}>
       <span>{label}</span>
       {(status === 'done' || status === 'error') && (
-        <button className="sync-toast-close" onClick={() => setStatus('idle')} aria-label="Dismiss">✕</button>
+        <button className="sync-toast-close flex items-center justify-center" onClick={() => setStatus('idle')} aria-label="Dismiss"><X size={14} /></button>
       )}
     </div>
   )

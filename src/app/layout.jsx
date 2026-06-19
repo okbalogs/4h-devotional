@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import { Fraunces, Lora } from "next/font/google";
 import "./globals.css";
 import ShellWrapper from "@/components/ShellWrapper";
 import { AuthProvider } from "@/context/AuthContext";
@@ -7,18 +7,15 @@ import InstallPopup from "@/components/InstallPopup";
 import ChangelogModal from "@/components/ChangelogModal";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const lora = Lora({
+  variable: "--font-lora",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  axes: ["SOFT", "WONK", "opsz"],
   subsets: ["latin"],
   display: "swap",
 });
@@ -99,7 +96,7 @@ export default function RootLayout({ children }) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} antialiased`}>
+      className={`${lora.variable} ${fraunces.variable} antialiased`}>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <script

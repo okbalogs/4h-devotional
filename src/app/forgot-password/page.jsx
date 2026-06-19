@@ -2,6 +2,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useAuth } from "@/context/AuthContext"
+import { Key, Mail } from "lucide-react"
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("")
@@ -40,7 +41,7 @@ export default function ForgotPassword() {
         <div className="auth-card" style={{ animation: "fadeIn 0.5s ease" }}>
           <div className="auth-icon">
              <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--clr-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--clr-primary)', fontSize: '1.4rem'}}>
-               🔑
+               <Key size={24} />
              </div>
           </div>
           <h1>Reset Password</h1>
@@ -55,7 +56,7 @@ export default function ForgotPassword() {
             <div className="auth-field">
               <label htmlFor="email">EMAIL ADDRESS</label>
               <div className="auth-input-wrap">
-                <span className="auth-input-icon auth-input-icon--left">✉️</span>
+                <span className="auth-input-icon auth-input-icon--left flex items-center justify-center"><Mail size={16} /></span>
                 <input
                   id="email"
                   type="email"

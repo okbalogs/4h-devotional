@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext'
 import { getTodayVerseForUser } from '@/utils/dailyVerse'
 import { queueEntry } from '@/utils/offlineStorage'
 import { notifyUser } from '@/utils/pushManager'
+import { BookOpen, Heart, Hand, Handshake, FileText } from 'lucide-react'
 
 const DRAFT_KEY = 'devotion_draft'
 
@@ -153,7 +154,7 @@ export default function NewEntry() {
           .single()
         if (ap) {
           const partnerId = ap.requester_id === user.id ? ap.partner_id : ap.requester_id
-          if (partnerId) notifyUser(partnerId, 'note', '📖 Devotion note shared', `${senderName} shared a lingering thought with you`, '/community?tab=partners')
+          if (partnerId) notifyUser(partnerId, 'note', 'Devotion note shared', `${senderName} shared a lingering thought with you`, '/community?tab=partners')
         }
       }
 
@@ -176,7 +177,7 @@ export default function NewEntry() {
     <div className="entry-page">
       {draftRestored && (
         <div style={{ background: 'var(--clr-card)', padding: '10px 16px', borderRadius: '8px', fontSize: '0.85rem', color: 'var(--clr-text-muted)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <span>📝 Draft restored from your last session</span>
+          <span className="flex items-center gap-2"><FileText size={16} /> Draft restored from your last session</span>
           <button onClick={() => { setTitle(''); setScriptureRef(''); setHear(''); setHeed(''); setHold(''); setHelp(''); setLingeringThought(''); localStorage.removeItem(DRAFT_KEY); setDraftRestored(false) }} style={{ background: 'none', border: 'none', color: 'var(--clr-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem' }}>Discard</button>
         </div>
       )}
@@ -245,7 +246,7 @@ export default function NewEntry() {
       <div className="quadrants-grid">
         <div className="quadrant-card">
           <div className="q-header">
-            <span className="q-icon">⚙️</span>
+            <span className="q-icon flex items-center justify-center"><BookOpen size={20} /></span>
             <h3 className="q-title">Head</h3>
           </div>
           <textarea
@@ -258,7 +259,7 @@ export default function NewEntry() {
 
         <div className="quadrant-card">
           <div className="q-header">
-            <span className="q-icon">🤎</span>
+            <span className="q-icon flex items-center justify-center"><Heart size={20} /></span>
             <h3 className="q-title">Heart</h3>
           </div>
           <textarea
@@ -271,7 +272,7 @@ export default function NewEntry() {
 
         <div className="quadrant-card">
           <div className="q-header">
-            <span className="q-icon">✋</span>
+            <span className="q-icon flex items-center justify-center"><Hand size={20} /></span>
             <h3 className="q-title">Hand</h3>
           </div>
           <textarea
@@ -284,7 +285,7 @@ export default function NewEntry() {
 
         <div className="quadrant-card">
           <div className="q-header">
-            <span className="q-icon">🤲</span>
+            <span className="q-icon flex items-center justify-center"><Handshake size={20} /></span>
             <h3 className="q-title">Help</h3>
           </div>
           <textarea

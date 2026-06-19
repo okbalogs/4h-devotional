@@ -1,10 +1,11 @@
 "use client"
 import { useTheme } from './ThemeProvider'
+import { Sun, ScrollText, Moon } from 'lucide-react'
 
 const themes = [
-  { key: 'light', label: 'Light', icon: '☀️' },
-  { key: 'sepia', label: 'Sepia', icon: '📜' },
-  { key: 'dark',  label: 'Dark',  icon: '🌙' },
+  { key: 'light', label: 'Light', icon: <Sun size={18} /> },
+  { key: 'sepia', label: 'Sepia', icon: <ScrollText size={18} /> },
+  { key: 'dark',  label: 'Dark',  icon: <Moon size={18} /> },
 ]
 
 export default function ThemeToggle() {

@@ -6,6 +6,7 @@ import { supabase } from '@/utils/supabase'
 import { useAuth } from '@/context/AuthContext'
 import { notifyUser } from '@/utils/pushManager'
 import DevotionCardModal from '@/components/DevotionCardModal'
+import { Pencil, BookOpen, Heart, Hand, Handshake, Download, Trash2 } from 'lucide-react'
 
 export default function ReadingRecord() {
   const { id } = useParams()
@@ -146,7 +147,7 @@ export default function ReadingRecord() {
         .single()
       if (ap) {
         const partnerId = ap.requester_id === user.id ? ap.partner_id : ap.requester_id
-        if (partnerId) notifyUser(partnerId, 'note', '📖 Devotion note shared', `${senderName} shared a lingering thought with you`, '/community?tab=partners')
+        if (partnerId) notifyUser(partnerId, 'note', 'Devotion note shared', `${senderName} shared a lingering thought with you`, '/community?tab=partners')
       }
     }
   }
@@ -212,7 +213,7 @@ export default function ReadingRecord() {
             </>
           ) : (
             <>
-              <button className="action-icon-btn" onClick={startEditing} title="Edit entry">✏️</button>
+              <button className="action-icon-btn flex items-center justify-center" onClick={startEditing} title="Edit entry"><Pencil size={18} /></button>
               <button className="user-profile-btn" style={{ background: 'none', border: 'none' }} onClick={() => router.push('/history')}>
                 ← Back
               </button>
@@ -254,14 +255,14 @@ export default function ReadingRecord() {
 
       <div className="quadrants-grid">
         {[
-          { key: 'hear', icon: '⚙️', label: 'Head' },
-          { key: 'heed', icon: '🤎', label: 'Heart' },
-          { key: 'hold', icon: '✋', label: 'Hand' },
-          { key: 'help', icon: '🤲', label: 'Help' },
+          { key: 'hear', icon: <BookOpen size={20} />, label: 'Head' },
+          { key: 'heed', icon: <Heart size={20} />, label: 'Heart' },
+          { key: 'hold', icon: <Hand size={20} />, label: 'Hand' },
+          { key: 'help', icon: <Handshake size={20} />, label: 'Help' },
         ].map(({ key, icon, label }) => (
           <div key={key} className="quadrant-card">
             <div className="q-header">
-              <span className="q-icon">{icon}</span>
+              <span className="q-icon flex items-center justify-center">{icon}</span>
               <h3 className="q-title">{label}</h3>
             </div>
             {isEditing ? (
@@ -297,13 +298,13 @@ export default function ReadingRecord() {
       <div className="entry-actions">
         <div className="entry-actions-left">
           {!isEditing && (
-            <button className="btn-export" onClick={() => setShowCard(true)} title="Download card">
-              <span>⬇</span> Download Card
+            <button className="btn-export flex items-center gap-2" onClick={() => setShowCard(true)} title="Download card">
+              <Download size={16} /> Download Card
             </button>
           )}
           {!isEditing && activePartnership && entry.lingering_thought && (
-            <button className="btn-export" onClick={handleShareNote} title="Share with partner" disabled={sharedNote}>
-              <span>🤝</span> {sharedNote ? 'Shared!' : 'Share with Partner'}
+            <button className="btn-export flex items-center gap-2" onClick={handleShareNote} title="Share with partner" disabled={sharedNote}>
+              <Handshake size={16} /> {sharedNote ? 'Shared!' : 'Share with Partner'}
             </button>
           )}
         </div>
@@ -315,7 +316,7 @@ export default function ReadingRecord() {
               disabled={deleting}
               title="Delete entry"
             >
-              🗑️
+              <Trash2 size={18} />
             </button>
           )}
         </div>

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/utils/supabase'
 import { subscribeToPush, notifyUser } from '@/utils/pushManager'
+import { Heart, Church, Pencil, Calendar, BookOpen, Clock, Zap, Star, Hand, Handshake, Bell } from 'lucide-react'
 import './community.css'
 
 const CITIES = ['Lagos', 'Abuja', 'Port Harcourt', 'Kano', 'Ibadan', 'Enugu', 'Kaduna', 'Benin City']
@@ -103,7 +104,7 @@ function PrayerTab({ user }) {
 
       const req = requests.find(r => r.id === requestId)
       if (req && req.user_id !== user.id) {
-        notifyUser(req.user_id, 'prayer_prayed', '🙏 Someone prayed', `${userName} prayed for your request`, '/community?tab=prayer')
+        notifyUser(req.user_id, 'prayer_prayed', 'Someone prayed', `${userName} prayed for your request`, '/community?tab=prayer')
       }
     }
   }
@@ -154,7 +155,7 @@ function PrayerTab({ user }) {
         </div>
       ) : requests.length === 0 ? (
         <div className="community-empty">
-          <span className="community-empty-icon">🙏</span>
+          <span className="community-empty-icon flex items-center justify-center"><Heart size={48} /></span>
           No prayer requests yet. Be the first to share.
         </div>
       ) : (
@@ -167,8 +168,8 @@ function PrayerTab({ user }) {
             return (
               <div key={req.id} className="prayer-card">
                 <div className="prayer-card-head">
-                  <div className={`prayer-avatar ${req.is_anonymous ? 'prayer-avatar--anon' : ''}`}>
-                    {req.is_anonymous ? '🙏' : nameInitials(displayName)}
+                  <div className={`prayer-avatar ${req.is_anonymous ? 'prayer-avatar--anon' : ''} flex items-center justify-center`}>
+                    {req.is_anonymous ? <Heart size={16} /> : nameInitials(displayName)}
                   </div>
                   <div className="prayer-card-meta">
                     <span className="prayer-poster">{displayName}</span>
@@ -178,10 +179,10 @@ function PrayerTab({ user }) {
                 <p className="prayer-content">{req.content}</p>
                 <div className="prayer-card-foot">
                   <button
-                    className={`pray-btn ${prayed ? 'pray-btn--prayed' : ''}`}
+                    className={`pray-btn flex items-center justify-center gap-1 ${prayed ? 'pray-btn--prayed' : ''}`}
                     onClick={() => togglePray(req.id)}
                   >
-                    🙏 {prayed ? 'Prayed' : 'I prayed'}{count > 0 && ` · ${count}`}
+                    <Heart size={16} /> {prayed ? 'Prayed' : 'I prayed'}{count > 0 && ` · ${count}`}
                   </button>
                   {req.user_id === user.id && (
                     <button className="prayer-delete-btn" onClick={() => deletePrayer(req.id)}>
@@ -310,15 +311,15 @@ function GroupDetail({ group: initialGroup, user, role, memberCounts, onClose, o
 
       {/* Header */}
       <div className="group-detail-head">
-        <div className="group-detail-icon">⛪</div>
+        <div className="group-detail-icon flex items-center justify-center"><Church size={48} /></div>
         <div className="group-detail-info">
           <h2 className="group-detail-name">{group.name}</h2>
           {group.church && <p className="group-detail-church">{group.church}</p>}
           <p className="group-detail-city">{group.city.toUpperCase()}</p>
         </div>
         {isLeader && (
-          <button className="group-edit-toggle" onClick={() => setEditing(v => !v)}>
-            {editing ? 'Cancel' : '✏️'}
+          <button className="group-edit-toggle flex items-center justify-center" onClick={() => setEditing(v => !v)}>
+            {editing ? 'Cancel' : <Pencil size={18} />}
           </button>
         )}
       </div>
@@ -350,7 +351,7 @@ function GroupDetail({ group: initialGroup, user, role, memberCounts, onClose, o
       {!editing && (
         <div className="group-detail-meta">
           {group.description && <p className="group-detail-desc">{group.description}</p>}
-          {group.meeting_schedule && <p className="group-detail-schedule">🗓 {group.meeting_schedule}</p>}
+          {group.meeting_schedule && <p className="group-detail-schedule flex items-center gap-1"><Calendar size={16} /> {group.meeting_schedule}</p>}
           <p className="group-detail-stat">{count} member{count !== 1 ? 's' : ''} · Led by {group.leader_name}</p>
         </div>
       )}
@@ -624,7 +625,7 @@ function GroupsTab({ user }) {
         </div>
       ) : groups.length === 0 ? (
         <div className="community-empty">
-          <span className="community-empty-icon">⛪</span>
+          <span className="community-empty-icon flex items-center justify-center"><Church size={48} /></span>
           No groups found{cityFilter !== 'all' ? ` in ${cityFilter}` : ''}.<br />
           Be the first to start one.
         </div>
@@ -638,7 +639,7 @@ function GroupsTab({ user }) {
                 <p className="group-card-name">{grp.name}</p>
                 {grp.church && <p className="group-card-church">{grp.church}</p>}
                 <p className="group-card-city">{grp.city}</p>
-                {grp.meeting_schedule && <p className="group-card-schedule">🗓 {grp.meeting_schedule}</p>}
+                {grp.meeting_schedule && <p className="group-card-schedule flex items-center gap-1"><Calendar size={14} /> {grp.meeting_schedule}</p>}
                 {grp.description && <p className="group-card-desc">{grp.description}</p>}
                 <div className="group-card-foot">
                   <span className="group-member-count">
@@ -786,7 +787,7 @@ function PartnersTab({ user }) {
       content: newPrayer.trim(),
     })
     const pid = getPartnerId()
-    if (pid) notifyUser(pid, 'prayer', '🙏 Prayer request', `${userName} shared a prayer with you`, '/community?tab=partners')
+    if (pid) notifyUser(pid, 'prayer', 'Prayer request', `${userName} shared a prayer with you`, '/community?tab=partners')
     setNewPrayer('')
     setPostingPrayer(false)
     fetchMessages(activePartner.id)
@@ -828,7 +829,7 @@ function PartnersTab({ user }) {
       .update({ partner_id: user.id, partner_name: userName, status: 'active' })
       .eq('id', id)
     if (receivedRequest?.requester_id) {
-      notifyUser(receivedRequest.requester_id, 'accepted', '🤝 Partnership accepted', `${userName} accepted your accountability partner invite`, '/community?tab=partners')
+      notifyUser(receivedRequest.requester_id, 'accepted', 'Partnership accepted', `${userName} accepted your accountability partner invite`, '/community?tab=partners')
     }
     fetchPartners()
   }
@@ -893,25 +894,25 @@ function PartnersTab({ user }) {
             <div className="partner-avatar-lg">{nameInitials(userName)}</div>
             <p className="partner-stat-name">{userName} <span className="partner-stat-you">(you)</span></p>
             <div className="partner-stat-nums">
-              <span>📖 {myStats?.total ?? '…'} total</span>
-              <span>📅 {myStats?.thisMonth ?? '…'} this month</span>
-              <span>🕐 {lastActiveLabel(myStats?.lastEntry)}</span>
+              <span className="flex items-center gap-1"><BookOpen size={14} /> {myStats?.total ?? '…'} total</span>
+              <span className="flex items-center gap-1"><Calendar size={14} /> {myStats?.thisMonth ?? '…'} this month</span>
+              <span className="flex items-center gap-1"><Clock size={14} /> {lastActiveLabel(myStats?.lastEntry)}</span>
             </div>
           </div>
           <div className="partner-vs-divider">
-            <span>⚡</span>
+            <span className="flex items-center justify-center"><Zap size={20} /></span>
             <span className="partner-days">{days}d together</span>
           </div>
           <div className="partner-stat-side">
             <div className="partner-avatar-lg partner-avatar-alt">{nameInitials(partnerName)}</div>
             <p className="partner-stat-name">{partnerName}</p>
             {partnerMilestone && (
-              <span className="partner-milestone">🌟 {partnerMilestone} entries!</span>
+              <span className="partner-milestone flex items-center gap-1"><Star size={14} /> {partnerMilestone} entries!</span>
             )}
             <div className="partner-stat-nums">
-              <span>📖 {partnerStats?.total ?? '…'} total</span>
-              <span>📅 {partnerStats?.thisMonth ?? '…'} this month</span>
-              <span>🕐 {lastActiveLabel(partnerStats?.lastEntry)}</span>
+              <span className="flex items-center gap-1"><BookOpen size={14} /> {partnerStats?.total ?? '…'} total</span>
+              <span className="flex items-center gap-1"><Calendar size={14} /> {partnerStats?.thisMonth ?? '…'} this month</span>
+              <span className="flex items-center gap-1"><Clock size={14} /> {lastActiveLabel(partnerStats?.lastEntry)}</span>
             </div>
           </div>
         </div>
@@ -920,8 +921,8 @@ function PartnersTab({ user }) {
         <div className="partner-section">
           <p className="partner-section-title">Check-in</p>
           <div className="nudge-row">
-            <button className="btn-nudge" onClick={sendNudge} disabled={nudging}>
-              👋 {nudging ? 'Sending…' : `Nudge ${partnerFirstName}`}
+            <button className="btn-nudge flex items-center gap-1" onClick={sendNudge} disabled={nudging}>
+              <Hand size={16} /> {nudging ? 'Sending…' : `Nudge ${partnerFirstName}`}
             </button>
             {myLastNudge && (
               <span className="nudge-last-sent">Last sent {timeAgo(myLastNudge.created_at)}</span>
@@ -930,8 +931,8 @@ function PartnersTab({ user }) {
           {nudges.length > 0 && (
             <div className="nudge-log">
               {nudges.map(n => (
-                <div key={n.id} className="nudge-item">
-                  👋 <strong>{n.sender_id === user.id ? 'You' : n.sender_name}</strong> sent a check-in · <span className="nudge-time">{timeAgo(n.created_at)}</span>
+                <div key={n.id} className="nudge-item flex items-center gap-1">
+                  <Hand size={14} /> <strong>{n.sender_id === user.id ? 'You' : n.sender_name}</strong> sent a check-in · <span className="nudge-time">{timeAgo(n.created_at)}</span>
                 </div>
               ))}
             </div>
@@ -1162,9 +1163,9 @@ export default function Community() {
   }
 
   const TABS = [
-    { key: 'prayer', label: '🙏 Prayer' },
-    { key: 'groups', label: '⛪ Groups' },
-    { key: 'partners', label: '🤝 Partners' },
+    { key: 'prayer', label: <span className="flex items-center gap-2"><Heart size={16} /> Prayer</span> },
+    { key: 'groups', label: <span className="flex items-center gap-2"><Church size={16} /> Groups</span> },
+    { key: 'partners', label: <span className="flex items-center gap-2"><Handshake size={16} /> Partners</span> },
   ]
 
   return (
@@ -1175,7 +1176,7 @@ export default function Community() {
 
       {showNotifBanner && (
         <div className="notif-banner">
-          <span>🔔 Enable notifications to get alerts for partner check-ins, prayers, and more.</span>
+          <span className="flex items-center gap-2"><Bell size={16} /> Enable notifications to get alerts for partner check-ins, prayers, and more.</span>
           <div className="notif-banner-actions">
             <button className="notif-banner-yes" onClick={enableNotifications}>Enable</button>
             <button className="notif-banner-no" onClick={() => setShowNotifBanner(false)}>Not now</button>

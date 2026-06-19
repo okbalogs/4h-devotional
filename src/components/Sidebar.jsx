@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import ThemeToggle from './ThemeToggle'
-import SearchDrawer from './SearchDrawer'
 import { supabase } from '@/utils/supabase'
 import { useAuth } from '@/context/AuthContext'
+import { BookOpen, Settings, Moon, Flame } from 'lucide-react'
 
 function ProfileModal({ user, streak, onClose }) {
   const router = useRouter()
@@ -57,7 +57,9 @@ function ProfileModal({ user, streak, onClose }) {
             <strong>{name}</strong>
             <span>{email}</span>
             {streak > 0 && (
-              <span className="profile-modal-streak">🔥 {streak}-day streak</span>
+              <span className="profile-modal-streak flex items-center gap-1">
+                <Flame size={14} /> {streak}-day streak
+              </span>
             )}
           </div>
         </div>
@@ -66,15 +68,15 @@ function ProfileModal({ user, streak, onClose }) {
 
         <nav className="profile-modal-nav">
           <button className="profile-modal-item" onClick={handleNewEntry}>
-            <span className="profile-modal-item-icon">📖</span>
+            <span className="profile-modal-item-icon"><BookOpen size={18} /></span>
             New Entry
           </button>
           <button className="profile-modal-item" onClick={handleSettings}>
-            <span className="profile-modal-item-icon">⚙️</span>
+            <span className="profile-modal-item-icon"><Settings size={18} /></span>
             Settings
           </button>
           <div className="profile-modal-item profile-modal-item--theme">
-            <span className="profile-modal-item-icon">🌙</span>
+            <span className="profile-modal-item-icon"><Moon size={18} /></span>
             Theme
             <span style={{ marginLeft: 'auto' }}>
               <ThemeToggle compact />
@@ -97,7 +99,6 @@ export default function Sidebar() {
   const { user } = useAuth()
   const [streak, setStreak] = useState(0)
   const [profileOpen, setProfileOpen] = useState(false)
-  const [searchOpen, setSearchOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
@@ -187,7 +188,7 @@ export default function Sidebar() {
       <aside className="sidebar">
         <div className="sidebar-header">
           <h1>Editorial<br />Devotion</h1>
-          {streak > 0 && <p className="sidebar-streak">{streak}-day streak 🔥</p>}
+          {streak > 0 && <p className="sidebar-streak flex items-center gap-1">{streak}-day streak <Flame size={14} /></p>}
         </div>
 
         <Link href="/entry/new" className="sidebar-new-entry">+ New Entry</Link>
@@ -210,19 +211,7 @@ export default function Sidebar() {
             )
           })}
 
-          {/* Search tab */}
-          <button
-            className={`sidebar-link ${searchOpen ? 'sidebar-link--active' : ''}`}
-            onClick={() => setSearchOpen(true)}
-            aria-label="Search entries"
-          >
-            <span className="sidebar-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </span>
-            Search
-          </button>
+
 
           {/* Profile tab — shown in bottom bar on mobile */}
           <button
@@ -258,7 +247,7 @@ export default function Sidebar() {
         />
       )}
 
-      <SearchDrawer open={searchOpen} onClose={() => setSearchOpen(false)} />
+
     </>
   )
 }

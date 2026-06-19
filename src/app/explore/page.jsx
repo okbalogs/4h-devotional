@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { BookOpen, Heart, Hand, Handshake, Calendar, Folder, WifiOff } from 'lucide-react'
 
 export const metadata = {
   title: 'Explore the 4H Method',
@@ -7,7 +8,7 @@ export const metadata = {
 
 const steps = [
   {
-    icon: '👂',
+    icon: <BookOpen size={24} />,
     step: 'STEP ONE',
     title: 'Head',
     subtitle: 'What does God say?',
@@ -15,7 +16,7 @@ const steps = [
     accent: false,
   },
   {
-    icon: '❤️',
+    icon: <Heart size={24} />,
     step: 'STEP TWO',
     title: 'Heart',
     subtitle: 'How does it convict my heart?',
@@ -23,7 +24,7 @@ const steps = [
     accent: false,
   },
   {
-    icon: '✋',
+    icon: <Hand size={24} />,
     step: 'STEP THREE',
     title: 'Hand',
     subtitle: 'What will I do with this today?',
@@ -31,7 +32,7 @@ const steps = [
     accent: true,
   },
   {
-    icon: '🤲',
+    icon: <Handshake size={24} />,
     step: 'STEP FOUR',
     title: 'Help',
     subtitle: 'Who can I serve with this truth?',
@@ -42,22 +43,22 @@ const steps = [
 
 const features = [
   {
-    icon: '📅',
+    icon: <Calendar size={24} className="text-[#9d4f14]" />,
     title: 'A verse chosen for your journey',
     body: 'Each day you receive a scripture matched to how long you have been walking with God — not random, not generic. Your journey day determines your reading.',
   },
   {
-    icon: '📖',
+    icon: <BookOpen size={24} className="text-[#9d4f14]" />,
     title: 'Your preferred Bible translation',
     body: 'Choose KJV, WEB, or ASV. Your preference is saved and applied across every daily verse and new entry automatically.',
   },
   {
-    icon: '🗂️',
+    icon: <Folder size={24} className="text-[#9d4f14]" />,
     title: 'A permanent spiritual archive',
     body: 'Every entry you write is stored privately in your account. Return to any past reflection in History and trace how God has been speaking to you over months and years.',
   },
   {
-    icon: '📴',
+    icon: <WifiOff size={24} className="text-[#9d4f14]" />,
     title: 'Works without internet',
     body: 'Wrote your devotion on the bus without data? No problem. Entries are saved offline and synced to your account the moment you reconnect.',
   },

@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect } from 'react'
+import { Smartphone } from 'lucide-react'
 
 export default function InstallButton() {
   const [prompt, setPrompt] = useState(null)
@@ -36,8 +37,8 @@ export default function InstallButton() {
   }
 
   return (
-    <button className="btn-install" onClick={handleInstall}>
-      📲 Install App
+    <button className="btn-install flex items-center justify-center gap-1" onClick={handleInstall}>
+      <Smartphone size={16} /> Install App
     </button>
   )
 }

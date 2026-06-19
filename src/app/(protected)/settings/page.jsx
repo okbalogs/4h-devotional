@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/utils/supabase'
+import { Bell, BookOpen, Eye, Clock, BarChart2, Heart, Key } from 'lucide-react'
 
 const BIBLE_VERSIONS = [
   { code: 'kjv', label: 'KJV' },
@@ -315,7 +316,7 @@ export default function Settings() {
             <div className="cards-grid">
               <div className="mini-card">
                 <div className="mini-card-header">
-                  <div className="circle-icon">🔔</div>
+                  <div className="circle-icon flex items-center justify-center"><Bell size={20} className="text-[#9d4f14]" /></div>
                   <div className={`toggle-switch ${reminders ? 'on' : ''}`} onClick={handleReminderToggle} />
                 </div>
                 <div>
@@ -326,7 +327,7 @@ export default function Settings() {
 
               <div className="mini-card">
                 <div className="mini-card-header">
-                  <div className="circle-icon">📖</div>
+                  <div className="circle-icon flex items-center justify-center"><BookOpen size={20} className="text-[#9d4f14]" /></div>
                 </div>
                 <div>
                   <h3>Bible Version</h3>
@@ -348,7 +349,7 @@ export default function Settings() {
 
               <div className="mini-card">
                 <div className="mini-card-header">
-                  <div className="circle-icon">👁️</div>
+                  <div className="circle-icon flex items-center justify-center"><Eye size={20} className="text-[#9d4f14]" /></div>
                   <div className={`toggle-switch ${publicProfile ? 'on' : ''}`} onClick={() => setPublicProfile(v => !v)} />
                 </div>
                 <div>
@@ -365,7 +366,7 @@ export default function Settings() {
             <div className="cards-grid">
               <div className="mini-card">
                 <div className="mini-card-header">
-                  <div className="circle-icon">⏰</div>
+                  <div className="circle-icon flex items-center justify-center"><Clock size={20} className="text-[#9d4f14]" /></div>
                 </div>
                 <div>
                   <h3>Morning Devotion</h3>
@@ -392,7 +393,7 @@ export default function Settings() {
 
               <div className="mini-card">
                 <div className="mini-card-header">
-                  <div className="circle-icon">📊</div>
+                  <div className="circle-icon flex items-center justify-center"><BarChart2 size={20} className="text-[#9d4f14]" /></div>
                   <div className={`toggle-switch ${weeklySummary ? 'on' : ''}`} onClick={() => setWeeklySummary(v => !v)} />
                 </div>
                 <div>
@@ -403,7 +404,7 @@ export default function Settings() {
 
               <div className="mini-card">
                 <div className="mini-card-header">
-                  <div className="circle-icon">🤲</div>
+                  <div className="circle-icon flex items-center justify-center"><Heart size={20} className="text-[#9d4f14]" /></div>
                   <div className={`toggle-switch ${communityPrayers ? 'on' : ''}`} onClick={() => setCommunityPrayers(v => !v)} />
                 </div>
                 <div>
@@ -420,7 +421,7 @@ export default function Settings() {
             <div className="card-strong">
               <div className="flex-between">
                 <div className="gap-12">
-                  <div className="circle-icon circle-icon-white">🔑</div>
+                  <div className="circle-icon circle-icon-white flex items-center justify-center"><Key size={20} className="text-[#9d4f14]" /></div>
                   <div>
                     <h3 style={{ fontSize: '1.05rem', color: '#333' }}>Update Your Password</h3>
                     <p style={{ fontSize: '0.85rem', color: '#666' }}>Update your credentials to keep your journal private.</p>

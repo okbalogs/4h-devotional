@@ -1,37 +1,38 @@
 "use client"
 import { useState, useEffect } from 'react'
+import { GraduationCap, Save, AlertTriangle, Mail, Search, BookOpen } from 'lucide-react'
 
 // Bump this key whenever you ship a new update so returning users see it once.
 const SEEN_KEY = 'changelog_seen_v6'
 
 const UPDATES = [
   {
-    icon: '🎓',
+    icon: <GraduationCap size={20} className="text-[#9d4f14]" />,
     title: 'Interactive Courses Hub',
     desc: 'Search courses and filter by category in real-time with refined UI card layouts.',
   },
   {
-    icon: '💾',
+    icon: <Save size={20} className="text-[#9d4f14]" />,
     title: 'Auto-Save Devotions',
     desc: 'Your active quiet time logs are saved locally as you type to prevent data loss.',
   },
   {
-    icon: '⚠️',
+    icon: <AlertTriangle size={20} className="text-[#9d4f14]" />,
     title: 'Unsaved Work Protection',
     desc: 'Warns you before navigating away from active edits or unsaved devotional logs.',
   },
   {
-    icon: '💌',
+    icon: <Mail size={20} className="text-[#9d4f14]" />,
     title: 'Functional Support Form',
     desc: 'Easily submit support tickets, testaments, or account queries with validate fields.',
   },
   {
-    icon: '🔍',
+    icon: <Search size={20} className="text-[#9d4f14]" />,
     title: 'Accessibility Boost',
     desc: 'Re-enabled standard browser pinch-to-zoom and configured SEO title templating.',
   },
   {
-    icon: '📖',
+    icon: <BookOpen size={20} className="text-[#9d4f14]" />,
     title: 'Custom 404 Not Found Page',
     desc: 'Beautifully styled missing page layout that guides you back to your sanctuary.',
   },
@@ -71,7 +72,7 @@ export default function ChangelogModal() {
         <ul className="changelog-list">
           {UPDATES.map((item) => (
             <li key={item.title} className="changelog-item">
-              <span className="changelog-item-icon">{item.icon}</span>
+              <span className="changelog-item-icon flex items-center justify-center">{item.icon}</span>
               <div>
                 <strong className="changelog-item-title">{item.title}</strong>
                 <p className="changelog-item-desc">{item.desc}</p>

@@ -4,6 +4,7 @@ import Image from "next/image"
 import { useState, useMemo } from "react"
 import { useAuth } from "@/context/AuthContext"
 import GoogleButton from "@/components/GoogleButton"
+import { Heart, BookDashed, Eye, EyeOff } from "lucide-react"
 import hero from "../../assets/images/hero.png"
 
 function PasswordStrength({ password }) {
@@ -101,14 +102,14 @@ export default function SignUp() {
 
           <div className="signup-features">
             <div className="signup-feature">
-              <span className="signup-feature-icon">💛</span>
+              <span className="signup-feature-icon flex items-center justify-center"><Heart size={20} className="text-[#c0783a]" /></span>
               <div>
                 <strong>Spiritual Discipline</strong>
                 <p>Consistent tracking of your daily walk with God.</p>
               </div>
             </div>
             <div className="signup-feature">
-              <span className="signup-feature-icon">📓</span>
+              <span className="signup-feature-icon flex items-center justify-center"><BookDashed size={20} className="text-[#9d4f14]" /></span>
               <div>
                 <strong>Journaled Reflections</strong>
                 <p>
@@ -211,8 +212,8 @@ export default function SignUp() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
-                  <button type="button" className="auth-input-icon auth-input-icon--right" onClick={() => setShowPw(v => !v)} aria-label="Toggle password">
-                    {showPw ? "🙈" : "👁️"}
+                  <button type="button" className="auth-input-icon auth-input-icon--right flex items-center justify-center" onClick={() => setShowPw(v => !v)} aria-label="Toggle password">
+                    {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
                 {password && <PasswordStrength password={password} />}
@@ -237,8 +238,8 @@ export default function SignUp() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
-                  <button type="button" className="auth-input-icon auth-input-icon--right" onClick={() => setShowConfirm(v => !v)} aria-label="Toggle confirm password">
-                    {showConfirm ? "🙈" : "👁️"}
+                  <button type="button" className="auth-input-icon auth-input-icon--right flex items-center justify-center" onClick={() => setShowConfirm(v => !v)} aria-label="Toggle confirm password">
+                    {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
