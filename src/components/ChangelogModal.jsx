@@ -7,32 +7,32 @@ const SEEN_KEY = 'changelog_seen_v6'
 
 const UPDATES = [
   {
-    icon: <GraduationCap size={20} className="text-[#9d4f14]" />,
+    icon: <GraduationCap size={20} className="text-[var(--clr-primary)]" />,
     title: 'Interactive Courses Hub',
     desc: 'Search courses and filter by category in real-time with refined UI card layouts.',
   },
   {
-    icon: <Save size={20} className="text-[#9d4f14]" />,
+    icon: <Save size={20} className="text-[var(--clr-primary)]" />,
     title: 'Auto-Save Devotions',
     desc: 'Your active quiet time logs are saved locally as you type to prevent data loss.',
   },
   {
-    icon: <AlertTriangle size={20} className="text-[#9d4f14]" />,
+    icon: <AlertTriangle size={20} className="text-[var(--clr-primary)]" />,
     title: 'Unsaved Work Protection',
     desc: 'Warns you before navigating away from active edits or unsaved devotional logs.',
   },
   {
-    icon: <Mail size={20} className="text-[#9d4f14]" />,
+    icon: <Mail size={20} className="text-[var(--clr-primary)]" />,
     title: 'Functional Support Form',
     desc: 'Easily submit support tickets, testaments, or account queries with validate fields.',
   },
   {
-    icon: <Search size={20} className="text-[#9d4f14]" />,
+    icon: <Search size={20} className="text-[var(--clr-primary)]" />,
     title: 'Accessibility Boost',
     desc: 'Re-enabled standard browser pinch-to-zoom and configured SEO title templating.',
   },
   {
-    icon: <BookOpen size={20} className="text-[#9d4f14]" />,
+    icon: <BookOpen size={20} className="text-[var(--clr-primary)]" />,
     title: 'Custom 404 Not Found Page',
     desc: 'Beautifully styled missing page layout that guides you back to your sanctuary.',
   },

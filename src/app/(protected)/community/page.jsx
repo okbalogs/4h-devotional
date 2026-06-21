@@ -1,9 +1,11 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '@/context/AuthContext'
+import { Heart, Church, Pencil, Calendar, BookOpen, Clock, Zap, Star, Hand, Handshake, Bell, Megaphone } from 'lucide-react'
 import { supabase } from '@/utils/supabase'
 import { subscribeToPush, notifyUser } from '@/utils/pushManager'
-import { Heart, Church, Pencil, Calendar, BookOpen, Clock, Zap, Star, Hand, Handshake, Bell } from 'lucide-react'
+import NoticesTab from './NoticesTab'
+import LeaderboardWidget from './LeaderboardWidget'
 import './community.css'
 
 const CITIES = ['Lagos', 'Abuja', 'Port Harcourt', 'Kano', 'Ibadan', 'Enugu', 'Kaduna', 'Benin City']
@@ -116,6 +118,7 @@ function PrayerTab({ user }) {
 
   return (
     <div>
+      <LeaderboardWidget />
       {/* Post form */}
       <div className="prayer-post-form" style={{ marginBottom: '20px' }}>
         <textarea
@@ -1138,12 +1141,13 @@ const TAB_NOTIF_TYPES = {
   prayer: ['prayer_prayed'],
   groups: ['group_message', 'group_join'],
   partners: ['nudge', 'prayer', 'note', 'invite', 'accepted'],
+  notices: [],
 }
 
 export default function Community() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('prayer')
-  const [tabUnread, setTabUnread] = useState({ prayer: 0, partners: 0 })
+  const [tabUnread, setTabUnread] = useState({ prayer: 0, partners: 0, notices: 0 })
   const [showNotifBanner, setShowNotifBanner] = useState(false)
 
   useEffect(() => {
@@ -1178,7 +1182,7 @@ export default function Community() {
         .eq('user_id', user.id)
         .eq('is_read', false)
 
-      const counts = { prayer: 0, partners: 0 }
+      const counts = { prayer: 0, partners: 0, notices: 0 }
       for (const n of data || []) {
         if (TAB_NOTIF_TYPES.prayer.includes(n.type)) counts.prayer++
         if (TAB_NOTIF_TYPES.partners.includes(n.type)) counts.partners++
@@ -1223,6 +1227,7 @@ export default function Community() {
     { key: 'prayer', label: <span className="flex items-center gap-2"><Heart size={16} /> Prayer</span> },
     { key: 'groups', label: <span className="flex items-center gap-2"><Church size={16} /> Groups</span> },
     { key: 'partners', label: <span className="flex items-center gap-2"><Handshake size={16} /> Partners</span> },
+    { key: 'notices', label: <span className="flex items-center gap-2"><Megaphone size={16} /> Notices</span> },
   ]
 
   return (
@@ -1260,6 +1265,7 @@ export default function Community() {
       {user && activeTab === 'prayer' && <PrayerTab user={user} />}
       {user && activeTab === 'groups' && <GroupsTab user={user} />}
       {user && activeTab === 'partners' && <PartnersTab user={user} />}
+      {user && activeTab === 'notices' && <NoticesTab user={user} />}
     </div>
   )
 }

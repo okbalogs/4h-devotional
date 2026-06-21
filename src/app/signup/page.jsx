@@ -102,14 +102,14 @@ export default function SignUp() {
 
           <div className="signup-features">
             <div className="signup-feature">
-              <span className="signup-feature-icon flex items-center justify-center"><Heart size={20} className="text-[#c0783a]" /></span>
+              <span className="signup-feature-icon flex items-center justify-center"><Heart size={20} className="text-[var(--clr-primary-hover)]" /></span>
               <div>
                 <strong>Spiritual Discipline</strong>
                 <p>Consistent tracking of your daily walk with God.</p>
               </div>
             </div>
             <div className="signup-feature">
-              <span className="signup-feature-icon flex items-center justify-center"><BookDashed size={20} className="text-[#9d4f14]" /></span>
+              <span className="signup-feature-icon flex items-center justify-center"><BookDashed size={20} className="text-[var(--clr-primary)]" /></span>
               <div>
                 <strong>Journaled Reflections</strong>
                 <p>

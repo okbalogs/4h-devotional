@@ -43,22 +43,22 @@ const steps = [
 
 const features = [
   {
-    icon: <Calendar size={24} className="text-[#9d4f14]" />,
+    icon: <Calendar size={24} className="text-[var(--clr-primary)]" />,
     title: 'A verse chosen for your journey',
     body: 'Each day you receive a scripture matched to how long you have been walking with God — not random, not generic. Your journey day determines your reading.',
   },
   {
-    icon: <BookOpen size={24} className="text-[#9d4f14]" />,
+    icon: <BookOpen size={24} className="text-[var(--clr-primary)]" />,
     title: 'Your preferred Bible translation',
     body: 'Choose KJV, WEB, or ASV. Your preference is saved and applied across every daily verse and new entry automatically.',
   },
   {
-    icon: <Folder size={24} className="text-[#9d4f14]" />,
+    icon: <Folder size={24} className="text-[var(--clr-primary)]" />,
     title: 'A permanent spiritual archive',
     body: 'Every entry you write is stored privately in your account. Return to any past reflection in History and trace how God has been speaking to you over months and years.',
   },
   {
-    icon: <WifiOff size={24} className="text-[#9d4f14]" />,
+    icon: <WifiOff size={24} className="text-[var(--clr-primary)]" />,
     title: 'Works without internet',
     body: 'Wrote your devotion on the bus without data? No problem. Entries are saved offline and synced to your account the moment you reconnect.',
   },

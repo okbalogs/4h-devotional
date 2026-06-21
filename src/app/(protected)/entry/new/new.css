@@ -1,0 +1,228 @@
+/* ─── NEW ENTRY PAGE (STEPPER LAYOUT) ─── */
+.new-entry-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 0 0 60px;
+  background: var(--clr-background, var(--clr-cream));
+}
+
+.new-draft-banner {
+  background: var(--clr-card);
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  color: var(--clr-text-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--clr-border);
+}
+
+.new-draft-banner button {
+  background: none;
+  border: none;
+  color: var(--clr-primary);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+/* ── Header ── */
+.new-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--clr-cream);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.new-header-btn {
+  background: none;
+  border: none;
+  font-family: var(--font-kalam);
+  font-size: 16px;
+  color: var(--clr-text-muted);
+  cursor: pointer;
+  min-width: 60px;
+  text-align: left;
+}
+
+.new-header-btn.save {
+  color: #6bb07d; /* lighter green for save */
+  font-weight: 700;
+  text-align: right;
+}
+
+.new-header-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.new-progress-text {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--clr-dark);
+}
+
+.new-progress-bars {
+  display: flex;
+  gap: 4px;
+}
+
+.new-progress-bar {
+  width: 14px;
+  height: 3px;
+  background: var(--clr-border);
+  border-radius: 2px;
+}
+
+.new-progress-bar.active {
+  background: var(--clr-primary);
+}
+
+/* ── Content ── */
+.new-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px;
+  gap: 16px;
+}
+
+.new-step-title {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--clr-dark);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.new-textarea {
+  width: 100%;
+  flex: 1;
+  min-height: 250px;
+  background: transparent;
+  border: none;
+  resize: none;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--clr-dark);
+  text-align: center;
+  outline: none;
+}
+
+.new-textarea::placeholder {
+  color: #c4beb4;
+  font-style: italic;
+}
+
+/* ── Verse Context (Step 0) ── */
+.new-verse-context {
+  background: var(--clr-card);
+  border: 1px solid var(--clr-border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.new-verse-ref {
+  display: block;
+  font-family: var(--font-kalam);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--clr-primary);
+  margin-bottom: 6px;
+}
+
+.new-verse-text {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-style: italic;
+  color: var(--clr-text-muted);
+  line-height: 1.4;
+}
+
+/* ── Lingering Thought (Step 3) ── */
+.new-lingering-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px dashed var(--clr-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.new-lingering-title {
+  font-family: var(--font-kalam);
+  font-size: 18px;
+  color: var(--clr-primary);
+  text-align: center;
+}
+
+.new-textarea.lingering {
+  min-height: 80px;
+  font-size: 18px;
+  background: var(--clr-card);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--clr-border);
+}
+
+.share-partner-check {
+  font-size: 14px;
+  color: var(--clr-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* ── Footer ── */
+.new-footer {
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.new-action-btn {
+  background: var(--clr-primary);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  font-family: var(--font-kalam);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.2s;
+  width: 100%;
+}
+
+.new-action-btn:hover {
+  background: var(--clr-primary-hover);
+  transform: translateY(-1px);
+}
+
+.new-error {
+  color: #c0392b;
+  font-size: 14px;
+  text-align: center;
+}
+
+.new-saved-indicator {
+  color: var(--clr-text-muted);
+  font-size: 12px;
+  text-align: center;
+}

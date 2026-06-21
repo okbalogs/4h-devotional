@@ -8,11 +8,11 @@
 
 /* Calendar Block */
 .calendar-block {
-  background: #fdf6ec;
+  background: var(--clr-cream);
   border-radius: 12px;
   padding: 30px;
   margin-bottom: 20px;
-  box-shadow: 0 4px 20px rgba(157, 79, 20, 0.04);
+  box-shadow: 0 4px 20px rgba(47, 93, 69, 0.04);
 }
 .calendar-header {
   display: flex;
@@ -23,7 +23,7 @@
 .calendar-header h3 {
   font-family: Georgia, serif;
   font-size: 1.25rem;
-  color: #3d2a1a;
+  color: var(--clr-dark);
   font-weight: 500;
 }
 .calendar-nav {
@@ -42,7 +42,7 @@
 }
 .calendar-day-header {
   font-weight: 700;
-  color: #8c786a;
+  color: var(--clr-text-muted);
   margin-bottom: 12px;
   font-size: 0.7rem;
   letter-spacing: 1px;
@@ -60,18 +60,19 @@
   transition: 0.2s;
 }
 .calendar-day:hover {
-  background: #eee4d8;
+  background: var(--clr-border);
 }
 .calendar-day.inactive {
-  color: #c4b6ab;
+  color: var(--clr-text-muted);
+  opacity: 0.5;
 }
 .calendar-day.has-entry {
-  background: #f5d1a5;
-  color: #9d4f14;
+  background: var(--clr-primary);
+  color: #fff;
   font-weight: 600;
 }
 .calendar-day.selected {
-  background: #9d4f14;
+  background: var(--clr-primary);
   color: white;
 }
 
@@ -82,21 +83,21 @@
   gap: 16px;
 }
 .stat-box {
-  background: #eee4d8;
+  background: var(--clr-border);
   padding: 20px;
   border-radius: 12px;
 }
 .stat-box h4 {
   font-size: 0.72rem;
   text-transform: uppercase;
-  color: #7a6555;
+  color: var(--clr-text-muted);
   letter-spacing: 1px;
   margin-bottom: 8px;
 }
 .stat-box p {
   font-size: 1.6rem;
   font-family: Georgia, serif;
-  color: #9d4f14;
+  color: var(--clr-primary);
 }
 
 /* Entry Cards */
@@ -109,13 +110,13 @@
   background: #fff;
   border-radius: 12px;
   padding: 30px;
-  box-shadow: 0 4px 24px rgba(157, 79, 20, 0.05);
+  box-shadow: 0 4px 24px rgba(47, 93, 69, 0.05);
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
 }
 .entry-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(157, 79, 20, 0.08);
+  box-shadow: 0 8px 30px rgba(47, 93, 69, 0.08);
 }
 .entry-meta {
   display: flex;
@@ -127,12 +128,12 @@
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 1px;
-  color: #7a6555;
+  color: var(--clr-text-muted);
   text-transform: uppercase;
 }
 .reference-pill {
-  background: #f5d1a5;
-  color: #9d4f14;
+  background: var(--clr-accent);
+  color: var(--clr-primary);
   font-size: 0.75rem;
   padding: 4px 12px;
   border-radius: 12px;
@@ -141,17 +142,17 @@
 .entry-card h3 {
   font-family: Georgia, serif;
   font-size: 1.5rem;
-  color: #3d2a1a;
+  color: var(--clr-dark);
   margin-bottom: 20px;
   font-style: italic;
 }
 .entry-title--untitled {
-  color: #b0a090;
+  color: var(--clr-text-muted);
   font-weight: 400;
 }
 
 .entry-summary {
-  background: #fbf8f5;
+  background: var(--clr-cream);
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 20px;
@@ -159,7 +160,7 @@
 .summary-label {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #9d4f14;
+  color: var(--clr-primary);
   letter-spacing: 1px;
   margin-bottom: 8px;
   display: block;
@@ -194,9 +195,9 @@
   border: none;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #9d4f14;
+  color: var(--clr-primary);
   cursor: pointer;
-  border-bottom: 2px solid #eaddd3;
+  border-bottom: 2px solid var(--clr-border);
   padding-bottom: 4px;
 }
 

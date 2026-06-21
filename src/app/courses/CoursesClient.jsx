@@ -184,7 +184,7 @@ export default function CoursesClient() {
               maxWidth: '600px',
               margin: '0 auto',
             }}>
-              <div className="flex justify-center mb-4"><BookOpen size={48} className="text-[#9d4f14]" /></div>
+              <div className="flex justify-center mb-4"><BookOpen size={48} className="text-[var(--clr-primary)]" /></div>
               <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.3rem', color: 'var(--clr-dark)', marginBottom: '8px' }}>No Courses Found</h3>
               <p style={{ color: 'var(--clr-text-muted)', fontSize: '0.92rem', margin: 0 }}>
                 We couldn't find any courses matching your search criteria. Try modifying your search keywords or choosing a different category.

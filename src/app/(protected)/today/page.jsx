@@ -2,192 +2,120 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { getTodayVerseForUser, getJourneyDay, getGreeting, getStreakAndCount } from '@/utils/dailyVerse'
+import { getTodayVerseForUser, getGreeting, getStreakAndCount, getCurrentPlanInfo, getUserPreferences } from '@/utils/dailyVerse'
 import BadgeModal, { getNewBadge } from '@/components/BadgeModal'
-import { BookOpen, Heart, Hand, Handshake, Flame, BookDashed, Sparkles } from 'lucide-react'
+import { supabase } from '@/utils/supabase'
 import './today.css'
-
-const H4_PILLARS = [
-  {
-    key: 'hear',
-    label: 'Head',
-    sub: 'What does the Word say?',
-    icon: <BookOpen size={24} />,
-    color: 'var(--clr-primary)',
-  },
-  {
-    key: 'heed',
-    label: 'Heart',
-    sub: 'What does it mean for me?',
-    icon: <Heart size={24} />,
-    color: '#c0783a',
-  },
-  {
-    key: 'hold',
-    label: 'Hand',
-    sub: 'What will I do today?',
-    icon: <Hand size={24} />,
-    color: '#7a4f28',
-  },
-  {
-    key: 'help',
-    label: 'Help',
-    sub: 'Who can I share this with?',
-    icon: <Handshake size={24} />,
-    color: '#4a7c59',
-  },
-]
-
-const AFFIRMATIONS = [
-  'His mercies are new every morning.',
-  'Be still, and know that He is God.',
-  'Draw near to God, and He will draw near to you.',
-  'The joy of the LORD is your strength.',
-  'In quietness and trust is your strength.',
-  'He restores my soul.',
-]
 
 export default function Today() {
   const { user } = useAuth()
   const router = useRouter()
   const [verse, setVerse] = useState(null)
   const [verseLoading, setVerseLoading] = useState(true)
-  const [streak, setStreak] = useState(null)
-  const [totalEntries, setTotalEntries] = useState(null)
+  const [streak, setStreak] = useState(0)
+  const [totalEntries, setTotalEntries] = useState(0)
+  const [recentDays, setRecentDays] = useState([])
+  const [planInfo, setPlanInfo] = useState(null)
   const [newBadge, setNewBadge] = useState(null)
-
+  const [avatarUrl, setAvatarUrl] = useState(null)
+  
   useEffect(() => {
     if (!user) return
     getTodayVerseForUser(user).then((v) => {
       setVerse(v)
       setVerseLoading(false)
     })
-    getStreakAndCount(user.id).then(({ streak, totalEntries }) => {
+    getUserPreferences(user.id).then((prefs) => {
+      setPlanInfo(getCurrentPlanInfo(user, prefs.examMode))
+    })
+    getStreakAndCount(user.id).then(({ streak, totalEntries, recentDays }) => {
       setStreak(streak)
       setTotalEntries(totalEntries)
+      setRecentDays(recentDays || [])
       if (streak > 0) {
         const badge = getNewBadge(streak)
         if (badge) setNewBadge(badge)
       }
     })
+    
+    supabase
+      .from('profiles')
+      .select('avatar_url')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => { if (data?.avatar_url) setAvatarUrl(data.avatar_url) })
   }, [user])
 
   const greeting = getGreeting()
-  const firstName = user?.user_metadata?.full_name?.split(' ')[0] ?? ''
-  const journeyDay = user ? getJourneyDay(user) : null
-  const affirmation = AFFIRMATIONS[(journeyDay ?? 0) % AFFIRMATIONS.length]
+  const firstName = user?.user_metadata?.full_name?.split(' ')[0] ?? 'Devotee'
+  const initials = firstName.slice(0, 2).toUpperCase()
+  
 
-  const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long', month: 'long', day: 'numeric',
-  })
 
   return (
     <div className="page-container today-page">
       <BadgeModal badge={newBadge} onClose={() => setNewBadge(null)} />
 
-      {/* ── Greeting ── */}
-      <div className="today-greeting">
-        <div className="today-greeting-text">
-          <p className="today-eyebrow">{today}</p>
-          <h1 className="today-title">
-            {greeting}{firstName ? `, ${firstName}` : ''}.
-          </h1>
-          <p className="today-sub">{affirmation}</p>
+      {/* Header */}
+      <div className="today-header">
+        <div>
+          <div className="today-greeting-sub">{greeting},</div>
+          <div className="today-greeting-name">{firstName} ✦</div>
         </div>
-        {journeyDay && (
-          <div className="today-day-badge">
-            <span className="today-day-num">{journeyDay}</span>
-            <span className="today-day-label">day{journeyDay !== 1 ? 's' : ''}<br />in Selah</span>
+        <div className="today-avatar">
+          {avatarUrl ? <img src={avatarUrl} alt="avatar" /> : <span>{initials}</span>}
+        </div>
+      </div>
+
+      {/* Streak Card */}
+      <div className="today-streak-card">
+        <div className="today-streak-header">
+          <span className="today-streak-count">{streak}</span>
+          <span className="today-streak-label">day streak</span>
+        </div>
+        <div className="today-streak-week">
+          {recentDays.map((d, i) => (
+             <div key={i} className="today-streak-day">
+               <span>{d.label}</span>
+               <span className={`today-streak-dot ${d.filled ? 'filled' : ''}`}></span>
+             </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Verse Card */}
+      <div className="today-verse-card">
+        <div className="today-verse-ref">TODAY &middot; {verse?.verse_reference?.toUpperCase() || 'LOADING...'}</div>
+        
+        {verseLoading ? (
+          <div className="today-verse-skeleton">
+            <div className="skeleton-line full"></div>
+            <div className="skeleton-line long"></div>
+            <div className="skeleton-line short"></div>
+          </div>
+        ) : verse ? (
+          <div className="today-verse-text">
+             &ldquo;{verse.verse_text.trim()}&rdquo;
+          </div>
+        ) : (
+          <div className="today-verse-text">
+             No verse loaded — check your connection.
           </div>
         )}
+        
+        <button className="today-action-btn" onClick={() => router.push('/entry/new')}>
+          Open today&apos;s 4H &rarr;
+        </button>
       </div>
 
-      {/* ── Verse Card ── */}
-      <div className="today-verse-card">
-        <div className="today-verse-card-inner">
-          <span className="today-verse-glyph"><Sparkles size={24} className="mx-auto text-[#9d4f14] opacity-50" /></span>
-
-          {verseLoading ? (
-            <div className="today-verse-skeleton">
-              <div className="skeleton-block" style={{ height: '14px', width: '120px', marginBottom: '16px' }} />
-              <div className="skeleton-block" style={{ height: '20px', width: '100%', marginBottom: '10px' }} />
-              <div className="skeleton-block" style={{ height: '20px', width: '90%', marginBottom: '10px' }} />
-              <div className="skeleton-block" style={{ height: '20px', width: '80%' }} />
-            </div>
-          ) : verse ? (
-            <>
-              <p className="today-verse-ref">{verse.verse_reference}</p>
-              <blockquote className="today-verse-text">
-                &ldquo;{verse.verse_text.trim()}&rdquo;
-              </blockquote>
-            </>
-          ) : (
-            <p className="today-verse-offline">
-              No verse loaded — check your connection and refresh.
-            </p>
-          )}
-
-          <button
-            className="today-begin-btn"
-            onClick={() => router.push('/entry/new')}
-          >
-            Begin Today&apos;s Devotion
-            <span className="today-begin-arrow">→</span>
-          </button>
+      {/* Reading Plan */}
+      <div className="today-plan-card">
+        <div className="today-plan-header">
+          <span className="today-plan-title">Reading plan &middot; {planInfo?.title || 'Loading...'}</span>
+          <span className="today-plan-progress">Day {planInfo?.currentDay || 1}/{planInfo?.totalDays || 5}</span>
         </div>
-
-        {/* decorative strip */}
-        <div className="today-verse-accent" />
-      </div>
-
-      {/* ── 4H Pillars ── */}
-      <div className="today-pillars-header">
-        <h2 className="today-section-title">Your 4H Journey</h2>
-        <p className="today-section-sub">Four lenses for today&apos;s Word</p>
-      </div>
-
-      <div className="today-pillars-grid">
-        {H4_PILLARS.map((pillar) => (
-          <button
-            key={pillar.key}
-            className="today-pillar-card"
-            onClick={() => router.push('/entry/new')}
-          >
-            <span className="today-pillar-icon">{pillar.icon}</span>
-            <strong className="today-pillar-label">{pillar.label}</strong>
-            <p className="today-pillar-sub">{pillar.sub}</p>
-          </button>
-        ))}
-      </div>
-
-      {/* ── Quick Stats ── */}
-      <div className="today-stats-row">
-        <div className="today-stat">
-          <span className="today-stat-icon flex items-center justify-center"><Flame size={20} /></span>
-          <div>
-            <strong className="today-stat-val">
-              {streak === null ? '—' : streak}
-            </strong>
-            <span className="today-stat-label">day streak</span>
-          </div>
-        </div>
-        <div className="today-stat-divider" />
-        <div className="today-stat">
-          <span className="today-stat-icon flex items-center justify-center"><BookDashed size={20} /></span>
-          <div>
-            <strong className="today-stat-val">
-              {totalEntries === null ? '—' : totalEntries}
-            </strong>
-            <span className="today-stat-label">entries logged</span>
-          </div>
-        </div>
-        <div className="today-stat-divider" />
-        <div className="today-stat">
-          <span className="today-stat-icon flex items-center justify-center"><Sparkles size={20} /></span>
-          <div>
-            <strong className="today-stat-val">Day {journeyDay ?? '—'}</strong>
-            <span className="today-stat-label">of your journey</span>
-          </div>
+        <div className="today-plan-bar-bg">
+          <div className="today-plan-bar-fill" style={{ width: `${((planInfo?.currentDay || 1) / (planInfo?.totalDays || 5)) * 100}%` }}></div>
         </div>
       </div>
 

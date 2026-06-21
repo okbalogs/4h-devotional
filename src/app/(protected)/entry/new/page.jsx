@@ -2,25 +2,47 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import '../entry.css'
+import './new.css'
 import { supabase } from '@/utils/supabase'
 import { useAuth } from '@/context/AuthContext'
 import { getTodayVerseForUser } from '@/utils/dailyVerse'
 import { queueEntry } from '@/utils/offlineStorage'
 import { notifyUser } from '@/utils/pushManager'
-import { BookOpen, Heart, Hand, Handshake, FileText } from 'lucide-react'
+import { FileText } from 'lucide-react'
 
 const DRAFT_KEY = 'devotion_draft'
+
+const STEPS = [
+  { id: 'hear', title: 'Head', placeholder: 'What does the Word say?' },
+  { id: 'heed', title: 'Heart', placeholder: 'What does it mean for me?' },
+  { id: 'hold', title: 'Hand', placeholder: 'What will I do today?' },
+  { id: 'help', title: 'Help', placeholder: 'Who can I share this with? (And wrap up)' }
+]
 
 export default function NewEntry() {
   const router = useRouter()
   const { user } = useAuth()
 
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    month: 'long', day: 'numeric', year: 'numeric'
-  })
+  const [currentStep, setCurrentStep] = useState(0)
 
   const [scriptureRef, setScriptureRef] = useState('')
   const [verseText, setVerseText] = useState('')
+
+  const [formData, setFormData] = useState({
+    hear: '',
+    heed: '',
+    hold: '',
+    help: '',
+    lingeringThought: ''
+  })
+
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
+  const [savedOffline, setSavedOffline] = useState(false)
+  const [activePartnership, setActivePartnership] = useState(null)
+  const [shareWithPartner, setShareWithPartner] = useState(false)
+  const [draftRestored, setDraftRestored] = useState(false)
+  const [draftSaved, setDraftSaved] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -29,18 +51,6 @@ export default function NewEntry() {
       if (v?.verse_text) setVerseText(v.verse_text)
     })
   }, [user])
-  const [hear, setHear] = useState('')
-  const [heed, setHeed] = useState('')
-  const [hold, setHold] = useState('')
-  const [help, setHelp] = useState('')
-  const [lingeringThought, setLingeringThought] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState(null)
-  const [savedOffline, setSavedOffline] = useState(false)
-  const [activePartnership, setActivePartnership] = useState(null)
-  const [shareWithPartner, setShareWithPartner] = useState(false)
-  const [draftRestored, setDraftRestored] = useState(false)
-  const [draftSaved, setDraftSaved] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -53,42 +63,23 @@ export default function NewEntry() {
       .then(({ data }) => setActivePartnership(data))
   }, [user])
 
-  // Restore draft from localStorage on mount
+  // Restore draft
   useEffect(() => {
     try {
       const saved = localStorage.getItem(DRAFT_KEY)
       if (saved) {
         const draft = JSON.parse(saved)
         if (draft.scriptureRef) setScriptureRef(draft.scriptureRef)
-        if (draft.hear) setHear(draft.hear)
-        if (draft.heed) setHeed(draft.heed)
-        if (draft.hold) setHold(draft.hold)
-        if (draft.help) setHelp(draft.help)
-        if (draft.lingeringThought) setLingeringThought(draft.lingeringThought)
+        setFormData(prev => ({ ...prev, ...draft }))
         setDraftRestored(true)
       }
     } catch {}
   }, [])
 
-  // Unsaved changes protection
-  useEffect(() => {
-    const hasContent = [hear, heed, hold, help, scriptureRef, lingeringThought].some(v => v && v.trim())
-    const handler = (e) => {
-      if (hasContent) {
-        e.preventDefault()
-        e.returnValue = ''
-      }
-    }
-    if (hasContent) {
-      window.addEventListener('beforeunload', handler)
-    }
-    return () => window.removeEventListener('beforeunload', handler)
-  }, [hear, heed, hold, help, scriptureRef, lingeringThought])
-
-  // Auto-save to localStorage every 2 seconds
+  // Auto-save
   useEffect(() => {
     const timer = setTimeout(() => {
-      const fields = { scriptureRef, hear, heed, hold, help, lingeringThought }
+      const fields = { scriptureRef, ...formData }
       const hasContent = Object.values(fields).some(v => v && v.trim())
       if (hasContent) {
         localStorage.setItem(DRAFT_KEY, JSON.stringify(fields))
@@ -97,24 +88,27 @@ export default function NewEntry() {
       }
     }, 2000)
     return () => clearTimeout(timer)
-  }, [scriptureRef, hear, heed, hold, help, lingeringThought])
+  }, [scriptureRef, formData])
+
+  const handleTextChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
 
   const entryPayload = () => ({
     user_id: user.id,
     scripture_reference: scriptureRef,
     verse_text: verseText,
-    hear,
-    heed,
-    hold,
-    help,
-    lingering_thought: lingeringThought,
+    hear: formData.hear,
+    heed: formData.heed,
+    hold: formData.hold,
+    help: formData.help,
+    lingering_thought: formData.lingeringThought,
   })
 
   const handleSave = async () => {
     setError(null)
     setSaving(true)
 
-    // Offline — queue locally and show confirmation
     if (!navigator.onLine) {
       queueEntry(entryPayload())
       localStorage.removeItem(DRAFT_KEY)
@@ -134,16 +128,15 @@ export default function NewEntry() {
 
       localStorage.removeItem(DRAFT_KEY)
 
-      if (shareWithPartner && activePartnership && lingeringThought.trim()) {
+      if (shareWithPartner && activePartnership && formData.lingeringThought.trim()) {
         const senderName = user?.user_metadata?.full_name || 'Devotee'
         await supabase.from('partner_messages').insert({
           partnership_id: activePartnership.id,
           sender_id: user.id,
           sender_name: senderName,
           type: 'note',
-          content: lingeringThought.trim(),
+          content: formData.lingeringThought.trim(),
         })
-        // Notify partner — find their user_id
         const { data: ap } = await supabase
           .from('accountability_partners')
           .select('requester_id, partner_id')
@@ -157,7 +150,6 @@ export default function NewEntry() {
 
       router.push(`/entry/${data.id}`)
     } catch (err) {
-      // Network error mid-request — queue offline
       if (!navigator.onLine || err.message?.includes('fetch')) {
         queueEntry(entryPayload())
         localStorage.removeItem(DRAFT_KEY)
@@ -170,138 +162,105 @@ export default function NewEntry() {
     }
   }
 
+  const handleNext = () => {
+    if (currentStep < STEPS.length - 1) {
+      setCurrentStep(c => c + 1)
+    } else {
+      handleSave()
+    }
+  }
+
+  const handleCancel = () => {
+    if (currentStep > 0) {
+      setCurrentStep(c => c - 1)
+    } else {
+      router.push('/today')
+    }
+  }
+
+  const step = STEPS[currentStep]
+
+  if (savedOffline) {
+    return (
+      <div className="new-entry-page flex flex-col items-center justify-center min-h-screen text-center p-6">
+        <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '24px', color: 'var(--clr-primary)', marginBottom: '16px' }}>Saved Offline</h2>
+        <p style={{ color: 'var(--clr-text-muted)', marginBottom: '24px' }}>Your entry is safely stored and will sync when you are back online.</p>
+        <button className="new-action-btn" onClick={() => router.push('/today')}>Back to Home</button>
+      </div>
+    )
+  }
+
   return (
-    <div className="entry-page">
+    <div className="new-entry-page">
       {draftRestored && (
-        <div style={{ background: 'var(--clr-card)', padding: '10px 16px', borderRadius: '8px', fontSize: '0.85rem', color: 'var(--clr-text-muted)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <span className="flex items-center gap-2"><FileText size={16} /> Draft restored from your last session</span>
-          <button onClick={() => { setScriptureRef(''); setHear(''); setHeed(''); setHold(''); setHelp(''); setLingeringThought(''); localStorage.removeItem(DRAFT_KEY); setDraftRestored(false) }} style={{ background: 'none', border: 'none', color: 'var(--clr-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem' }}>Discard</button>
+        <div className="new-draft-banner">
+          <span className="flex items-center gap-2"><FileText size={16} /> Draft restored</span>
+          <button onClick={() => { setFormData({hear:'',heed:'',hold:'',help:'',lingeringThought:''}); localStorage.removeItem(DRAFT_KEY); setDraftRestored(false) }}>Discard</button>
         </div>
       )}
 
-      <div className="entry-top-bar">
-        <div className="entry-top-left">
-          NEW ENTRY <span style={{margin: '0 6px'}}>•</span> <span className="date">{currentDate}</span>
+      {/* Header */}
+      <div className="new-header">
+        <button className="new-header-btn" onClick={handleCancel}>
+          {currentStep === 0 ? 'Cancel' : 'Back'}
+        </button>
+        
+        <div className="new-header-progress">
+          <span className="new-progress-text">{currentStep + 1}/{STEPS.length}</span>
+          <div className="new-progress-bars">
+            {STEPS.map((_, i) => (
+              <div key={i} className={`new-progress-bar ${i <= currentStep ? 'active' : ''}`} />
+            ))}
+          </div>
         </div>
-        <div className="entry-top-right">
-          {draftSaved && <span style={{ fontSize: '0.78rem', color: 'var(--clr-text-muted)', marginRight: '12px' }}>Draft saved ✓</span>}
-          {error && <span style={{ color: '#c0392b', fontSize: '0.85rem', marginRight: '12px' }}>{error}</span>}
-          {savedOffline && (
-            <span style={{ color: '#7a6555', fontSize: '0.85rem', marginRight: '12px' }}>
-              Saved offline — will sync when connected.
-            </span>
-          )}
-          {savedOffline ? (
-            <button
-              className="btn-primary"
-              style={{ padding: '10px 24px', borderRadius: '8px' }}
-              onClick={() => router.push('/today')}
-            >
-              Done
-            </button>
-          ) : (
-            <button
-              className="btn-primary"
-              style={{ padding: '10px 24px', borderRadius: '8px' }}
-              onClick={handleSave}
-              disabled={saving}
-            >
-              {saving ? 'Saving...' : 'Save Entry'}
-            </button>
-          )}
-        </div>
+
+        <button className="new-header-btn save" onClick={handleSave} disabled={saving}>
+          {saving ? 'Saving...' : 'Save'}
+        </button>
       </div>
 
-      <div className="scripture-hero">
-        <div className="scripture-meta">
-          <span className="reference-pill" style={{ background: '#fdf6ec' }}>DAILY SCRIPTURE</span>
-          <input
-            type="text"
-            value={scriptureRef}
-            onChange={(e) => setScriptureRef(e.target.value)}
-            placeholder="e.g. Psalm 23:1-3"
-            className="verse-ref"
-            style={{ background: 'transparent', border: 'none', outline: 'none', fontWeight: 'inherit', letterSpacing: 'inherit', cursor: 'text' }}
-          />
+      <div className="new-content">
+        {/* Verse display above the input for context */}
+        <div className="new-verse-context">
+          <span className="new-verse-ref">{scriptureRef}</span>
+          <p className="new-verse-text">&ldquo;{verseText || 'Loading...'}&rdquo;</p>
         </div>
 
-
-
-        {verseText ? (
-          <p className="scripture-text" style={{ fontSize: '1.25rem', lineHeight: '1.6', color: '#555', fontStyle: 'italic', marginBottom: '16px' }}>{verseText}</p>
-        ) : (
-          <p className="scripture-text" style={{ fontSize: '1.25rem', lineHeight: '1.6', color: '#bbb', fontStyle: 'italic', marginBottom: '16px' }}>Loading verse...</p>
-        )}
-      </div>
-
-      <div className="quadrants-grid">
-        <div className="quadrant-card">
-          <div className="q-header">
-            <span className="q-icon flex items-center justify-center"><BookOpen size={20} /></span>
-            <h3 className="q-title">Head</h3>
-          </div>
-          <textarea
-            className="q-textarea"
-            placeholder="What does God say? Identify the main truths..."
-            value={hear}
-            onChange={(e) => setHear(e.target.value)}
-          />
-        </div>
-
-        <div className="quadrant-card">
-          <div className="q-header">
-            <span className="q-icon flex items-center justify-center"><Heart size={20} /></span>
-            <h3 className="q-title">Heart</h3>
-          </div>
-          <textarea
-            className="q-textarea"
-            placeholder="Let the word penetrate your heart. Reflect on emotions..."
-            value={heed}
-            onChange={(e) => setHeed(e.target.value)}
-          />
-        </div>
-
-        <div className="quadrant-card">
-          <div className="q-header">
-            <span className="q-icon flex items-center justify-center"><Hand size={20} /></span>
-            <h3 className="q-title">Hand</h3>
-          </div>
-          <textarea
-            className="q-textarea"
-            placeholder="What action steps will you take to apply the word..."
-            value={hold}
-            onChange={(e) => setHold(e.target.value)}
-          />
-        </div>
-
-        <div className="quadrant-card">
-          <div className="q-header">
-            <span className="q-icon flex items-center justify-center"><Handshake size={20} /></span>
-            <h3 className="q-title">Help</h3>
-          </div>
-          <textarea
-            className="q-textarea"
-            placeholder="How can you extend this truth to others..."
-            value={help}
-            onChange={(e) => setHelp(e.target.value)}
-          />
-        </div>
-      </div>
-
-      <div className="scenic-banner">
-        <input
-          type="text"
-          placeholder="Type a core lingering thought here..."
-          value={lingeringThought}
-          onChange={(e) => setLingeringThought(e.target.value)}
-          style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: '1.6rem', color: '#666', background: 'rgba(253, 246, 236, 0.8)', border: 'none', borderRadius: '8px', padding: '12px 24px', minWidth: '50%', outline: 'none', textAlign: 'center' }}
+        <h1 className="new-step-title">{step.title}</h1>
+        
+        <textarea
+          className="new-textarea"
+          placeholder={step.placeholder}
+          value={formData[step.id]}
+          onChange={(e) => handleTextChange(step.id, e.target.value)}
+          autoFocus
         />
-        {activePartnership && lingeringThought.trim() && (
-          <label className="share-partner-check">
-            <input type="checkbox" checked={shareWithPartner} onChange={e => setShareWithPartner(e.target.checked)} />
-            Share this thought with my accountability partner
-          </label>
+
+        {currentStep === 3 && (
+          <div className="new-lingering-section">
+            <h3 className="new-lingering-title">Lingering Thought</h3>
+            <textarea
+              className="new-textarea lingering"
+              placeholder="A core takeaway from today..."
+              value={formData.lingeringThought}
+              onChange={(e) => handleTextChange('lingeringThought', e.target.value)}
+            />
+            {activePartnership && (
+              <label className="share-partner-check">
+                <input type="checkbox" checked={shareWithPartner} onChange={e => setShareWithPartner(e.target.checked)} />
+                Share this thought with my accountability partner
+              </label>
+            )}
+          </div>
         )}
+      </div>
+
+      <div className="new-footer">
+        <button className="new-action-btn" onClick={handleNext}>
+          {currentStep === STEPS.length - 1 ? 'Finish & Save' : 'Next'}
+        </button>
+        {error && <p className="new-error">{error}</p>}
+        {draftSaved && <p className="new-saved-indicator">Draft saved ✓</p>}
       </div>
     </div>
   )

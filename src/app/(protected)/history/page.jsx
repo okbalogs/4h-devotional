@@ -131,8 +131,8 @@ export default function DailyArchives() {
       {/* Offline banner */}
       {isOffline && (
         <div style={{
-          background: 'rgba(157, 79, 20, 0.08)',
-          border: '1px solid rgba(157, 79, 20, 0.25)',
+          background: 'rgba(47, 93, 69, 0.08)',
+          border: '1px solid rgba(47, 93, 69, 0.25)',
           borderRadius: '10px',
           padding: '10px 16px',
           marginBottom: '20px',
@@ -148,7 +148,7 @@ export default function DailyArchives() {
       )}
 
       <div style={{ marginBottom: '40px' }}>
-        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#9d4f14', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Your Journey</span>
+        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--clr-primary)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Your Journey</span>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '2.4rem', color: '#333', marginTop: '4px', marginBottom: '12px' }}>Faithful Reflections</h2>
         <p style={{ color: '#666', maxWidth: '600px', lineHeight: 1.6 }}>
           Review your walk through the Word. Every entry is a step closer to the heart of God.
@@ -205,7 +205,7 @@ export default function DailyArchives() {
             <p style={{ color: '#999', padding: '20px 0' }}>
               No entries this month.{' '}
               {!isOffline && (
-                <Link href="/entry/new" style={{ color: '#9d4f14', fontWeight: 600 }}>Write one now →</Link>
+                <Link href="/entry/new" style={{ color: 'var(--clr-primary)', fontWeight: 600 }}>Write one now →</Link>
               )}
             </p>
           )}

@@ -6,7 +6,7 @@ import { supabase } from '@/utils/supabase'
 import { useAuth } from '@/context/AuthContext'
 import { notifyUser } from '@/utils/pushManager'
 import DevotionCardModal from '@/components/DevotionCardModal'
-import { Pencil, BookOpen, Heart, Hand, Handshake, Download, Trash2 } from 'lucide-react'
+import { Pencil, BookOpen, Heart, Hand, Handshake, Download, Trash2, Share2 } from 'lucide-react'
 
 export default function ReadingRecord() {
   const { id } = useParams()
@@ -150,6 +150,13 @@ export default function ReadingRecord() {
     }
   }
 
+  const handleShareWhatsApp = () => {
+    if (!entry) return
+    const text = `My devotion for today from ${entry.scripture_reference}:\n\n"${entry.lingering_thought || entry.hear || verseText}"\n\n- Shared via 4H Devotion Tracker`
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`
+    window.open(url, '_blank')
+  }
+
   const handleDelete = async () => {
     if (!confirm('Delete this entry? This cannot be undone.')) return
     setDeleting(true)
@@ -222,7 +229,7 @@ export default function ReadingRecord() {
 
       <div className="scripture-hero">
         <div className="scripture-meta">
-          <span className="reference-pill" style={{ background: '#fdf6ec' }}>DAILY SCRIPTURE</span>
+          <span className="reference-pill" style={{ background: 'var(--clr-cream)' }}>DAILY SCRIPTURE</span>
           {isEditing ? (
             <input
               type="text"
@@ -230,7 +237,7 @@ export default function ReadingRecord() {
               onChange={set('scripture_reference')}
               placeholder="e.g. Psalm 23:1-3"
               className="verse-ref"
-              style={{ background: 'transparent', border: 'none', borderBottom: '1.5px solid #e8d8c4', outline: 'none', fontWeight: 'inherit', letterSpacing: 'inherit', cursor: 'text', padding: '2px 0' }}
+              style={{ background: 'transparent', border: 'none', borderBottom: '1.5px solid var(--clr-border)', outline: 'none', fontWeight: 'inherit', letterSpacing: 'inherit', cursor: 'text', padding: '2px 0' }}
             />
           ) : (
             entry.scripture_reference && <span className="verse-ref">{entry.scripture_reference}</span>
@@ -287,6 +294,11 @@ export default function ReadingRecord() {
           {!isEditing && (
             <button className="btn-export flex items-center gap-2" onClick={() => setShowCard(true)} title="Download card">
               <Download size={16} /> Download Card
+            </button>
+          )}
+          {!isEditing && (
+            <button className="btn-export flex items-center gap-2" onClick={handleShareWhatsApp} title="Share to WhatsApp" style={{ background: '#25D366', color: 'white', borderColor: '#25D366' }}>
+              <Share2 size={16} /> WhatsApp
             </button>
           )}
           {!isEditing && activePartnership && entry.lingering_thought && (

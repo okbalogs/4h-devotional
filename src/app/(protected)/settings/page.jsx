@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/utils/supabase'
-import { Bell, BookOpen, Eye, Clock, BarChart2, Heart, Key } from 'lucide-react'
+import { Bell, BookOpen, Eye, Clock, BarChart2, Heart, Key, GraduationCap } from 'lucide-react'
 
 const BIBLE_VERSIONS = [
   { code: 'kjv', label: 'KJV' },
@@ -30,6 +30,8 @@ export default function Settings() {
   // Profile fields
   const [fullName, setFullName] = useState('')
   const [church, setChurch] = useState('')
+  const [academicLevel, setAcademicLevel] = useState('')
+  const [examMode, setExamMode] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState(null)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const fileInputRef = useRef(null)
@@ -53,7 +55,7 @@ export default function Settings() {
 
     supabase
       .from('profiles')
-      .select('avatar_url, bible_version, church, reminders_enabled, reminder_time, public_profile, weekly_summary, community_prayers')
+      .select('avatar_url, bible_version, church, reminders_enabled, reminder_time, public_profile, weekly_summary, community_prayers, academic_level, exam_mode')
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
@@ -61,6 +63,8 @@ export default function Settings() {
         if (data.avatar_url) setAvatarUrl(data.avatar_url)
         if (data.bible_version) setBibleVersion(data.bible_version)
         if (data.church) setChurch(data.church)
+        if (data.academic_level) setAcademicLevel(data.academic_level)
+        if (data.exam_mode !== undefined) setExamMode(data.exam_mode)
         setReminders(data.reminders_enabled ?? true)
         setReminderTime(data.reminder_time ?? '06:00')
         setPublicProfile(data.public_profile ?? false)
@@ -71,6 +75,8 @@ export default function Settings() {
         originalProfileRef.current = {
           fullName: user.user_metadata?.full_name ?? '',
           church: data.church ?? '',
+          academicLevel: data.academic_level ?? '',
+          examMode: data.exam_mode ?? false,
           bibleVersion: data.bible_version ?? 'web',
           reminders: data.reminders_enabled ?? true,
           reminderTime: data.reminder_time ?? '06:00',
@@ -130,6 +136,8 @@ export default function Settings() {
         id: user.id,
         bible_version: bibleVersion,
         church,
+        academic_level: academicLevel,
+        exam_mode: examMode,
         reminders_enabled: reminders,
         reminder_time: reminderTime,
         public_profile: publicProfile,
@@ -152,7 +160,7 @@ export default function Settings() {
         : 'Changes saved.')
       // Update originals so subsequent discards reflect the saved state
       originalProfileRef.current = {
-        fullName, church, bibleVersion, reminders, reminderTime,
+        fullName, church, academicLevel, examMode, bibleVersion, reminders, reminderTime,
         publicProfile, weeklySummary, communityPrayers,
       }
       originalBibleVersionRef.current = bibleVersion
@@ -171,6 +179,8 @@ export default function Settings() {
     if (orig) {
       setFullName(orig.fullName)
       setChurch(orig.church)
+      setAcademicLevel(orig.academicLevel)
+      setExamMode(orig.examMode)
       setBibleVersion(orig.bibleVersion)
       setReminders(orig.reminders)
       setReminderTime(orig.reminderTime)
@@ -297,7 +307,25 @@ export default function Settings() {
                   </div>
                 </div>
                 <div>
-                  <label className="input-label">Church / Denomination (Optional)</label>
+                  <label className="input-label">Academic Level</label>
+                  <select
+                    className="input-soft"
+                    value={academicLevel}
+                    onChange={(e) => setAcademicLevel(e.target.value)}
+                    style={{ marginBottom: '16px' }}
+                  >
+                    <option value="">Select Level...</option>
+                    <option value="100L">100L</option>
+                    <option value="200L">200L</option>
+                    <option value="300L">300L</option>
+                    <option value="400L">400L</option>
+                    <option value="500L">500L</option>
+                    <option value="Graduate">Graduate</option>
+                    <option value="Alumni">Alumni</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="input-label">Local Church / Denomination (Optional)</label>
                   <input
                     type="text"
                     className="input-soft"
@@ -316,7 +344,7 @@ export default function Settings() {
             <div className="cards-grid">
               <div className="mini-card">
                 <div className="mini-card-header">
-                  <div className="circle-icon flex items-center justify-center"><Bell size={20} className="text-[#9d4f14]" /></div>
+                  <div className="circle-icon flex items-center justify-center"><Bell size={20} className="text-[var(--clr-primary)]" /></div>
                   <div className={`toggle-switch ${reminders ? 'on' : ''}`} onClick={handleReminderToggle} />
                 </div>
                 <div>
@@ -327,7 +355,7 @@ export default function Settings() {
 
               <div className="mini-card">
                 <div className="mini-card-header">
-                  <div className="circle-icon flex items-center justify-center"><BookOpen size={20} className="text-[#9d4f14]" /></div>
+                  <div className="circle-icon flex items-center justify-center"><BookOpen size={20} className="text-[var(--clr-primary)]" /></div>
                 </div>
                 <div>
                   <h3>Bible Version</h3>
@@ -349,7 +377,18 @@ export default function Settings() {
 
               <div className="mini-card">
                 <div className="mini-card-header">
-                  <div className="circle-icon flex items-center justify-center"><Eye size={20} className="text-[#9d4f14]" /></div>
+                  <div className="circle-icon flex items-center justify-center"><GraduationCap size={20} className="text-[var(--clr-primary)]" /></div>
+                  <div className={`toggle-switch ${examMode ? 'on' : ''}`} onClick={() => setExamMode(v => !v)} />
+                </div>
+                <div>
+                  <h3>Exam Season Mode</h3>
+                  <p>Shift daily verses to focus on peace, diligence, and overcoming anxiety.</p>
+                </div>
+              </div>
+
+              <div className="mini-card">
+                <div className="mini-card-header">
+                  <div className="circle-icon flex items-center justify-center"><Eye size={20} className="text-[var(--clr-primary)]" /></div>
                   <div className={`toggle-switch ${publicProfile ? 'on' : ''}`} onClick={() => setPublicProfile(v => !v)} />
                 </div>
                 <div>
@@ -366,7 +405,7 @@ export default function Settings() {
             <div className="cards-grid">
               <div className="mini-card">
                 <div className="mini-card-header">
-                  <div className="circle-icon flex items-center justify-center"><Clock size={20} className="text-[#9d4f14]" /></div>
+                  <div className="circle-icon flex items-center justify-center"><Clock size={20} className="text-[var(--clr-primary)]" /></div>
                 </div>
                 <div>
                   <h3>Morning Devotion</h3>
@@ -393,7 +432,7 @@ export default function Settings() {
 
               <div className="mini-card">
                 <div className="mini-card-header">
-                  <div className="circle-icon flex items-center justify-center"><BarChart2 size={20} className="text-[#9d4f14]" /></div>
+                  <div className="circle-icon flex items-center justify-center"><BarChart2 size={20} className="text-[var(--clr-primary)]" /></div>
                   <div className={`toggle-switch ${weeklySummary ? 'on' : ''}`} onClick={() => setWeeklySummary(v => !v)} />
                 </div>
                 <div>
@@ -404,7 +443,7 @@ export default function Settings() {
 
               <div className="mini-card">
                 <div className="mini-card-header">
-                  <div className="circle-icon flex items-center justify-center"><Heart size={20} className="text-[#9d4f14]" /></div>
+                  <div className="circle-icon flex items-center justify-center"><Heart size={20} className="text-[var(--clr-primary)]" /></div>
                   <div className={`toggle-switch ${communityPrayers ? 'on' : ''}`} onClick={() => setCommunityPrayers(v => !v)} />
                 </div>
                 <div>
@@ -421,7 +460,7 @@ export default function Settings() {
             <div className="card-strong">
               <div className="flex-between">
                 <div className="gap-12">
-                  <div className="circle-icon circle-icon-white flex items-center justify-center"><Key size={20} className="text-[#9d4f14]" /></div>
+                  <div className="circle-icon circle-icon-white flex items-center justify-center"><Key size={20} className="text-[var(--clr-primary)]" /></div>
                   <div>
                     <h3 style={{ fontSize: '1.05rem', color: '#333' }}>Update Your Password</h3>
                     <p style={{ fontSize: '0.85rem', color: '#666' }}>Update your credentials to keep your journal private.</p>
@@ -436,7 +475,7 @@ export default function Settings() {
               </div>
 
               {showPasswordForm && (
-                <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(157, 79, 20, 0.15)' }}>
+                <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(47, 93, 69, 0.15)' }}>
                   <div className="form-row" style={{ marginBottom: '16px' }}>
                     <div>
                       <label className="input-label">New Password</label>
@@ -470,7 +509,7 @@ export default function Settings() {
                   )}
                   <button
                     className="btn-primary"
-                    style={{ border: 'none', padding: '10px 20px', borderRadius: '8px', background: '#9d4f14', color: '#fff', fontWeight: 600 }}
+                    style={{ border: 'none', padding: '10px 20px', borderRadius: '8px', background: 'var(--clr-primary)', color: '#fff', fontWeight: 600 }}
                     onClick={handlePasswordChange}
                     disabled={changingPassword}
                   >
@@ -490,7 +529,7 @@ export default function Settings() {
             <button className="btn-text" onClick={handleDiscard}>Discard Changes</button>
             <button
               className="btn-primary"
-              style={{ border: 'none', padding: '12px 24px', borderRadius: '8px', background: '#9d4f14', color: '#fff', fontWeight: 600 }}
+              style={{ border: 'none', padding: '12px 24px', borderRadius: '8px', background: 'var(--clr-primary)', color: '#fff', fontWeight: 600 }}
               onClick={handleSave}
               disabled={saving}
             >

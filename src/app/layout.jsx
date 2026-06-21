@@ -1,4 +1,4 @@
-import { Fraunces, Lora } from "next/font/google";
+import { Playfair_Display, Outfit } from "next/font/google";
 import "./globals.css";
 import ShellWrapper from "@/components/ShellWrapper";
 import { AuthProvider } from "@/context/AuthContext";
@@ -7,15 +7,14 @@ import InstallPopup from "@/components/InstallPopup";
 import ChangelogModal from "@/components/ChangelogModal";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
-const lora = Lora({
-  variable: "--font-lora",
+const outfit = Outfit({
+  variable: "--font-kalam", // keeping the variable name mapping
   subsets: ["latin"],
   display: "swap",
 });
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  axes: ["SOFT", "WONK", "opsz"],
+const playfair = Playfair_Display({
+  variable: "--font-caveat", // keeping the variable name mapping
   subsets: ["latin"],
   display: "swap",
 });
@@ -86,7 +85,7 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: "#9d4f14",
+  themeColor: "var(--clr-primary)",
   width: "device-width",
   initialScale: 1,
 };
@@ -96,7 +95,7 @@ export default function RootLayout({ children }) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${lora.variable} ${fraunces.variable} antialiased`}>
+      className={`${outfit.variable} ${playfair.variable} antialiased`}>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <script

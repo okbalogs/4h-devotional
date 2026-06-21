@@ -14,13 +14,13 @@
   align-items: center;
   gap: 12px;
   font-size: 0.8rem;
-  color: #7a6555;
+  color: var(--clr-text-muted);
   font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
 }
 .entry-top-left span.date {
-  color: #8c786a;
+  color: var(--clr-text-muted);
   text-transform: none;
   letter-spacing: 0;
   font-weight: 500;
@@ -37,7 +37,7 @@
   background: #fff;
   border-radius: 16px;
   padding: 50px;
-  box-shadow: 0 8px 30px rgba(157, 79, 20, 0.05);
+  box-shadow: 0 8px 30px rgba(47, 93, 69, 0.05);
   margin-bottom: 30px;
   position: relative;
 }
@@ -60,7 +60,7 @@
 .verse-ref {
   font-weight: 700;
   letter-spacing: 1px;
-  color: #9d4f14;
+  color: var(--clr-primary);
   font-size: 0.85rem;
 }
 .scripture-text {
@@ -80,7 +80,7 @@
   margin-bottom: 40px;
 }
 .quadrant-card {
-  background: #fdf6ec;
+  background: var(--clr-cream);
   border-radius: 12px;
   padding: 30px;
   position: relative;
@@ -114,9 +114,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #eee4d8;
+  background: var(--clr-border);
   border-radius: 50%;
-  color: #9d4f14;
+  color: var(--clr-primary);
   font-size: 0.9rem;
 }
 .q-title {
@@ -172,7 +172,7 @@
   background: none;
   border: none;
   font-weight: 600;
-  color: #9d4f14;
+  color: var(--clr-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -180,7 +180,7 @@
   padding: 12px 16px;
 }
 .btn-export:hover {
-  background: rgba(157, 79, 20, 0.05);
+  background: rgba(47, 93, 69, 0.05);
   border-radius: 8px;
 }
 .entry-actions-right {
@@ -193,13 +193,13 @@
   align-items: center;
   gap: 8px;
   font-size: 0.82rem;
-  color: #7a6555;
+  color: var(--clr-text-muted);
   cursor: pointer;
   user-select: none;
   margin-top: 10px;
 }
 .share-partner-check input {
-  accent-color: #9d4f14;
+  accent-color: var(--clr-primary);
   width: 15px;
   height: 15px;
   cursor: pointer;
@@ -208,7 +208,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #7a6555;
+  color: var(--clr-text-muted);
   transition: 0.2s;
   padding: 8px;
 }
@@ -296,7 +296,7 @@
     font-size: 1.1rem;
     padding: 8px 12px;
     border-radius: 10px;
-    background: rgba(157, 79, 20, 0.07);
+    background: rgba(47, 93, 69, 0.07);
     min-width: 44px;
     min-height: 44px;
     display: flex;
@@ -315,9 +315,9 @@
     font-size: 0.82rem;
     padding: 8px 14px;
     border-radius: 10px;
-    background: rgba(157, 79, 20, 0.07);
+    background: rgba(47, 93, 69, 0.07);
     border: none;
-    color: #9d4f14;
+    color: var(--clr-primary);
     font-weight: 600;
     min-height: 44px;
     display: flex;
@@ -408,7 +408,7 @@
   font-family: Georgia, serif;
   font-size: 1rem;
   font-weight: 600;
-  color: #7a6555;
+  color: var(--clr-text-muted);
   letter-spacing: 1.5px;
   text-transform: uppercase;
 }
@@ -416,26 +416,26 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #9d4f14;
+  color: var(--clr-primary);
   font-size: 1.1rem;
   padding: 4px 8px;
   border-radius: 6px;
   transition: background 0.15s;
 }
-.dcard-close:hover { background: rgba(157,79,20,0.08); }
+.dcard-close:hover { background: rgba(47, 93, 69, 0.08); }
 
 /* Preview card */
 .dcard-preview {
   margin: 20px;
   border-radius: 16px;
-  border: 1px solid #e8d8c4;
+  border: 1px solid var(--clr-border);
   overflow: hidden;
-  background: linear-gradient(160deg, #fdf6ec 0%, #f5e6d3 100%);
+  background: linear-gradient(160deg, var(--clr-cream) 0%, #f5e6d3 100%);
   font-family: Arial, sans-serif;
 }
 .dcard-accent-bar {
   height: 6px;
-  background: linear-gradient(90deg, #9d4f14, #c0783a);
+  background: linear-gradient(90deg, var(--clr-primary), var(--clr-primary-hover));
 }
 .dcard-accent-bar-bottom {
   margin-top: 0;
@@ -450,7 +450,7 @@
   font-family: Georgia, serif;
   font-weight: bold;
   font-size: 0.85rem;
-  color: #9d4f14;
+  color: var(--clr-primary);
   letter-spacing: 2px;
 }
 .dcard-date {
@@ -459,7 +459,7 @@
 }
 .dcard-divider {
   border: none;
-  border-top: 1px solid #e8d8c4;
+  border-top: 1px solid var(--clr-border);
   margin: 0 20px;
 }
 .dcard-divider-bottom { margin-top: 12px; }
@@ -472,7 +472,7 @@
   padding: 3px 12px;
   font-size: 0.72rem;
   font-weight: bold;
-  color: #9d4f14;
+  color: var(--clr-primary);
   letter-spacing: 1px;
 }
 .dcard-verse-text {
@@ -506,10 +506,10 @@
   border-radius: 10px;
   padding: 12px 14px;
   border: 1px solid rgba(232,216,196,0.7);
-  border-left: 4px solid #9d4f14;
+  border-left: 4px solid var(--clr-primary);
   min-height: 100px;
 }
-.dcard-cell-1 { border-left-color: #c0783a; }
+.dcard-cell-1 { border-left-color: var(--clr-primary-hover); }
 .dcard-cell-2 { border-left-color: #7a4f28; background: rgba(253,246,236,0.8); }
 .dcard-cell-3 { border-left-color: #4a7c59; background: rgba(253,246,236,0.8); }
 .dcard-cell-header {
@@ -527,7 +527,7 @@
 .dcard-cell-sub {
   font-size: 0.68rem;
   font-weight: bold;
-  color: #9d4f14;
+  color: var(--clr-primary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -543,7 +543,7 @@
   font-style: italic;
   font-size: 0.88rem;
   color: #7a4f28;
-  background: rgba(157,79,20,0.06);
+  background: rgba(47, 93, 69, 0.06);
   border-radius: 8px;
   padding: 10px 14px;
   line-height: 1.5;
@@ -555,13 +555,13 @@
   font-size: 0.72rem;
 }
 .dcard-footer-left { color: #c0a080; }
-.dcard-footer-right { font-family: Georgia, serif; font-weight: bold; color: #9d4f14; }
+.dcard-footer-right { font-family: Georgia, serif; font-weight: bold; color: var(--clr-primary); }
 
 /* Download button */
 .dcard-download-btn {
   margin: 0 20px 20px;
   padding: 14px;
-  background: linear-gradient(135deg, #9d4f14, #c0783a);
+  background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-hover));
   color: #fff;
   font-weight: 700;
   font-size: 0.95rem;
@@ -625,7 +625,7 @@
   width: 100%;
   min-height: 120px;
   background: transparent;
-  border: 1px solid rgba(157, 79, 20, 0.2);
+  border: 1px solid rgba(47, 93, 69, 0.2);
   border-radius: 8px;
   padding: 12px;
   color: #555;
@@ -639,7 +639,7 @@
 }
 .q-textarea:focus {
   outline: none;
-  border-color: #9d4f14;
+  border-color: var(--clr-primary);
   background: rgba(255, 255, 255, 0.5);
 }
 .q-textarea::placeholder {

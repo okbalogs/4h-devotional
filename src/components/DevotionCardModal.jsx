@@ -136,14 +136,14 @@ function drawCard(canvas, entry, verseText, formattedDate) {
   // --- Start Drawing ---
   // Background gradient
   const bg = ctx.createLinearGradient(0, 0, 0, finalH)
-  bg.addColorStop(0, '#fdf6ec')
+  bg.addColorStop(0, 'var(--clr-cream)')
   bg.addColorStop(0.5, '#faf0e4')
   bg.addColorStop(1, '#f5e6d3')
   ctx.fillStyle = bg
   ctx.fillRect(0, 0, W, finalH)
 
   // Subtle texture lines
-  ctx.strokeStyle = 'rgba(157,79,20,0.04)'
+  ctx.strokeStyle = 'rgba(47, 93, 69, 0.04)'
   ctx.lineWidth = 1
   for (let i = 0; i < finalH; i += 40) {
     ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(W, i); ctx.stroke()
@@ -151,13 +151,13 @@ function drawCard(canvas, entry, verseText, formattedDate) {
 
   // Top accent bar
   const topGrad = ctx.createLinearGradient(0, 0, W, 0)
-  topGrad.addColorStop(0, '#9d4f14')
-  topGrad.addColorStop(1, '#c0783a')
+  topGrad.addColorStop(0, 'var(--clr-primary)')
+  topGrad.addColorStop(1, 'var(--clr-primary-hover)')
   ctx.fillStyle = topGrad
   ctx.fillRect(0, 0, W, 10)
 
   // Header
-  ctx.fillStyle = '#9d4f14'
+  ctx.fillStyle = 'var(--clr-primary)'
   ctx.font = 'bold 26px Georgia, serif'
   ctx.letterSpacing = '4px'
   ctx.fillText('✦  SELAH', 60, 80)
@@ -170,7 +170,7 @@ function drawCard(canvas, entry, verseText, formattedDate) {
   ctx.textAlign = 'left'
 
   // Separator
-  ctx.strokeStyle = '#e8d8c4'
+  ctx.strokeStyle = 'var(--clr-border)'
   ctx.lineWidth = 1.5
   ctx.beginPath(); ctx.moveTo(60, 105); ctx.lineTo(W - 60, 105); ctx.stroke()
 
@@ -186,7 +186,7 @@ function drawCard(canvas, entry, verseText, formattedDate) {
     ctx.strokeStyle = '#e8cfa8'
     ctx.lineWidth = 1
     ctx.stroke()
-    ctx.fillStyle = '#9d4f14'
+    ctx.fillStyle = 'var(--clr-primary)'
     ctx.fillText(refText, 76, cursorY + 24)
     cursorY += 56
   }
@@ -216,7 +216,7 @@ function drawCard(canvas, entry, verseText, formattedDate) {
 
   // 4H grid drawing
   const cols = [60, 60 + cellW + 20]
-  const pillarColors = ['#9d4f14', '#c0783a', '#7a4f28', '#4a7c59']
+  const pillarColors = ['var(--clr-primary)', 'var(--clr-primary-hover)', '#7a4f28', '#4a7c59']
 
   PILLARS.forEach((pillar, i) => {
     const cx = cols[i % 2]
@@ -237,7 +237,7 @@ function drawCard(canvas, entry, verseText, formattedDate) {
     const iconR = 22
     ctx.beginPath()
     ctx.arc(cx + 38, cy + 38, iconR, 0, Math.PI * 2)
-    ctx.fillStyle = `rgba(157,79,20,0.1)`
+    ctx.fillStyle = `rgba(47, 93, 69, 0.1)`
     ctx.fill()
     ctx.fillStyle = pillarColors[i]
     ctx.font = '22px Arial, sans-serif'
@@ -269,7 +269,7 @@ function drawCard(canvas, entry, verseText, formattedDate) {
   if (entry.lingering_thought) {
     roundRect(ctx, 60, lingeringY, W - 120, lingeringH, 12)
     const bannerGrad = ctx.createLinearGradient(60, lingeringY, W - 60, lingeringY)
-    bannerGrad.addColorStop(0, 'rgba(157,79,20,0.08)')
+    bannerGrad.addColorStop(0, 'rgba(47, 93, 69, 0.08)')
     bannerGrad.addColorStop(1, 'rgba(192,120,58,0.06)')
     ctx.fillStyle = bannerGrad
     ctx.fill()
@@ -285,7 +285,7 @@ function drawCard(canvas, entry, verseText, formattedDate) {
   }
 
   // Footer separator
-  ctx.strokeStyle = '#e8d8c4'
+  ctx.strokeStyle = 'var(--clr-border)'
   ctx.lineWidth = 1.5
   ctx.beginPath(); ctx.moveTo(60, finalH - 80); ctx.lineTo(W - 60, finalH - 80); ctx.stroke()
 
@@ -293,7 +293,7 @@ function drawCard(canvas, entry, verseText, formattedDate) {
   ctx.font = '22px Arial, sans-serif'
   ctx.fillText('4H Devotion · ECWA', 60, finalH - 46)
   ctx.textAlign = 'right'
-  ctx.fillStyle = '#9d4f14'
+  ctx.fillStyle = 'var(--clr-primary)'
   ctx.font = 'bold 22px Georgia, serif'
   ctx.fillText('✦ selah', W - 60, finalH - 46)
   ctx.textAlign = 'left'

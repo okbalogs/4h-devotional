@@ -156,7 +156,7 @@
 }
 
 .pray-btn--prayed {
-  background: rgba(157, 79, 20, 0.1);
+  background: rgba(47, 93, 69, 0.1);
   border-color: var(--clr-primary);
   color: var(--clr-primary);
 }
@@ -236,7 +236,7 @@
 }
 
 .group-card:hover {
-  box-shadow: 0 6px 24px rgba(157, 79, 20, 0.1);
+  box-shadow: 0 6px 24px rgba(47, 93, 69, 0.1);
 }
 
 .group-card-name {
@@ -297,7 +297,7 @@
 }
 
 .join-btn--join:hover {
-  background: #bb621c;
+  background: var(--clr-primary-hover);
 }
 
 .join-btn--leave {
@@ -312,7 +312,7 @@
 }
 
 .join-btn--leader {
-  background: rgba(157, 79, 20, 0.1);
+  background: rgba(47, 93, 69, 0.1);
   color: var(--clr-primary);
   cursor: default;
   pointer-events: none;
@@ -523,8 +523,8 @@
   justify-content: space-between;
   gap: 12px;
   padding: 14px 18px;
-  background: rgba(157, 79, 20, 0.07);
-  border: 1px solid rgba(157, 79, 20, 0.2);
+  background: rgba(47, 93, 69, 0.07);
+  border: 1px solid rgba(47, 93, 69, 0.2);
   border-radius: 12px;
   font-size: 0.88rem;
   color: var(--clr-text-muted);
@@ -641,7 +641,7 @@
   font-size: 0.74rem;
   font-weight: 700;
   color: #7a4f28;
-  background: rgba(157, 79, 20, 0.1);
+  background: rgba(47, 93, 69, 0.1);
   padding: 3px 10px;
   border-radius: 20px;
 }
@@ -680,7 +680,7 @@
   padding: 10px 20px;
   border-radius: 20px;
   border: 1.5px solid var(--clr-primary);
-  background: rgba(157, 79, 20, 0.07);
+  background: rgba(47, 93, 69, 0.07);
   color: var(--clr-primary);
   font-family: inherit;
   font-size: 0.88rem;
@@ -690,7 +690,7 @@
 }
 
 .btn-nudge:hover {
-  background: rgba(157, 79, 20, 0.15);
+  background: rgba(47, 93, 69, 0.15);
 }
 
 .btn-nudge:disabled {
@@ -747,8 +747,8 @@
 }
 
 .partner-msg--mine {
-  background: rgba(157, 79, 20, 0.06);
-  border-color: rgba(157, 79, 20, 0.15);
+  background: rgba(47, 93, 69, 0.06);
+  border-color: rgba(47, 93, 69, 0.15);
 }
 
 .partner-msg-meta {
@@ -827,8 +827,8 @@
   color: var(--clr-text-muted);
 }
 
-/* ── Responsive ── */
-@media (max-width: 600px) {
+/* Mobile: full-screen sheet */
+@media (max-width: 768px) {
   .create-group-row {
     grid-template-columns: 1fr;
   }
@@ -843,6 +843,11 @@
 
   .partner-panel {
     padding: 20px;
+    max-width: 100%;
+  }
+
+  .partner-panel--active {
+    max-width: 100%;
   }
 
   .prayer-post-actions {
@@ -1063,7 +1068,7 @@
   font-size: 0.68rem;
   font-weight: 700;
   color: var(--clr-primary);
-  background: rgba(157, 79, 20, 0.1);
+  background: rgba(47, 93, 69, 0.1);
   padding: 2px 8px;
   border-radius: 10px;
 }
@@ -1105,8 +1110,8 @@
 }
 
 .group-msg--mine {
-  background: rgba(157, 79, 20, 0.07);
-  border-color: rgba(157, 79, 20, 0.15);
+  background: rgba(47, 93, 69, 0.07);
+  border-color: rgba(47, 93, 69, 0.15);
   align-self: flex-end;
 }
 
@@ -1150,7 +1155,7 @@
 /* ── Dark mode ── */
 [data-theme="dark"] .prayer-textarea,
 [data-theme="dark"] .partner-invite-input {
-  background: #2a2218;
+  background: var(--clr-card);
   color: var(--clr-text);
   border-color: #3a3020;
 }

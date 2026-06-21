@@ -1,33 +1,47 @@
 import { supabase } from './supabase'
 import { getLocalVerse, setLocalVerse } from './offlineStorage'
 
-const VERSE_LIST = [
-  "Psalm 23:1-3", "John 3:16", "Proverbs 3:5-6", "Romans 8:28",
-  "Philippians 4:6-7", "Isaiah 40:31", "Jeremiah 29:11", "Matthew 6:33",
-  "Psalm 46:1", "Joshua 1:9", "Romans 12:1-2", "Galatians 5:22-23",
-  "Ephesians 6:10-11", "1 Corinthians 13:4-7", "James 1:2-4", "Hebrews 11:1",
-  "Matthew 5:3-5", "Psalm 119:105", "Isaiah 41:10", "2 Timothy 3:16-17",
-  "Romans 5:1-2", "Colossians 3:23-24", "Matthew 11:28-30", "Psalm 139:14",
-  "1 Peter 5:7", "John 15:5", "Romans 6:23", "Psalm 27:1",
-  "Isaiah 55:8-9", "Matthew 28:19-20", "John 14:6", "Acts 1:8",
-  "Romans 3:23", "Ephesians 2:8-9", "Philippians 4:13", "Psalm 37:4",
-  "Proverbs 4:23", "Isaiah 26:3", "Luke 6:31", "John 10:10",
-  "Romans 8:1", "2 Corinthians 5:17", "Galatians 2:20", "Ephesians 4:32",
-  "Colossians 1:15-17", "1 Thessalonians 5:16-18", "2 Timothy 1:7", "Hebrews 4:16",
-  "James 1:22", "1 John 1:9", "Revelation 3:20", "Psalm 51:10",
-  "Proverbs 16:3", "Isaiah 43:2", "Matthew 5:14-16", "John 8:32",
-  "Acts 4:12", "Romans 10:9", "1 Corinthians 10:13", "Ephesians 3:20",
-  "Philippians 2:3-4", "Colossians 4:2", "1 Timothy 6:6", "Hebrews 12:1-2",
-  "James 4:7", "1 Peter 2:9", "Psalm 34:8", "Proverbs 22:6",
-  "Isaiah 53:5", "Matthew 6:9-13", "John 16:33", "Romans 8:38-39",
-  "1 Corinthians 15:57", "Ephesians 5:1-2", "Philippians 1:6", "Colossians 3:2",
-  "2 Thessalonians 3:3", "Hebrews 13:8", "James 5:16", "1 Peter 3:15",
-  "1 John 4:7-8", "Psalm 91:1-2", "Proverbs 18:24", "Isaiah 58:6-7",
-  "Matthew 22:37-39", "John 1:1-3", "Romans 12:9-10", "1 Corinthians 6:19-20",
-  "Galatians 6:9", "Ephesians 1:3-4", "Philippians 3:13-14", "Colossians 3:12-14",
-  "2 Timothy 2:15", "Hebrews 10:24-25", "James 2:17", "1 Peter 4:10",
-  "Revelation 21:4", "Psalm 1:1-3", "Proverbs 31:25", "Isaiah 9:6",
-]
+const STUDENT_PLANS = [
+  {
+    title: "Foundation of Trust",
+    verses: ["Proverbs 3:5-6", "Philippians 4:6-7", "Isaiah 40:31", "Jeremiah 29:11", "Matthew 6:33"]
+  },
+  {
+    title: "Courage & Action",
+    verses: ["Joshua 1:9", "Colossians 3:23-24", "James 1:2-4", "Hebrews 11:1", "Psalm 119:105"]
+  },
+  {
+    title: "Strength & Guidance",
+    verses: ["Isaiah 41:10", "2 Timothy 3:16-17", "Romans 12:1-2", "Proverbs 16:3", "Philippians 4:13"]
+  },
+  {
+    title: "Wisdom & Purpose",
+    verses: ["Psalm 37:4", "Proverbs 4:23", "Ephesians 5:15-16", "1 Timothy 4:12", "Psalm 1:1-3"]
+  },
+  {
+    title: "Diligence & Excellence",
+    verses: ["Proverbs 22:29", "Daniel 1:17", "Ecclesiastes 9:10", "1 Corinthians 10:31", "Romans 8:28"]
+  }
+];
+
+const EXAM_PLANS = [
+  {
+    title: "Overcoming Anxiety",
+    verses: ["John 14:27", "Philippians 4:6", "Isaiah 26:3", "2 Timothy 1:7", "Psalm 55:22"]
+  },
+  {
+    title: "God's Help in Trials",
+    verses: ["1 Peter 5:7", "Psalm 46:1", "Isaiah 41:13", "Proverbs 16:3", "Colossians 3:23"]
+  },
+  {
+    title: "Wisdom for Tests",
+    verses: ["James 1:5", "Psalm 121:1-2", "Proverbs 2:6", "Isaiah 40:29", "Philippians 4:13"]
+  }
+];
+
+function getFlatList(plans) {
+  return plans.flatMap(p => p.verses);
+}
 
 export function getJourneyDay(user) {
   const created = new Date(user.created_at)
@@ -44,19 +58,23 @@ export function getGreeting() {
   return 'Good Evening'
 }
 
-export async function getUserBibleVersion(userId) {
+export async function getUserPreferences(userId) {
   const { data } = await supabase
     .from('profiles')
-    .select('bible_version')
+    .select('bible_version, exam_mode')
     .eq('id', userId)
     .single()
-  return data?.bible_version ?? 'web'
+  return {
+    bibleVersion: data?.bible_version ?? 'web',
+    examMode: data?.exam_mode ?? false
+  }
 }
 
-async function prefetchVerses(userId, startDay, bibleVersion) {
+async function prefetchVerses(userId, startDay, bibleVersion, examMode) {
+  const list = getFlatList(examMode ? EXAM_PLANS : STUDENT_PLANS)
   const rows = []
   for (let d = startDay; d < startDay + 7; d++) {
-    const ref = VERSE_LIST[(d - 1) % VERSE_LIST.length]
+    const ref = list[(d - 1) % list.length]
     try {
       const url = `https://bible-api.com/${encodeURIComponent(ref)}?translation=${bibleVersion}`
       const res = await fetch(url)
@@ -79,12 +97,14 @@ async function prefetchVerses(userId, startDay, bibleVersion) {
   }
 }
 
-export async function getTodayVerse(user, bibleVersion = 'web') {
+export async function getTodayVerse(user, bibleVersion = 'web', examMode = false) {
   const journeyDay = getJourneyDay(user)
+  const list = getFlatList(examMode ? EXAM_PLANS : STUDENT_PLANS)
+  const expectedRef = list[(journeyDay - 1) % list.length]
 
   // 1. Check localStorage first — works instantly offline
   const local = getLocalVerse(user.id, journeyDay)
-  if (local && local.bible_version === bibleVersion) {
+  if (local && local.bible_version === bibleVersion && local.verse_reference === expectedRef) {
     return { journeyDay, verse_reference: local.verse_reference, verse_text: local.verse_text }
   }
 
@@ -97,13 +117,13 @@ export async function getTodayVerse(user, bibleVersion = 'web') {
       .eq('journey_day', journeyDay)
       .single()
 
-    if (cached && cached.bible_version === bibleVersion) {
+    if (cached && cached.bible_version === bibleVersion && cached.verse_reference === expectedRef) {
       setLocalVerse(user.id, journeyDay, cached)
       return { journeyDay, verse_reference: cached.verse_reference, verse_text: cached.verse_text }
     }
 
     // 3. Version changed or no Supabase cache — fetch from API
-    await prefetchVerses(user.id, journeyDay, bibleVersion)
+    await prefetchVerses(user.id, journeyDay, bibleVersion, examMode)
 
     const { data } = await supabase
       .from('user_verses')
@@ -128,8 +148,8 @@ export async function getTodayVerse(user, bibleVersion = 'web') {
 
 // Convenience: fetches the user's saved translation preference then gets the verse
 export async function getTodayVerseForUser(user) {
-  const bibleVersion = await getUserBibleVersion(user.id)
-  return getTodayVerse(user, bibleVersion)
+  const prefs = await getUserPreferences(user.id)
+  return getTodayVerse(user, prefs.bibleVersion, prefs.examMode)
 }
 
 // Returns { streak, totalEntries } based on actual logged entries.
@@ -141,7 +161,19 @@ export async function getStreakAndCount(userId) {
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
-  if (!data || data.length === 0) return { streak: 0, totalEntries: 0 }
+  if (!data || data.length === 0) {
+    const recentDays = []
+    const d = new Date()
+    for (let i = 6; i >= 0; i--) {
+      const pastDate = new Date(d)
+      pastDate.setDate(d.getDate() - i)
+      recentDays.push({
+         label: ['S','M','T','W','T','F','S'][pastDate.getDay()],
+         filled: false
+      })
+    }
+    return { streak: 0, totalEntries: 0, recentDays }
+  }
 
   const toDay = (d) => new Date(d).toLocaleDateString('en-CA') // YYYY-MM-DD local
 
@@ -154,7 +186,17 @@ export async function getStreakAndCount(userId) {
 
   // Streak only stays alive if the user logged today or yesterday
   if (uniqueDates[0] !== today && uniqueDates[0] !== yesterday) {
-    return { streak: 0, totalEntries: count ?? data.length }
+    const recentDays = []
+    const d = new Date()
+    for (let i = 6; i >= 0; i--) {
+      const pastDate = new Date(d)
+      pastDate.setDate(d.getDate() - i)
+      recentDays.push({
+         label: ['S','M','T','W','T','F','S'][pastDate.getDay()],
+         filled: uniqueDates.includes(toDay(pastDate))
+      })
+    }
+    return { streak: 0, totalEntries: count ?? data.length, recentDays }
   }
 
   let streak = 1
@@ -169,5 +211,43 @@ export async function getStreakAndCount(userId) {
     }
   }
 
-  return { streak, totalEntries: count ?? data.length }
+  const recentDays = []
+  const d = new Date()
+  for (let i = 6; i >= 0; i--) {
+    const pastDate = new Date(d)
+    pastDate.setDate(d.getDate() - i)
+    recentDays.push({
+       label: ['S','M','T','W','T','F','S'][pastDate.getDay()],
+       filled: uniqueDates.includes(toDay(pastDate))
+    })
+  }
+
+  return { streak, totalEntries: count ?? data.length, recentDays }
+}
+
+export function getCurrentPlanInfo(user, examMode = false) {
+  const journeyDay = getJourneyDay(user)
+  const plans = examMode ? EXAM_PLANS : STUDENT_PLANS
+  
+  // Find which plan we are currently in based on journeyDay
+  // Since plans can theoretically have different lengths (though all are 5 here),
+  // we can iterate to find the current plan.
+  
+  const totalVerses = getFlatList(plans).length
+  const currentOverallDay = ((journeyDay - 1) % totalVerses) + 1
+  
+  let dayAccumulator = 0
+  for (const plan of plans) {
+    if (currentOverallDay <= dayAccumulator + plan.verses.length) {
+      return {
+        title: plan.title,
+        currentDay: currentOverallDay - dayAccumulator,
+        totalDays: plan.verses.length
+      }
+    }
+    dayAccumulator += plan.verses.length
+  }
+  
+  // Fallback
+  return { title: plans[0].title, currentDay: 1, totalDays: 5 }
 }

@@ -97,7 +97,7 @@ export default function FellowshipClient() {
                   background: 'var(--clr-cream)',
                   borderRadius: '16px',
                   padding: '32px',
-                  boxShadow: '0 4px 20px rgba(157,79,20,0.07)',
+                  boxShadow: '0 4px 20px rgba(47, 93, 69, 0.07)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '24px',
@@ -146,7 +146,7 @@ export default function FellowshipClient() {
             a group meeting near you, or start one in your church.
           </p>
 
-          <div style={{ background: 'var(--clr-card)', borderRadius: '16px', padding: '40px', boxShadow: '0 4px 24px rgba(157,79,20,0.08)' }}>
+          <div style={{ background: 'var(--clr-card)', borderRadius: '16px', padding: '40px', boxShadow: '0 4px 24px rgba(47, 93, 69, 0.08)' }}>
             <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
               <input
                 type="text"
