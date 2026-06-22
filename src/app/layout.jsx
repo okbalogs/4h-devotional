@@ -38,6 +38,8 @@ export const metadata = {
     "Christian Journal",
     "Bible Study Nigeria",
     "Devotional Tracker",
+    "Balogun Oyinkansola",
+    "Oyinkansola"
   ],
   authors: [{ name: "4H Devotional Team" }],
   verification: {
