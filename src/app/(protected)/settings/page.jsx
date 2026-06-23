@@ -1,7 +1,9 @@
 "use client"
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { supabase } from '@/utils/supabase'
+import { auth, storage } from '@/utils/firebase'
+import { updateProfile, updatePassword } from 'firebase/auth'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { Bell, BookOpen, Eye, Clock, BarChart2, Heart, Key, GraduationCap } from 'lucide-react'
 
 const BIBLE_VERSIONS = [
@@ -53,13 +55,15 @@ export default function Settings() {
     if (!user) return
     setFullName(user.user_metadata?.full_name ?? '')
 
-    supabase
-      .from('profiles')
-      .select('avatar_url, bible_version, church, reminders_enabled, reminder_time, public_profile, weekly_summary, community_prayers, academic_level, exam_mode')
-      .eq('id', user.id)
-      .single()
-      .then(({ data }) => {
-        if (!data) return
+    const fetchProfile = async () => {
+      try {
+        const token = await auth.currentUser?.getIdToken()
+        const res = await fetch('/api/profile', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        
         if (data.avatar_url) setAvatarUrl(data.avatar_url)
         if (data.bible_version) setBibleVersion(data.bible_version)
         if (data.church) setChurch(data.church)
@@ -71,9 +75,8 @@ export default function Settings() {
         setWeeklySummary(data.weekly_summary ?? true)
         setCommunityPrayers(data.community_prayers ?? false)
 
-        // Store original values for discard (#7)
         originalProfileRef.current = {
-          fullName: user.user_metadata?.full_name ?? '',
+          fullName: user.user_metadata?.full_name ?? user.displayName ?? '',
           church: data.church ?? '',
           academicLevel: data.academic_level ?? '',
           examMode: data.exam_mode ?? false,
@@ -84,9 +87,10 @@ export default function Settings() {
           weeklySummary: data.weekly_summary ?? true,
           communityPrayers: data.community_prayers ?? false,
         }
-        // Track original bible version for feedback (#8)
         originalBibleVersionRef.current = data.bible_version ?? 'web'
-      })
+      } catch (err) {}
+    }
+    fetchProfile()
   }, [user])
 
   const handleReminderToggle = async () => {
@@ -130,48 +134,57 @@ export default function Settings() {
     setSaving(true)
     setSaveMsg(null)
 
-    const [authResult, profileResult] = await Promise.all([
-      supabase.auth.updateUser({ data: { full_name: fullName } }),
-      supabase.from('profiles').upsert({
-        id: user.id,
-        bible_version: bibleVersion,
-        church,
-        academic_level: academicLevel,
-        exam_mode: examMode,
-        reminders_enabled: reminders,
-        reminder_time: reminderTime,
-        public_profile: publicProfile,
-        weekly_summary: weeklySummary,
-        community_prayers: communityPrayers,
-        updated_at: new Date().toISOString(),
-      }),
-    ])
+    try {
+      if (fullName !== (user.displayName || '')) {
+        await updateProfile(auth.currentUser, { displayName: fullName });
+      }
 
-    const error = authResult.error || profileResult.error
+      const token = await auth.currentUser?.getIdToken()
+      const res = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          bible_version: bibleVersion,
+          church,
+          academic_level: academicLevel,
+          exam_mode: examMode,
+          reminders_enabled: reminders,
+          reminder_time: reminderTime,
+          public_profile: publicProfile,
+          weekly_summary: weeklySummary,
+          community_prayers: communityPrayers,
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to update profile')
+    } catch (err) {
+      setSaveMsg(err.message)
+      setSaving(false)
+      return
+    }
+
     setSaving(false)
 
-    if (error) {
-      setSaveMsg(error.message)
-    } else {
-      // Bible version feedback (#8)
-      const versionChanged = bibleVersion !== originalBibleVersionRef.current
-      setSaveMsg(versionChanged
-        ? 'Changes saved. Your verse will refresh on next visit.'
-        : 'Changes saved.')
-      // Update originals so subsequent discards reflect the saved state
-      originalProfileRef.current = {
-        fullName, church, academicLevel, examMode, bibleVersion, reminders, reminderTime,
-        publicProfile, weeklySummary, communityPrayers,
-      }
-      originalBibleVersionRef.current = bibleVersion
+    // Bible version feedback (#8)
+    const versionChanged = bibleVersion !== originalBibleVersionRef.current
+    setSaveMsg(versionChanged
+      ? 'Changes saved. Your verse will refresh on next visit.'
+      : 'Changes saved.')
+    // Update originals so subsequent discards reflect the saved state
+    originalProfileRef.current = {
+      fullName, church, academicLevel, examMode, bibleVersion, reminders, reminderTime,
+      publicProfile, weeklySummary, communityPrayers,
     }
+    originalBibleVersionRef.current = bibleVersion
+    
     setTimeout(() => setSaveMsg(null), 4000)
 
     // Keep localStorage in sync so NotificationScheduler works offline
-    if (!error) {
-      localStorage.setItem('notif_enabled', reminders ? 'true' : 'false')
-      localStorage.setItem('notif_time', reminderTime)
-    }
+    localStorage.setItem('notif_enabled', reminders ? 'true' : 'false')
+    localStorage.setItem('notif_time', reminderTime)
   }
 
   const handleDiscard = () => {
@@ -210,11 +223,8 @@ export default function Settings() {
       return
     }
     setChangingPassword(true)
-    const { error } = await supabase.auth.updateUser({ password: newPassword })
-    setChangingPassword(false)
-    if (error) {
-      setPasswordMsg(error.message)
-    } else {
+    try {
+      await updatePassword(auth.currentUser, newPassword)
       setPasswordMsg('Password updated successfully!')
       setNewPassword('')
       setConfirmPassword('')
@@ -222,7 +232,10 @@ export default function Settings() {
         setShowPasswordForm(false)
         setPasswordMsg(null)
       }, 2500)
+    } catch (error) {
+      setPasswordMsg(error.message)
     }
+    setChangingPassword(false)
   }
 
   const handleAvatarChange = async (e) => {
@@ -234,27 +247,27 @@ export default function Settings() {
     const ext = file.name.split('.').pop()
     const path = `${user.id}/avatar.${ext}`
 
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(path, file, { upsert: true })
+    try {
+      const storageRef = ref(storage, path)
+      await uploadBytes(storageRef, file)
+      const publicUrl = await getDownloadURL(storageRef)
+      
+      const token = await auth.currentUser?.getIdToken()
+      await fetch('/api/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ avatar_url: publicUrl })
+      })
 
-    if (uploadError) {
-      setSaveMsg(uploadError.message)
-      setUploadingPhoto(false)
-      return
+      setAvatarUrl(publicUrl)
+      setSaveMsg('Photo updated.')
+      setTimeout(() => setSaveMsg(null), 3000)
+    } catch (err) {
+      setSaveMsg(err.message)
     }
-
-    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
-
-    await supabase.from('profiles').upsert({
-      id: user.id,
-      avatar_url: publicUrl,
-      updated_at: new Date().toISOString(),
-    })
-
-    setAvatarUrl(publicUrl)
-    setSaveMsg('Photo updated.')
-    setTimeout(() => setSaveMsg(null), 3000)
     setUploadingPhoto(false)
   }
 

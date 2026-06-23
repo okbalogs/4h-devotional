@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import '../entry.css'
-import { supabase } from '@/utils/supabase'
+import { auth } from '@/utils/firebase'
 import { useAuth } from '@/context/AuthContext'
 import { notifyUser } from '@/utils/pushManager'
 import DevotionCardModal from '@/components/DevotionCardModal'
@@ -34,13 +34,19 @@ export default function ReadingRecord() {
 
   useEffect(() => {
     if (!user) return
-    supabase
-      .from('accountability_partners')
-      .select('id')
-      .or(`requester_id.eq.${user.id},partner_id.eq.${user.id}`)
-      .eq('status', 'active')
-      .maybeSingle()
-      .then(({ data }) => setActivePartnership(data))
+    const fetchPartner = async () => {
+      try {
+        const token = await auth.currentUser?.getIdToken()
+        const res = await fetch('/api/community/partners/active', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setActivePartnership(data)
+        }
+      } catch (err) {}
+    }
+    fetchPartner()
   }, [user])
 
   // Edit state
@@ -73,19 +79,22 @@ export default function ReadingRecord() {
   }, [isEditing, draft, entry])
 
   useEffect(() => {
-    supabase
-      .from('entries')
-      .select('*')
-      .eq('id', id)
-      .single()
-      .then(({ data, error }) => {
-        if (error || !data) {
-          setNotFound(true)
-        } else {
-          setEntry(data)
-        }
+    const fetchEntry = async () => {
+      try {
+        const token = await auth.currentUser?.getIdToken()
+        const res = await fetch(`/api/entries/${id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if (!res.ok) throw new Error('Not found')
+        const data = await res.json()
+        setEntry(data)
         setLoading(false)
-      })
+      } catch (err) {
+        setNotFound(true)
+        setLoading(false)
+      }
+    }
+    fetchEntry()
   }, [id])
 
   const startEditing = () => {
@@ -110,43 +119,55 @@ export default function ReadingRecord() {
   const handleSave = async () => {
     setSaving(true)
     setSaveError(null)
-    const { error } = await supabase
-      .from('entries')
-      .update(draft)
-      .eq('id', id)
-    if (error) {
-      setSaveError(error.message)
-      setSaving(false)
-    } else {
+    try {
+      const token = await auth.currentUser?.getIdToken()
+      const res = await fetch(`/api/entries/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(draft)
+      })
+      if (!res.ok) throw new Error('Failed to update entry')
+      
       setEntry((prev) => ({ ...prev, ...draft }))
       setIsEditing(false)
       setDraft(null)
+      setSaving(false)
+    } catch (error) {
+      setSaveError(error.message)
       setSaving(false)
     }
   }
 
   const handleShareNote = async () => {
     if (!activePartnership || !entry.lingering_thought) return
-    const senderName = user?.user_metadata?.full_name || 'Devotee'
-    const { error: err } = await supabase.from('partner_messages').insert({
-      partnership_id: activePartnership.id,
-      sender_id: user.id,
-      sender_name: senderName,
-      type: 'note',
-      content: entry.lingering_thought,
-    })
-    if (!err) {
-      setSharedNote(true)
-      setTimeout(() => setSharedNote(false), 3000)
-      const { data: ap } = await supabase
-        .from('accountability_partners')
-        .select('requester_id, partner_id')
-        .eq('id', activePartnership.id)
-        .single()
-      if (ap) {
-        const partnerId = ap.requester_id === user.id ? ap.partner_id : ap.requester_id
+    try {
+      const senderName = user?.user_metadata?.full_name || 'Devotee'
+      const token = await auth.currentUser?.getIdToken()
+      const res = await fetch('/api/community/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          partnership_id: activePartnership.id,
+          sender_name: senderName,
+          type: 'note',
+          content: entry.lingering_thought
+        })
+      })
+      
+      if (res.ok) {
+        setSharedNote(true)
+        setTimeout(() => setSharedNote(false), 3000)
+        const partnerId = activePartnership.requester_id === user.id ? activePartnership.partner_id : activePartnership.requester_id
         if (partnerId) notifyUser(partnerId, 'note', 'Devotion note shared', `${senderName} shared a lingering thought with you`, '/community?tab=partners')
       }
+    } catch (err) {
+      console.error('Failed to share note')
     }
   }
 
@@ -160,8 +181,17 @@ export default function ReadingRecord() {
   const handleDelete = async () => {
     if (!confirm('Delete this entry? This cannot be undone.')) return
     setDeleting(true)
-    await supabase.from('entries').delete().eq('id', id)
-    router.push('/history')
+    try {
+      const token = await auth.currentUser?.getIdToken()
+      await fetch(`/api/entries/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      router.push('/history')
+    } catch (err) {
+      setDeleting(false)
+      alert('Failed to delete entry')
+    }
   }
 
   if (loading) {

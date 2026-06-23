@@ -1,0 +1,81 @@
+import { NextResponse } from 'next/server';
+import { adminDb, adminAuth } from '@/utils/firebaseAdmin';
+
+const STUDENT_PLANS = [
+  { title: "Foundation of Trust", verses: ["Proverbs 3:5-6", "Philippians 4:6-7", "Isaiah 40:31", "Jeremiah 29:11", "Matthew 6:33"] },
+  { title: "Courage & Action", verses: ["Joshua 1:9", "Colossians 3:23-24", "James 1:2-4", "Hebrews 11:1", "Psalm 119:105"] },
+  { title: "Strength & Guidance", verses: ["Isaiah 41:10", "2 Timothy 3:16-17", "Romans 12:1-2", "Proverbs 16:3", "Philippians 4:13"] },
+  { title: "Wisdom & Purpose", verses: ["Psalm 37:4", "Proverbs 4:23", "Ephesians 5:15-16", "1 Timothy 4:12", "Psalm 1:1-3"] },
+  { title: "Diligence & Excellence", verses: ["Proverbs 22:29", "Daniel 1:17", "Ecclesiastes 9:10", "1 Corinthians 10:31", "Romans 8:28"] }
+];
+
+const EXAM_PLANS = [
+  { title: "Overcoming Anxiety", verses: ["John 14:27", "Philippians 4:6", "Isaiah 26:3", "2 Timothy 1:7", "Psalm 55:22"] },
+  { title: "God's Help in Trials", verses: ["1 Peter 5:7", "Psalm 46:1", "Isaiah 41:13", "Proverbs 16:3", "Colossians 3:23"] },
+  { title: "Wisdom for Tests", verses: ["James 1:5", "Psalm 121:1-2", "Proverbs 2:6", "Isaiah 40:29", "Philippians 4:13"] }
+];
+
+function getFlatList(plans) {
+  return plans.flatMap(p => p.verses);
+}
+
+function getJourneyDay(creationTime) {
+  const created = new Date(creationTime);
+  const today = new Date();
+  created.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+  return Math.floor((today - created) / 86400000) + 1;
+}
+
+export async function GET(req) {
+  try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const token = authHeader.split('Bearer ')[1];
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    const uid = decodedToken.uid;
+
+    const userRecord = await adminAuth.getUser(uid);
+    const journeyDay = getJourneyDay(userRecord.metadata.creationTime);
+
+    // Get preferences
+    const prefsDoc = await adminDb.collection('profiles').doc(uid).get();
+    const bibleVersion = prefsDoc.exists && prefsDoc.data().bible_version ? prefsDoc.data().bible_version : 'web';
+    const examMode = prefsDoc.exists && prefsDoc.data().exam_mode ? prefsDoc.data().exam_mode : false;
+
+    const list = getFlatList(examMode ? EXAM_PLANS : STUDENT_PLANS);
+    const expectedRef = list[(journeyDay - 1) % list.length];
+
+    // Check Firebase cache
+    const cacheDocId = `${uid}_${journeyDay}`;
+    const cacheDoc = await adminDb.collection('user_verses').doc(cacheDocId).get();
+    
+    if (cacheDoc.exists) {
+      const data = cacheDoc.data();
+      if (data.bible_version === bibleVersion && data.verse_reference === expectedRef) {
+        return NextResponse.json({ journeyDay, ...data });
+      }
+    }
+
+    // Fetch from Bible API
+    const url = `https://bible-api.com/${encodeURIComponent(expectedRef)}?translation=${bibleVersion}`;
+    const res = await fetch(url);
+    const json = await res.json();
+    
+    const newVerse = {
+      user_id: uid,
+      journey_day: journeyDay,
+      verse_reference: json.reference,
+      verse_text: json.text.trim().replace(/\n/g, ' '),
+      bible_version: bibleVersion,
+    };
+
+    // Save to Firestore
+    await adminDb.collection('user_verses').doc(cacheDocId).set(newVerse);
+
+    return NextResponse.json({ journeyDay, ...newVerse });
+
+  } catch (err) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}

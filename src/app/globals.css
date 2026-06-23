@@ -2122,7 +2122,7 @@ a {
 
 .auth-page {
   position: relative;
-  height: 100vh;
+  min-height: 100dvh;
   background: var(--clr-cream);
   display: flex;
   flex-direction: column;
@@ -2137,6 +2137,7 @@ a {
   padding: 20px 40px;
   position: relative;
   z-index: 2;
+  flex-shrink: 0;
 }
 
 .auth-brand {
@@ -2199,12 +2200,10 @@ a {
 .signin-main {
   flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   padding: 20px 40px;
   position: relative;
   z-index: 1;
-  overflow-y: auto;
 }
 
 /* ─── Auth card ─── */
@@ -2215,6 +2214,7 @@ a {
   width: 100%;
   max-width: 460px;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.06);
+  margin: auto;
 }
 
 .auth-card h1,
@@ -2514,6 +2514,7 @@ a {
   padding: 24px 40px 28px;
   position: relative;
   z-index: 1;
+  flex-shrink: 0;
 }
 .auth-footer-links {
   display: flex;
@@ -2543,7 +2544,6 @@ a {
   padding: 20px 60px;
   position: relative;
   z-index: 1;
-  overflow-y: auto;
 }
 
 .signup-left {

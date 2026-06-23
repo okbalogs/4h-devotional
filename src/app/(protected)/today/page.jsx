@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { getTodayVerseForUser, getGreeting, getStreakAndCount, getCurrentPlanInfo, getUserPreferences } from '@/utils/dailyVerse'
 import BadgeModal, { getNewBadge } from '@/components/BadgeModal'
-import { supabase } from '@/utils/supabase'
 import './today.css'
 
 export default function Today() {
@@ -27,6 +26,7 @@ export default function Today() {
     })
     getUserPreferences(user.id).then((prefs) => {
       setPlanInfo(getCurrentPlanInfo(user, prefs.examMode))
+      if (prefs.avatarUrl) setAvatarUrl(prefs.avatarUrl)
     })
     getStreakAndCount(user.id).then(({ streak, totalEntries, recentDays }) => {
       setStreak(streak)
@@ -37,13 +37,6 @@ export default function Today() {
         if (badge) setNewBadge(badge)
       }
     })
-    
-    supabase
-      .from('profiles')
-      .select('avatar_url')
-      .eq('id', user.id)
-      .single()
-      .then(({ data }) => { if (data?.avatar_url) setAvatarUrl(data.avatar_url) })
   }, [user])
 
   const greeting = getGreeting()

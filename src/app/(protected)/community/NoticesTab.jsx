@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/utils/supabase'
+import { db } from '@/utils/firebase'
+import { collection, query, onSnapshot, orderBy, limit, doc, getDoc, addDoc, deleteDoc } from 'firebase/firestore'
 import { Megaphone } from 'lucide-react'
 
 function timeAgo(dateStr) {
@@ -25,51 +26,52 @@ export default function NoticesTab({ user }) {
 
   const checkAdminStatus = useCallback(async () => {
     if (!user) return
-    const { data } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', user.id)
-      .single()
-    setIsAdmin(data?.is_admin || false)
+    const docRef = doc(db, 'profiles', user.uid)
+    const docSnap = await getDoc(docRef)
+    if (docSnap.exists()) {
+      setIsAdmin(docSnap.data().is_admin || false)
+    }
   }, [user])
-
-  const fetchNotices = useCallback(async () => {
-    setLoading(true)
-    const { data, error: err } = await supabase
-      .from('notices')
-      .select('id, title, content, created_at')
-      .order('created_at', { ascending: false })
-      .limit(30)
-    if (!err) setNotices(data || [])
-    setLoading(false)
-  }, [])
 
   useEffect(() => {
     checkAdminStatus()
-    fetchNotices()
-  }, [checkAdminStatus, fetchNotices])
+    setLoading(true)
+    const q = query(collection(db, 'notices'), orderBy('created_at', 'desc'), limit(30))
+    const unsub = onSnapshot(q, (snap) => {
+      setNotices(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      setLoading(false)
+    })
+    return () => unsub()
+  }, [checkAdminStatus])
 
   const postNotice = async () => {
     if (!title.trim() || !content.trim()) return
     setPosting(true)
     setError('')
-    const { error: err } = await supabase.from('notices').insert({
-      author_id: user.id,
-      title: title.trim(),
-      content: content.trim(),
-    })
-    if (err) { setError('Could not post notice. You might not have permission.'); setPosting(false); return }
-    setTitle('')
-    setContent('')
-    setShowCreate(false)
-    setPosting(false)
-    fetchNotices()
+    try {
+      await addDoc(collection(db, 'notices'), {
+        author_id: user.uid,
+        title: title.trim(),
+        content: content.trim(),
+        created_at: new Date().toISOString()
+      })
+      setTitle('')
+      setContent('')
+      setShowCreate(false)
+    } catch (err) {
+      setError('Could not post notice. You might not have permission.')
+    } finally {
+      setPosting(false)
+    }
   }
 
   const deleteNotice = async (noticeId) => {
     if (!confirm('Delete this notice?')) return
-    await supabase.from('notices').delete().eq('id', noticeId)
-    setNotices(prev => prev.filter(n => n.id !== noticeId))
+    try {
+      await deleteDoc(doc(db, 'notices', noticeId))
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   return (

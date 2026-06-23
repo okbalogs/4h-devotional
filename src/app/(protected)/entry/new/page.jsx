@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import '../entry.css'
 import './new.css'
-import { supabase } from '@/utils/supabase'
+import { auth } from '@/utils/firebase'
 import { useAuth } from '@/context/AuthContext'
 import { getTodayVerseForUser } from '@/utils/dailyVerse'
 import { queueEntry } from '@/utils/offlineStorage'
@@ -54,13 +54,19 @@ export default function NewEntry() {
 
   useEffect(() => {
     if (!user) return
-    supabase
-      .from('accountability_partners')
-      .select('id')
-      .or(`requester_id.eq.${user.id},partner_id.eq.${user.id}`)
-      .eq('status', 'active')
-      .maybeSingle()
-      .then(({ data }) => setActivePartnership(data))
+    const fetchPartner = async () => {
+      try {
+        const token = await auth.currentUser?.getIdToken()
+        const res = await fetch('/api/community/partners/active', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setActivePartnership(data)
+        }
+      } catch (err) {}
+    }
+    fetchPartner()
   }, [user])
 
   // Restore draft
@@ -118,34 +124,40 @@ export default function NewEntry() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('entries')
-        .insert(entryPayload())
-        .select('id')
-        .single()
+      const token = await auth.currentUser?.getIdToken()
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
 
-      if (error) throw error
+      const res = await fetch('/api/entries', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(entryPayload())
+      })
+
+      if (!res.ok) throw new Error('Failed to save entry')
+      const data = await res.json()
 
       localStorage.removeItem(DRAFT_KEY)
 
       if (shareWithPartner && activePartnership && formData.lingeringThought.trim()) {
         const senderName = user?.user_metadata?.full_name || 'Devotee'
-        await supabase.from('partner_messages').insert({
-          partnership_id: activePartnership.id,
-          sender_id: user.id,
-          sender_name: senderName,
-          type: 'note',
-          content: formData.lingeringThought.trim(),
+        
+        await fetch('/api/community/messages', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            partnership_id: activePartnership.id,
+            sender_name: senderName,
+            type: 'note',
+            content: formData.lingeringThought.trim()
+          })
         })
-        const { data: ap } = await supabase
-          .from('accountability_partners')
-          .select('requester_id, partner_id')
-          .eq('id', activePartnership.id)
-          .single()
-        if (ap) {
-          const partnerId = ap.requester_id === user.id ? ap.partner_id : ap.requester_id
-          if (partnerId) notifyUser(partnerId, 'note', 'Devotion note shared', `${senderName} shared a lingering thought with you`, '/community?tab=partners')
-        }
+
+        // For now, assume partner_id could be stored in activePartnership
+        const partnerId = activePartnership.requester_id === user.id ? activePartnership.partner_id : activePartnership.requester_id
+        if (partnerId) notifyUser(partnerId, 'note', 'Devotion note shared', `${senderName} shared a lingering thought with you`, '/community?tab=partners')
       }
 
       router.push(`/entry/${data.id}`)

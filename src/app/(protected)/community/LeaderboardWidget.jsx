@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { supabase } from '@/utils/supabase'
+import { db } from '@/utils/firebase'
+import { collection, query, where, getDocs } from 'firebase/firestore'
 import { getStreakAndCount } from '@/utils/dailyVerse'
 import { Trophy, Flame } from 'lucide-react'
 
@@ -14,24 +15,16 @@ export default function LeaderboardWidget() {
         // Find users who have posted recently to calculate their streaks
         // (For a small fellowship, we can fetch unique user IDs from recent entries)
         const twoDaysAgo = new Date(Date.now() - 48 * 3600000).toISOString()
-        const { data: recentEntries } = await supabase
-          .from('entries')
-          .select('user_id')
-          .gte('created_at', twoDaysAgo)
+        const q = query(collection(db, 'entries'), where('created_at', '>=', twoDaysAgo))
+        const snap = await getDocs(q)
 
-        if (!recentEntries || recentEntries.length === 0) {
+        if (snap.empty) {
           setLoading(false)
           return
         }
 
-        const uniqueUserIds = [...new Set(recentEntries.map(e => e.user_id))]
+        const uniqueUserIds = [...new Set(snap.docs.map(e => e.data().user_id))]
         
-        // Fetch profiles
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id, is_admin') // Ideally we'd join with auth.users for names, but we'll fetch full_name from a view or just use initials
-          .in('id', uniqueUserIds)
-
         // For simplicity, we calculate streaks for these active users
         const streakPromises = uniqueUserIds.map(async (userId) => {
           const { streak } = await getStreakAndCount(userId)

@@ -42,6 +42,7 @@ export default function SignUp() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
+  const [level, setLevel] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState(null)
@@ -57,7 +58,7 @@ export default function SignUp() {
     setError(null)
     setLoading(true)
     try {
-      await signup(email, password, fullName)
+      await signup(email, password, fullName, level)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -187,6 +188,25 @@ export default function SignUp() {
                   className="auth-input--has-left-icon"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="auth-field">
+              <label htmlFor="signup-level">LEVEL / CLASS (Optional)</label>
+              <div className="auth-input-wrap">
+                <span className="auth-input-icon auth-input-icon--left">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+                  </svg>
+                </span>
+                <input
+                  id="signup-level"
+                  type="text"
+                  placeholder="e.g., 100L, Graduate"
+                  className="auth-input--has-left-icon"
+                  value={level}
+                  onChange={(e) => setLevel(e.target.value)}
                 />
               </div>
             </div>

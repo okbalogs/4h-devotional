@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import './history.css'
-import { supabase } from '@/utils/supabase'
+import { auth } from '@/utils/firebase'
 import { useAuth } from '@/context/AuthContext'
 
 export default function DailyArchives() {
@@ -47,23 +47,23 @@ export default function DailyArchives() {
       setLoading(false)
     }
 
-    supabase
-      .from('entries')
-      .select('id, scripture_reference, hear, created_at')
-      .eq('user_id', user.id)
-      .gte('created_at', start)
-      .lte('created_at', end)
-      .order('created_at', { ascending: false })
-      .then(({ data, error }) => {
-        if (!error && data) {
+    const fetchEntries = async () => {
+      try {
+        const token = await auth.currentUser?.getIdToken()
+        const res = await fetch(`/api/entries?start=${start}&end=${end}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if (res.ok) {
+          const data = await res.json()
           setEntries(data)
           try { localStorage.setItem(cacheKey, JSON.stringify(data)) } catch {}
           setLoading(false)
-        } else {
-          applyCache()
+          return
         }
-      })
-      .catch(applyCache)
+      } catch (err) {}
+      applyCache()
+    }
+    fetchEntries()
   }, [user, year, month])
 
   // Fetch total entry count — with localStorage cache fallback
@@ -77,19 +77,22 @@ export default function DailyArchives() {
       } catch {}
     }
 
-    supabase
-      .from('entries')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .then(({ count, error }) => {
-        if (!error && count !== null) {
+    const fetchTotal = async () => {
+      try {
+        const token = await auth.currentUser?.getIdToken()
+        const res = await fetch('/api/entries?count_only=true', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if (res.ok) {
+          const { count } = await res.json()
           setTotalEntries(count)
           try { localStorage.setItem('cached_history_total', String(count)) } catch {}
-        } else {
-          applyCountCache()
+          return
         }
-      })
-      .catch(applyCountCache)
+      } catch (err) {}
+      applyCountCache()
+    }
+    fetchTotal()
   }, [user])
 
   const firstDayOfMonth = new Date(year, month, 1).getDay()

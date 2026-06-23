@@ -714,7 +714,7 @@ select.input-soft {
 /* ─── RESPONSIVE ─── */
 @media (max-width: 900px) {
   .protected-content {
-    padding: 32px 32px 84px;
+    padding: 32px 32px 120px !important;
   }
 }
 
@@ -839,7 +839,7 @@ select.input-soft {
 
   /* Content area */
   .protected-content {
-    padding: 20px 16px 84px;
+    padding: 20px 16px 120px !important;
   }
 
   .page-container {
@@ -909,7 +909,7 @@ select.input-soft {
 
 @media (max-width: 480px) {
   .protected-content {
-    padding: 16px 12px 88px;
+    padding: 16px 12px 120px !important;
   }
 
   .page-container {

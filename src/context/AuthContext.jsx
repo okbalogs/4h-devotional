@@ -1,9 +1,31 @@
 "use client"
 import { createContext, useContext, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { supabase } from "@/utils/supabase"
+import { auth, db } from "@/utils/firebase"
+import { doc, setDoc } from "firebase/firestore"
+import { 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  updateProfile, 
+  signOut, 
+  sendPasswordResetEmail,
+  signInWithCustomToken
+} from "firebase/auth"
 
 const AuthContext = createContext({})
+
+// Shim to make Firebase user object compatible with existing Supabase references
+const formatUser = (firebaseUser) => {
+  if (!firebaseUser) return null;
+  return {
+    ...firebaseUser,
+    id: firebaseUser.uid, // Supabase uses user.id
+    user_metadata: {
+      full_name: firebaseUser.displayName, // Supabase uses user.user_metadata.full_name
+    }
+  };
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
@@ -11,57 +33,62 @@ export const AuthProvider = ({ children }) => {
   const router = useRouter()
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    // Intercept Custom Token from Google OAuth redirect
+    const urlParams = new URLSearchParams(window.location.search);
+    const customToken = urlParams.get('customToken');
+    if (customToken) {
+      signInWithCustomToken(auth, customToken).then(() => {
+        // Clear the token from the URL for security
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }).catch(err => console.error("Custom token login failed", err));
+    }
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(formatUser(firebaseUser))
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    return () => unsubscribe()
   }, [])
 
   const login = async (email, password) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) throw error
+    await signInWithEmailAndPassword(auth, email, password)
     router.push("/today")
   }
 
-  const signup = async (email, password, fullName = '') => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName } },
-    })
-    if (error) throw error
+  const signup = async (email, password, fullName = '', level = '') => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+    if (fullName) {
+      await updateProfile(userCredential.user, { displayName: fullName })
+      // Update local state immediately after profile update
+      setUser(formatUser({ ...userCredential.user, displayName: fullName }))
+    }
+    // Save additional profile data to Firestore
+    try {
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        fullName: fullName,
+        email: email,
+        level: level,
+        created_at: new Date().toISOString()
+      }, { merge: true })
+    } catch (err) {
+      console.error("Error saving user profile:", err)
+    }
     router.push("/today")
   }
 
   const loginWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/today`,
-      }
-    })
-    if (error) throw error
+    window.location.href = '/api/auth/google';
   }
 
   const logout = async () => {
-    await supabase.auth.signOut()
+    await signOut(auth)
     router.push("/signin")
   }
 
   const resetPassword = async (email) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    })
-    if (error) throw error
+    await sendPasswordResetEmail(auth, email)
   }
 
   return (
@@ -72,3 +99,4 @@ export const AuthProvider = ({ children }) => {
 }
 
 export const useAuth = () => useContext(AuthContext)
+
