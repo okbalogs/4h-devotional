@@ -7,6 +7,8 @@ import ThemeToggle from "./ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/", label: "Sanctuary" },
+  { href: "/signup", label: "Get Started" },
+  { href: "/signin", label: "Sign In" },
 ];
 
 export default function Navbar() {
@@ -41,7 +43,7 @@ export default function Navbar() {
       <nav className="site-nav">
         {/* Logo */}
         <Link href="/" className="site-nav-logo">
-          ✦ Editorial Devotion
+          Editorial Devotion
         </Link>
 
         {/* Desktop links */}
