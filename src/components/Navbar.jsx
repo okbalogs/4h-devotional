@@ -41,8 +41,7 @@ export default function Navbar() {
       <nav className="site-nav">
         {/* Logo */}
         <Link href="/" className="site-nav-logo">
-          <span className="site-nav-logo-mark">✦</span>
-          Editorial Devotion
+          ✦ Editorial Devotion
         </Link>
 
         {/* Desktop links */}
