@@ -1,4 +1,5 @@
-import { supabase } from './supabase'
+import { db } from './firebase'
+import { doc, setDoc, getDoc, deleteDoc, addDoc, collection } from 'firebase/firestore'
 
 function urlBase64ToUint8Array(base64) {
   const padding = '='.repeat((4 - (base64.length % 4)) % 4)
@@ -22,10 +23,11 @@ export async function subscribeToPush(userId) {
         applicationServerKey: urlBase64ToUint8Array(key),
       })
     }
-    await supabase.from('push_subscriptions').upsert(
-      { user_id: userId, subscription: sub.toJSON(), updated_at: new Date().toISOString() },
-      { onConflict: 'user_id' }
-    )
+    await setDoc(doc(db, 'push_subscriptions', userId), {
+      user_id: userId,
+      subscription: sub.toJSON(),
+      updated_at: new Date().toISOString(),
+    })
   } catch (err) {
     console.warn('Push subscribe failed:', err)
   }
@@ -33,25 +35,22 @@ export async function subscribeToPush(userId) {
 
 export async function sendPushToUser(recipientId, title, body, url = '/community?tab=partners') {
   try {
-    const { data } = await supabase
-      .from('push_subscriptions')
-      .select('subscription')
-      .eq('user_id', recipientId)
-      .single()
+    const snap = await getDoc(doc(db, 'push_subscriptions', recipientId))
+    if (!snap.exists()) return
 
-    if (!data?.subscription) return
+    const { subscription } = snap.data()
+    if (!subscription) return
 
     const res = await fetch('/api/push/notify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ subscription: data.subscription, title, body, url }),
+      body: JSON.stringify({ subscription, title, body, url }),
     })
 
     if (res.ok) {
       const json = await res.json()
       if (json.expired) {
-        // Clean up stale subscription
-        await supabase.from('push_subscriptions').delete().eq('user_id', recipientId)
+        await deleteDoc(doc(db, 'push_subscriptions', recipientId))
       }
     }
   } catch {
@@ -60,13 +59,18 @@ export async function sendPushToUser(recipientId, title, body, url = '/community
 }
 
 export async function notifyUser(recipientId, type, title, body, url = '/community?tab=partners') {
-  await supabase.from('notifications').insert({
-    user_id: recipientId,
-    type,
-    title,
-    body,
-    url,
-    is_read: false,
-  })
+  try {
+    await addDoc(collection(db, 'notifications'), {
+      user_id: recipientId,
+      type,
+      title,
+      body,
+      url,
+      is_read: false,
+      created_at: new Date().toISOString(),
+    })
+  } catch {
+    // best-effort
+  }
   sendPushToUser(recipientId, title, body, url) // fire-and-forget
 }
