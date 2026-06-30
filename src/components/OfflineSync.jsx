@@ -1,8 +1,7 @@
 "use client"
 import { useEffect, useState } from 'react'
-import { supabase } from '@/utils/supabase'
 import { useAuth } from '@/context/AuthContext'
-import { getPendingEntries, removePendingEntry } from '@/utils/offlineStorage'
+import { getPendingEntries, removePendingEntry, saveLocalEntry } from '@/utils/offlineStorage'
 import { RefreshCcw, CheckCircle2, AlertTriangle, X } from 'lucide-react'
 
 export default function OfflineSync() {
@@ -25,8 +24,15 @@ export default function OfflineSync() {
       for (const entry of pending) {
         const { _offlineId, ...payload } = entry
         try {
-          const { error } = await supabase.from('entries').insert(payload)
-          if (!error) {
+          const token = await user.getIdToken()
+          const res = await fetch('/api/entries', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(payload)
+          })
+          if (res.ok) {
+            const saved = await res.json()
+            saveLocalEntry(user.id, saved)
             removePendingEntry(_offlineId)
           } else {
             failCount++

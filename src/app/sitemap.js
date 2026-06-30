@@ -4,10 +4,6 @@ export default function sitemap() {
   // Public crawlable pages
   const routes = [
     '',
-    '/explore',
-    '/courses',
-    '/fellowship',
-    '/instructors',
     '/privacy',
     '/terms',
     '/support',

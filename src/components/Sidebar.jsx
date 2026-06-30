@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import ThemeToggle from './ThemeToggle'
-import { supabase } from '@/utils/supabase'
 import { useAuth } from '@/context/AuthContext'
+import { getLocalEntries } from '@/utils/offlineStorage'
 import { BookOpen, Settings, Moon, Flame, Home, Book, Users, User } from 'lucide-react'
+
+const ADMIN_EMAILS = ['olaolubalogs@gmail.com']
 
 function ProfileModal({ user, streak, onClose }) {
   const router = useRouter()
@@ -14,17 +16,9 @@ function ProfileModal({ user, streak, onClose }) {
   const name = user?.user_metadata?.full_name || 'Devotee'
   const email = user?.email || ''
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-  const [avatarUrl, setAvatarUrl] = useState(null)
+  const avatarUrl = user?.photoURL || null
 
-  useEffect(() => {
-    if (!user) return
-    supabase
-      .from('profiles')
-      .select('avatar_url')
-      .eq('id', user.id)
-      .single()
-      .then(({ data }) => { if (data?.avatar_url) setAvatarUrl(data.avatar_url) })
-  }, [user])
+  // no supabase fetch needed
 
   const handleLogout = async () => {
     onClose()
@@ -99,54 +93,18 @@ export default function Sidebar() {
   const { user } = useAuth()
   const [streak, setStreak] = useState(0)
   const [profileOpen, setProfileOpen] = useState(false)
-  const [unreadCount, setUnreadCount] = useState(0)
+  const isAdmin = ADMIN_EMAILS.includes(user?.email?.toLowerCase())
 
   useEffect(() => {
     if (!user) return
-    const since = new Date()
-    since.setDate(since.getDate() - 60)
-    supabase
-      .from('entries')
-      .select('created_at')
-      .eq('user_id', user.id)
-      .gte('created_at', since.toISOString())
-      .order('created_at', { ascending: false })
-      .then(({ data }) => {
-        if (!data?.length) { setStreak(0); return }
-        const days = new Set(data.map(e => e.created_at.slice(0, 10)))
-        let count = 0
-        const d = new Date()
-        if (!days.has(d.toISOString().slice(0, 10))) d.setDate(d.getDate() - 1)
-        while (days.has(d.toISOString().slice(0, 10))) { count++; d.setDate(d.getDate() - 1) }
-        setStreak(count)
-      })
-  }, [user])
-
-  useEffect(() => {
-    if (!user) return
-
-    const fetchUnread = async () => {
-      const { count } = await supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('is_read', false)
-      setUnreadCount(count || 0)
-    }
-
-    fetchUnread()
-
-    const channel = supabase
-      .channel(`sidebar-notifs-${user.id}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'notifications',
-        filter: `user_id=eq.${user.id}`,
-      }, fetchUnread)
-      .subscribe()
-
-    return () => supabase.removeChannel(channel)
+    const entries = getLocalEntries(user.id)
+    if (!entries?.length) { setStreak(0); return }
+    const days = new Set(entries.map(e => e.created_at?.slice(0, 10)).filter(Boolean))
+    let count = 0
+    const d = new Date()
+    if (!days.has(d.toISOString().slice(0, 10))) d.setDate(d.getDate() - 1)
+    while (days.has(d.toISOString().slice(0, 10))) { count++; d.setDate(d.getDate() - 1) }
+    setStreak(count)
   }, [user])
 
   const name = user?.user_metadata?.full_name || 'Devotee'
@@ -206,8 +164,8 @@ export default function Sidebar() {
               >
                 <span className="sidebar-icon">{item.icon}</span>
                 <span className="sidebar-link-text">{item.name}</span>
-                {item.name === 'Community' && unreadCount > 0 && (
-                  <span className="sidebar-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                {item.name === 'Community' && isAdmin && (
+                  <span className="sidebar-badge sidebar-badge--admin">A</span>
                 )}
               </Link>
             )

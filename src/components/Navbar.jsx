@@ -7,9 +7,6 @@ import ThemeToggle from "./ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/", label: "Sanctuary" },
-  { href: "/explore", label: "Explore" },
-  { href: "/fellowship", label: "Fellowship" },
-  { href: "/courses", label: "Courses" },
 ];
 
 export default function Navbar() {

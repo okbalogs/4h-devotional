@@ -5,7 +5,6 @@ import ShellWrapper from "@/components/ShellWrapper";
 import { AuthProvider } from "@/context/AuthContext";
 import PwaRegistration from "@/components/PwaRegistration";
 import InstallPopup from "@/components/InstallPopup";
-import ChangelogModal from "@/components/ChangelogModal";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const outfit = Outfit({
@@ -115,7 +114,6 @@ export default function RootLayout({ children }) {
           <ThemeProvider>
             <PwaRegistration />
             <InstallPopup />
-            <ChangelogModal />
             <ShellWrapper>{children}</ShellWrapper>
           </ThemeProvider>
         </AuthProvider>
