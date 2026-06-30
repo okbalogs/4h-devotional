@@ -5,6 +5,7 @@ import '../entry.css'
 import { auth } from '@/utils/firebase'
 import { useAuth } from '@/context/AuthContext'
 import { notifyUser } from '@/utils/pushManager'
+import { getLocalEntries, deleteLocalEntry } from '@/utils/offlineStorage'
 import DevotionCardModal from '@/components/DevotionCardModal'
 import { Pencil, BookOpen, Heart, Hand, Handshake, Download, Trash2, Share2 } from 'lucide-react'
 
@@ -79,23 +80,16 @@ export default function ReadingRecord() {
   }, [isEditing, draft, entry])
 
   useEffect(() => {
-    const fetchEntry = async () => {
-      try {
-        const token = await auth.currentUser?.getIdToken()
-        const res = await fetch(`/api/entries/${id}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-        if (!res.ok) throw new Error('Not found')
-        const data = await res.json()
-        setEntry(data)
-        setLoading(false)
-      } catch (err) {
-        setNotFound(true)
-        setLoading(false)
-      }
+    if (!user) return
+    const all = getLocalEntries(user.id)
+    const found = all.find(e => e.id === id)
+    if (found) {
+      setEntry(found)
+    } else {
+      setNotFound(true)
     }
-    fetchEntry()
-  }, [id])
+    setLoading(false)
+  }, [id, user])
 
   const startEditing = () => {
     setDraft({
@@ -120,17 +114,13 @@ export default function ReadingRecord() {
     setSaving(true)
     setSaveError(null)
     try {
-      const token = await auth.currentUser?.getIdToken()
-      const res = await fetch(`/api/entries/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(draft)
-      })
-      if (!res.ok) throw new Error('Failed to update entry')
-      
+      // Update in localStorage directly
+      const entries = getLocalEntries(user.id)
+      const idx = entries.findIndex(e => e.id === id)
+      if (idx !== -1) {
+        entries[idx] = { ...entries[idx], ...draft }
+        localStorage.setItem(`entries_${user.id}`, JSON.stringify(entries))
+      }
       setEntry((prev) => ({ ...prev, ...draft }))
       setIsEditing(false)
       setDraft(null)
@@ -182,11 +172,7 @@ export default function ReadingRecord() {
     if (!confirm('Delete this entry? This cannot be undone.')) return
     setDeleting(true)
     try {
-      const token = await auth.currentUser?.getIdToken()
-      await fetch(`/api/entries/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
+      deleteLocalEntry(user.id, id)
       router.push('/history')
     } catch (err) {
       setDeleting(false)

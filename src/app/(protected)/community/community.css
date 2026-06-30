@@ -827,7 +827,44 @@
   color: var(--clr-text-muted);
 }
 
-/* Mobile: full-screen sheet */
+/* ─── RESPONSIVE: TABLET ─── */
+@media (min-width: 769px) and (max-width: 1100px) {
+  .groups-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+  }
+
+  .partner-panel {
+    max-width: 100%;
+    padding: 28px;
+  }
+
+  .partner-panel--active {
+    max-width: 100%;
+  }
+
+  .prayer-card {
+    padding: 18px;
+  }
+
+  .partner-stats-row {
+    padding: 18px;
+  }
+
+  .group-card {
+    padding: 20px;
+  }
+
+  .create-group-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .community-page {
+    gap: 20px;
+  }
+}
+
+/* ─── RESPONSIVE: MOBILE ─── */
 @media (max-width: 768px) {
   .create-group-row {
     grid-template-columns: 1fr;

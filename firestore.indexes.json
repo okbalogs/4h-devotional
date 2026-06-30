@@ -1,0 +1,45 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "entries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "user_id", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "accountability_partners",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "requester_id", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "accountability_partners",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "partner_id", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "accountability_partners",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "partner_email", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "partner_messages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "partnership_id", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

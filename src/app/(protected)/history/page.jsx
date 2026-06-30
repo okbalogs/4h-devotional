@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import './history.css'
-import { auth } from '@/utils/firebase'
 import { useAuth } from '@/context/AuthContext'
+import { getLocalEntries } from '@/utils/offlineStorage'
 
 export default function DailyArchives() {
   const { user } = useAuth()
@@ -28,72 +28,21 @@ export default function DailyArchives() {
     }
   }, [])
 
-  // Fetch entries for selected month — with localStorage cache fallback
+  // Load entries from localStorage directly (no Firestore)
   useEffect(() => {
     if (!user) return
     setLoading(true)
-    const cacheKey = `cached_history_${year}_${month}`
-    const start = new Date(year, month, 1).toISOString()
-    const end = new Date(year, month + 1, 0, 23, 59, 59).toISOString()
-
-    const applyCache = () => {
-      try {
-        const raw = localStorage.getItem(cacheKey)
-        if (raw) setEntries(JSON.parse(raw))
-        else setEntries([])
-      } catch {
-        setEntries([])
-      }
-      setLoading(false)
-    }
-
-    const fetchEntries = async () => {
-      try {
-        const token = await auth.currentUser?.getIdToken()
-        const res = await fetch(`/api/entries?start=${start}&end=${end}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-        if (res.ok) {
-          const data = await res.json()
-          setEntries(data)
-          try { localStorage.setItem(cacheKey, JSON.stringify(data)) } catch {}
-          setLoading(false)
-          return
-        }
-      } catch (err) {}
-      applyCache()
-    }
-    fetchEntries()
+    const all = getLocalEntries(user.id)
+    const start = new Date(year, month, 1)
+    const end = new Date(year, month + 1, 0, 23, 59, 59)
+    const filtered = all.filter(e => {
+      const d = new Date(e.created_at)
+      return d >= start && d <= end
+    })
+    setEntries(filtered)
+    setTotalEntries(all.length)
+    setLoading(false)
   }, [user, year, month])
-
-  // Fetch total entry count — with localStorage cache fallback
-  useEffect(() => {
-    if (!user) return
-
-    const applyCountCache = () => {
-      try {
-        const raw = localStorage.getItem('cached_history_total')
-        if (raw !== null) setTotalEntries(Number(raw))
-      } catch {}
-    }
-
-    const fetchTotal = async () => {
-      try {
-        const token = await auth.currentUser?.getIdToken()
-        const res = await fetch('/api/entries?count_only=true', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-        if (res.ok) {
-          const { count } = await res.json()
-          setTotalEntries(count)
-          try { localStorage.setItem('cached_history_total', String(count)) } catch {}
-          return
-        }
-      } catch (err) {}
-      applyCountCache()
-    }
-    fetchTotal()
-  }, [user])
 
   const firstDayOfMonth = new Date(year, month, 1).getDay()
   const daysInMonth = new Date(year, month + 1, 0).getDate()

@@ -11,12 +11,14 @@ export async function GET(req) {
   const redirectUri = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/auth/google/callback`;
   const frontendRedirect = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/today`;
 
+  const signinPage = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/signin`;
+
   if (error) {
-    return NextResponse.redirect(`${frontendRedirect}?error=${encodeURIComponent(error)}`);
+    return NextResponse.redirect(`${signinPage}?error=${encodeURIComponent(error)}`);
   }
 
   if (!code) {
-    return NextResponse.redirect(`${frontendRedirect}?error=NoCodeProvided`);
+    return NextResponse.redirect(`${signinPage}?error=NoCodeProvided`);
   }
 
   try {
@@ -85,6 +87,6 @@ export async function GET(req) {
 
   } catch (err) {
     console.error('Google OAuth Error:', err);
-    return NextResponse.redirect(`${frontendRedirect}?error=${encodeURIComponent(err.message)}`);
+    return NextResponse.redirect(`${signinPage}?error=${encodeURIComponent(err.message)}`);
   }
 }

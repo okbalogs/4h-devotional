@@ -1,4 +1,5 @@
 import { auth } from './firebase';
+import { getLocalVerse, setLocalVerse, getLocalEntries } from './offlineStorage';
 
 const STUDENT_PLANS = [
   { title: "Foundation of Trust", verses: ["Proverbs 3:5-6", "Philippians 4:6-7", "Isaiah 40:31", "Jeremiah 29:11", "Matthew 6:33"] },
@@ -59,32 +60,69 @@ export async function getUserPreferences(userId) {
 
 export async function getTodayVerseForUser(user) {
   try {
-    const res = await fetch('/api/verses/today', { headers: await getAuthHeaders() });
-    if (!res.ok) throw new Error('Failed to fetch today verse');
-    return await res.json();
+    // Check localStorage cache first
+    const uid = user?.uid || user?.id;
+    const journeyDay = getJourneyDay(user);
+    const cached = getLocalVerse(uid, journeyDay);
+    if (cached?.verse_text) return cached;
+
+    // Fetch preferences from localStorage (set by settings page)
+    const bibleVersion = localStorage.getItem('bible_version') || 'web';
+    const examMode = localStorage.getItem('exam_mode') === 'true';
+
+    const params = new URLSearchParams({ translation: bibleVersion, examMode });
+    const res = await fetch(`/api/verses/today?${params}`, { headers: await getAuthHeaders() });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      console.error('[getTodayVerseForUser] API error:', res.status, body?.error);
+      return null;
+    }
+    const data = await res.json();
+
+    // Cache in localStorage for offline + instant load
+    setLocalVerse(uid, journeyDay, data);
+    return data;
   } catch (err) {
+    console.error('[getTodayVerseForUser]', err.message);
     return null;
   }
 }
 
-export async function getStreakAndCount(userId) {
-  try {
-    const res = await fetch('/api/entries/streak', { headers: await getAuthHeaders() });
-    if (!res.ok) throw new Error('Failed to fetch streak');
-    return await res.json();
-  } catch (err) {
-    const recentDays = [];
-    const d = new Date();
-    for (let i = 6; i >= 0; i--) {
-      const pastDate = new Date(d);
-      pastDate.setDate(d.getDate() - i);
-      recentDays.push({
-         label: ['S','M','T','W','T','F','S'][pastDate.getDay()],
-         filled: false
-      });
-    }
-    return { streak: 0, totalEntries: 0, recentDays };
+export function getStreakAndCount(userId) {
+  const toDay = (d) => new Date(d).toLocaleDateString('en-CA');
+  const entries = getLocalEntries(userId);
+
+  const recentDays = [];
+  const now = new Date();
+  const uniqueDates = [...new Set(entries.map(e => toDay(e.created_at)))].sort((a, b) => b.localeCompare(a));
+
+  for (let i = 6; i >= 0; i--) {
+    const pastDate = new Date(now);
+    pastDate.setDate(now.getDate() - i);
+    recentDays.push({
+      label: ['S','M','T','W','T','F','S'][pastDate.getDay()],
+      filled: uniqueDates.includes(toDay(pastDate)),
+    });
   }
+
+  if (!uniqueDates.length) return { streak: 0, totalEntries: 0, recentDays };
+
+  const today = toDay(now);
+  const yesterday = toDay(new Date(Date.now() - 86_400_000));
+  if (uniqueDates[0] !== today && uniqueDates[0] !== yesterday) {
+    return { streak: 0, totalEntries: entries.length, recentDays };
+  }
+
+  let streak = 0;
+  let expected = new Date(uniqueDates[0] === today ? now : new Date(Date.now() - 86_400_000));
+  for (const dateStr of uniqueDates) {
+    if (dateStr === toDay(expected)) {
+      streak++;
+      expected.setDate(expected.getDate() - 1);
+    } else break;
+  }
+
+  return { streak, totalEntries: entries.length, recentDays };
 }
 
 export function getCurrentPlanInfo(user, examMode = false) {

@@ -6,7 +6,7 @@ import './new.css'
 import { auth } from '@/utils/firebase'
 import { useAuth } from '@/context/AuthContext'
 import { getTodayVerseForUser } from '@/utils/dailyVerse'
-import { queueEntry } from '@/utils/offlineStorage'
+import { queueEntry, saveLocalEntry } from '@/utils/offlineStorage'
 import { notifyUser } from '@/utils/pushManager'
 import { FileText } from 'lucide-react'
 
@@ -139,6 +139,10 @@ export default function NewEntry() {
       if (!res.ok) throw new Error('Failed to save entry')
       const data = await res.json()
 
+      // Persist to localStorage (primary storage — no Firestore)
+      const saved = saveLocalEntry(user.id, data)
+      const entryId = saved?.id || data.id
+
       localStorage.removeItem(DRAFT_KEY)
 
       if (shareWithPartner && activePartnership && formData.lingeringThought.trim()) {
@@ -160,7 +164,7 @@ export default function NewEntry() {
         if (partnerId) notifyUser(partnerId, 'note', 'Devotion note shared', `${senderName} shared a lingering thought with you`, '/community?tab=partners')
       }
 
-      router.push(`/entry/${data.id}`)
+      router.push(`/entry/${entryId}`)
     } catch (err) {
       if (!navigator.onLine || err.message?.includes('fetch')) {
         queueEntry(entryPayload())

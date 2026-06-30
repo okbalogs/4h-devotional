@@ -1,5 +1,7 @@
-const VERSE_KEY = (userId, journeyDay) => `verse_${userId}_${journeyDay}`
-const PENDING_KEY = 'pending_entries'
+const VERSE_KEY    = (uid, day) => `verse_${uid}_${day}`
+const PENDING_KEY  = 'pending_entries'
+const ENTRIES_KEY  = (uid) => `entries_${uid}`
+const PROFILE_KEY  = (uid) => `profile_${uid}`
 
 // ─── Verse cache ───
 
@@ -51,4 +53,65 @@ export function removePendingEntry(offlineId) {
 
 export function hasPendingEntries() {
   return getPendingEntries().length > 0
+}
+
+// ─── Entries (primary storage, no Firestore) ───
+
+export function getLocalEntries(uid) {
+  try {
+    const raw = localStorage.getItem(ENTRIES_KEY(uid))
+    return raw ? JSON.parse(raw) : []
+  } catch { return [] }
+}
+
+export function saveLocalEntry(uid, entry) {
+  try {
+    const entries = getLocalEntries(uid)
+    const newEntry = {
+      ...entry,
+      id: `local_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+      created_at: entry.created_at || new Date().toISOString(),
+    }
+    entries.unshift(newEntry) // newest first
+    localStorage.setItem(ENTRIES_KEY(uid), JSON.stringify(entries))
+    return newEntry
+  } catch { return null }
+}
+
+export function deleteLocalEntry(uid, id) {
+  try {
+    const filtered = getLocalEntries(uid).filter(e => e.id !== id)
+    localStorage.setItem(ENTRIES_KEY(uid), JSON.stringify(filtered))
+  } catch {}
+}
+
+// ─── Profile ───
+
+const DEFAULT_PROFILE = {
+  bible_version: 'web',
+  exam_mode: false,
+  avatar_url: null,
+  church: '',
+  academic_level: '',
+  reminders_enabled: true,
+  reminder_time: '06:00',
+  public_profile: false,
+  weekly_summary: true,
+  community_prayers: false,
+}
+
+export function getLocalProfile(uid) {
+  try {
+    const raw = localStorage.getItem(PROFILE_KEY(uid))
+    return raw ? { ...DEFAULT_PROFILE, ...JSON.parse(raw) } : { ...DEFAULT_PROFILE }
+  } catch { return { ...DEFAULT_PROFILE } }
+}
+
+export function setLocalProfile(uid, updates) {
+  try {
+    const current = getLocalProfile(uid)
+    const merged = { ...current, ...updates, updated_at: new Date().toISOString() }
+    localStorage.setItem(PROFILE_KEY(uid), JSON.stringify(merged))
+    return merged
+  } catch { return null }
 }

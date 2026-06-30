@@ -1,8 +1,10 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { db } from '@/utils/firebase'
-import { collection, query, onSnapshot, orderBy, limit, doc, getDoc, addDoc, deleteDoc } from 'firebase/firestore'
+import { collection, query, onSnapshot, orderBy, limit } from 'firebase/firestore'
 import { Megaphone } from 'lucide-react'
+
+const ADMIN_EMAILS = ['olaolubalogs@gmail.com']
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -17,49 +19,45 @@ function timeAgo(dateStr) {
 export default function NoticesTab({ user }) {
   const [notices, setNotices] = useState([])
   const [loading, setLoading] = useState(true)
-  const [isAdmin, setIsAdmin] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [posting, setPosting] = useState(false)
   const [error, setError] = useState('')
 
-  const checkAdminStatus = useCallback(async () => {
-    if (!user) return
-    const docRef = doc(db, 'profiles', user.uid)
-    const docSnap = await getDoc(docRef)
-    if (docSnap.exists()) {
-      setIsAdmin(docSnap.data().is_admin || false)
-    }
-  }, [user])
+  const isAdmin = ADMIN_EMAILS.includes(user?.email?.toLowerCase())
 
   useEffect(() => {
-    checkAdminStatus()
     setLoading(true)
     const q = query(collection(db, 'notices'), orderBy('created_at', 'desc'), limit(30))
     const unsub = onSnapshot(q, (snap) => {
       setNotices(snap.docs.map(d => ({ id: d.id, ...d.data() })))
       setLoading(false)
+    }, (err) => {
+      console.warn("Notices listener error:", err)
+      setError("Unable to load notices. Please check permissions.")
+      setLoading(false)
     })
     return () => unsub()
-  }, [checkAdminStatus])
+  }, [])
 
   const postNotice = async () => {
     if (!title.trim() || !content.trim()) return
     setPosting(true)
     setError('')
     try {
-      await addDoc(collection(db, 'notices'), {
-        author_id: user.uid,
-        title: title.trim(),
-        content: content.trim(),
-        created_at: new Date().toISOString()
+      const token = await user.getIdToken()
+      const res = await fetch('/api/community/notices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ title, content })
       })
+      if (!res.ok) throw new Error((await res.json()).error)
       setTitle('')
       setContent('')
       setShowCreate(false)
     } catch (err) {
-      setError('Could not post notice. You might not have permission.')
+      setError('Could not post notice: ' + err.message)
     } finally {
       setPosting(false)
     }
@@ -68,7 +66,11 @@ export default function NoticesTab({ user }) {
   const deleteNotice = async (noticeId) => {
     if (!confirm('Delete this notice?')) return
     try {
-      await deleteDoc(doc(db, 'notices', noticeId))
+      const token = await user.getIdToken()
+      await fetch(`/api/community/notices?id=${noticeId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
     } catch (err) {
       console.error(err)
     }
@@ -77,8 +79,14 @@ export default function NoticesTab({ user }) {
   return (
     <div>
       {isAdmin && (
-        <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
-          <button className="today-begin-btn" style={{ padding: '10px 20px', fontSize: '0.85rem', marginTop: 0 }}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', background: 'var(--clr-card)', border: '1px solid var(--clr-border)', borderRadius: '12px', padding: '12px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ background: 'var(--clr-primary)', color: '#fff', fontSize: '0.7rem', fontWeight: 700, padding: '3px 8px', borderRadius: '100px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+              Admin
+            </span>
+            <span style={{ color: 'var(--clr-text-muted)', fontSize: '0.82rem' }}>You can post and delete notices</span>
+          </div>
+          <button className="today-begin-btn" style={{ padding: '8px 18px', fontSize: '0.82rem', marginTop: 0 }}
             onClick={() => setShowCreate(v => !v)}>
             {showCreate ? 'Cancel' : '+ New Notice'}
           </button>

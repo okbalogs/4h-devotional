@@ -42,8 +42,6 @@ export default function PrayerTab({ user }) {
       
       const ids = reqs.map(r => r.id)
       
-      // Fetch responses in real-time or just one-off? One-off for now to avoid too many listeners
-      // Wait, firebase limits 'in' queries to 30 items. We have max 30 requests.
       const q2 = query(collection(db, 'prayer_responses'), where('request_id', 'in', ids))
       onSnapshot(q2, (snap2) => {
          const counts = {}
@@ -56,7 +54,13 @@ export default function PrayerTab({ user }) {
          setPrayerCounts(counts)
          setMyPrayers(mine)
          setLoading(false)
+      }, (err) => {
+         console.warn("Prayer responses listener error:", err)
       })
+    }, (err) => {
+      console.warn("Prayer requests listener error:", err)
+      setError("Unable to load prayer requests. Please check permissions.")
+      setLoading(false)
     })
 
     return () => unsub()
