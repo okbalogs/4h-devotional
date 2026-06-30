@@ -33,12 +33,6 @@ export default function Navbar() {
     <header className={`site-nav-header ${scrolled ? 'site-nav-header--scrolled' : ''}`}>
       <nav className="site-nav">
 
-        {/* Logo */}
-        <Link href="/" className="site-nav-logo">
-          <span className="site-nav-logo-mark">✦</span>
-          Editorial Devotion
-        </Link>
-
         {/* Desktop links */}
         <div className="site-nav-links">
           {NAV_LINKS.map(({ href, label }) => (
