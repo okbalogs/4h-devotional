@@ -1,9 +1,8 @@
-/* ─── TODAY PAGE (OPTION A) ─── */
+/* ─── TODAY PAGE ─── */
 .today-page {
   display: flex;
   flex-direction: column;
   gap: 13px;
-  /* Override protected-content padding to be mobile-sized and centered */
   max-width: 440px;
   margin: 0 auto;
   padding: 0 16px 80px;
@@ -175,7 +174,7 @@
 }
 .today-action-btn:hover {
   background: var(--clr-primary-hover);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 /* ── Reading Plan Card ── */
@@ -220,4 +219,174 @@
   height: 100%;
   background: var(--clr-primary);
   transition: width 0.3s ease;
+}
+
+/* ─── RESPONSIVE: TABLET ─── */
+@media (min-width: 769px) and (max-width: 1100px) {
+  .today-page {
+    max-width: 600px;
+    padding: 0 20px 60px;
+    gap: 16px;
+  }
+
+  .today-header {
+    margin-top: 8px;
+  }
+
+  .today-greeting-name {
+    font-size: 32px;
+  }
+
+  .today-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 15px;
+  }
+
+  .today-streak-card {
+    padding: 22px 20px;
+    border-radius: 18px;
+  }
+
+  .today-streak-count {
+    font-size: 48px;
+  }
+
+  .today-streak-dot {
+    width: 18px;
+    height: 18px;
+  }
+
+  .today-verse-card {
+    padding: 22px 20px;
+    border-radius: 18px;
+    gap: 14px;
+  }
+
+  .today-verse-ref {
+    font-size: 16px;
+  }
+
+  .today-verse-text {
+    font-size: 24px;
+  }
+
+  .today-action-btn {
+    padding: 16px;
+    font-size: 18px;
+    border-radius: 14px;
+  }
+
+  .today-plan-card {
+    padding: 22px 20px;
+    border-radius: 18px;
+  }
+
+  .today-plan-title {
+    font-size: 17px;
+  }
+
+  .today-plan-bar-bg {
+    height: 12px;
+  }
+}
+
+/* ─── RESPONSIVE: DESKTOP ─── */
+@media (min-width: 1101px) {
+  .today-page {
+    max-width: 760px;
+    padding: 0 24px 60px;
+    gap: 20px;
+
+    /* 2-column grid for dashboard cards */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+  }
+
+  /* Header spans full width */
+  .today-header {
+    grid-column: 1 / -1;
+    margin-top: 0;
+    margin-bottom: 4px;
+  }
+
+  .today-greeting-name {
+    font-size: 34px;
+  }
+
+  .today-avatar {
+    width: 52px;
+    height: 52px;
+    font-size: 16px;
+  }
+
+  /* Streak card — left column */
+  .today-streak-card {
+    grid-column: 1;
+    padding: 24px;
+    border-radius: 18px;
+    gap: 16px;
+    align-self: stretch;
+  }
+
+  .today-streak-count {
+    font-size: 52px;
+  }
+
+  .today-streak-label {
+    font-size: 20px;
+  }
+
+  .today-streak-dot {
+    width: 18px;
+    height: 18px;
+  }
+
+  .today-streak-day {
+    font-size: 14px;
+  }
+
+  /* Plan card — right column */
+  .today-plan-card {
+    grid-column: 2;
+    padding: 24px;
+    border-radius: 18px;
+    align-self: stretch;
+    justify-content: center;
+  }
+
+  .today-plan-title {
+    font-size: 18px;
+  }
+
+  .today-plan-bar-bg {
+    height: 14px;
+    border-radius: 7px;
+  }
+
+  /* Verse card — spans both columns */
+  .today-verse-card {
+    grid-column: 1 / -1;
+    padding: 28px;
+    border-radius: 18px;
+    gap: 16px;
+  }
+
+  .today-verse-ref {
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
+
+  .today-verse-text {
+    font-size: 26px;
+    line-height: 1.45;
+  }
+
+  .today-action-btn {
+    padding: 16px;
+    font-size: 18px;
+    border-radius: 14px;
+    max-width: 320px;
+  }
 }

@@ -1,55 +1,23 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { db } from '@/utils/firebase'
-import { collection, query, where, getDocs } from 'firebase/firestore'
 import { getStreakAndCount } from '@/utils/dailyVerse'
+import { useAuth } from '@/context/AuthContext'
 import { Trophy, Flame } from 'lucide-react'
 
 export default function LeaderboardWidget() {
+  const { user } = useAuth()
   const [leaders, setLeaders] = useState([])
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function fetchLeaders() {
-      try {
-        // Find users who have posted recently to calculate their streaks
-        // (For a small fellowship, we can fetch unique user IDs from recent entries)
-        const twoDaysAgo = new Date(Date.now() - 48 * 3600000).toISOString()
-        const q = query(collection(db, 'entries'), where('created_at', '>=', twoDaysAgo))
-        const snap = await getDocs(q)
-
-        if (snap.empty) {
-          setLoading(false)
-          return
-        }
-
-        const uniqueUserIds = [...new Set(snap.docs.map(e => e.data().user_id))]
-        
-        // For simplicity, we calculate streaks for these active users
-        const streakPromises = uniqueUserIds.map(async (userId) => {
-          const { streak } = await getStreakAndCount(userId)
-          return { userId, streak }
-        })
-
-        const streaksData = await Promise.all(streakPromises)
-        
-        // Sort by streak descending and take top 5
-        const topStreaks = streaksData
-          .filter(s => s.streak > 2) // Only show streaks > 2
-          .sort((a, b) => b.streak - a.streak)
-          .slice(0, 5)
-
-        setLeaders(topStreaks)
-      } catch (err) {
-        console.error("Error fetching leaderboard", err)
-      } finally {
-        setLoading(false)
-      }
+    if (!user) return
+    // Without Firestore we only have the current user's streak
+    const { streak } = getStreakAndCount(user.id)
+    if (streak > 2) {
+      const name = user?.user_metadata?.full_name || 'Devotee'
+      setLeaders([{ userId: user.id, streak, name }])
     }
-    fetchLeaders()
-  }, [])
+  }, [user])
 
-  if (loading) return <div className="skeleton-block" style={{ height: '100px', width: '100%', borderRadius: '8px' }} />
   if (leaders.length === 0) return null
 
   return (
@@ -62,7 +30,7 @@ export default function LeaderboardWidget() {
           <div key={leader.userId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
             <span style={{ color: '#555', fontWeight: 500 }}>
               {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : <span style={{display: 'inline-block', width: '20px', textAlign: 'center'}}>{i+1}</span>}
-              <span style={{ marginLeft: '8px' }}>Devotee {leader.userId.substring(0, 4)}</span>
+              <span style={{ marginLeft: '8px' }}>{leader.name || `Devotee ${leader.userId.substring(0, 4)}`}</span>
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, color: '#d35400' }}>
               {leader.streak} <Flame size={14} />

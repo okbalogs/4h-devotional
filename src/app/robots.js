@@ -7,10 +7,6 @@ export default function robots() {
         userAgent: '*',
         allow: [
           '/',
-          '/explore',
-          '/courses',
-          '/fellowship',
-          '/instructors',
           '/privacy',
           '/terms',
           '/support',

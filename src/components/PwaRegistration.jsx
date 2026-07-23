@@ -1,8 +1,7 @@
 "use client"
 import { useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { getPendingEntries, removePendingEntry, hasPendingEntries } from '@/utils/offlineStorage'
-import { supabase } from '@/utils/supabase'
+import { hasPendingEntries } from '@/utils/offlineStorage'
 
 export default function PwaRegistration() {
   const { user } = useAuth()
@@ -26,23 +25,7 @@ export default function PwaRegistration() {
     return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
 
-  // Sync pending offline entries when back online
-  useEffect(() => {
-    if (!user) return
-
-    const syncPending = async () => {
-      if (!navigator.onLine || !hasPendingEntries()) return
-      for (const entry of getPendingEntries()) {
-        const { _offlineId, ...data } = entry
-        const { error } = await supabase.from('entries').insert(data)
-        if (!error) removePendingEntry(_offlineId)
-      }
-    }
-
-    syncPending()
-    window.addEventListener('online', syncPending)
-    return () => window.removeEventListener('online', syncPending)
-  }, [user])
+  // Sync handled by OfflineSync component
 
   return null
 }

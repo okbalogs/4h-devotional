@@ -1,14 +1,21 @@
+export const runtime = 'nodejs';
+
 import { NextResponse } from 'next/server';
-import { adminDb, adminAuth } from '@/utils/firebaseAdmin';
+import { adminAuth } from '@/utils/firebaseAdmin';
+
+// Entries live in localStorage on the client. This route only verifies auth.
+// GET: client should read from localStorage directly (returns 404 stub for API calls)
+// PUT: verify auth, return updated fields so client can patch localStorage
+// DELETE: verify auth, return success so client can remove from localStorage
 
 async function verifyAuth(req) {
   const authHeader = req.headers.get('Authorization');
   if (!authHeader?.startsWith('Bearer ')) return null;
   const token = authHeader.split('Bearer ')[1];
   try {
-    const decodedToken = await adminAuth.verifyIdToken(token);
-    return decodedToken.uid;
-  } catch (err) {
+    const decoded = await adminAuth.verifyIdToken(token);
+    return decoded.uid;
+  } catch {
     return null;
   }
 }
@@ -16,26 +23,8 @@ async function verifyAuth(req) {
 export async function GET(req, { params }) {
   const uid = await verifyAuth(req);
   if (!uid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  try {
-    const { id } = await params;
-    const doc = await adminDb.collection('entries').doc(id).get();
-    
-    if (!doc.exists) {
-      return NextResponse.json({ error: 'Entry not found' }, { status: 404 });
-    }
-
-    const data = doc.data();
-    
-    // Ensure the user owns this entry
-    if (data.user_id !== uid) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
-
-    return NextResponse.json({ id: doc.id, ...data });
-  } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
-  }
+  // Client reads from localStorage; this endpoint is a no-op
+  return NextResponse.json({ error: 'Entry not found' }, { status: 404 });
 }
 
 export async function PUT(req, { params }) {
@@ -43,29 +32,13 @@ export async function PUT(req, { params }) {
   if (!uid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const { id } = await params;
-    const docRef = adminDb.collection('entries').doc(id);
-    const doc = await docRef.get();
-    
-    if (!doc.exists) {
-      return NextResponse.json({ error: 'Entry not found' }, { status: 404 });
-    }
-    if (doc.data().user_id !== uid) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
-
     const body = await req.json();
-    
-    const updateData = {};
-    const allowedFields = ['scripture_reference', 'verse_text', 'hear', 'heed', 'hold', 'help', 'lingering_thought'];
-    for (const field of allowedFields) {
-      if (body[field] !== undefined) {
-        updateData[field] = body[field];
-      }
+    const allowed = ['scripture_reference', 'verse_text', 'hear', 'heed', 'hold', 'help', 'lingering_thought'];
+    const updates = {};
+    for (const field of allowed) {
+      if (body[field] !== undefined) updates[field] = body[field];
     }
-
-    await docRef.update(updateData);
-    return NextResponse.json({ success: true, ...updateData });
+    return NextResponse.json({ success: true, ...updates });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
@@ -74,23 +47,6 @@ export async function PUT(req, { params }) {
 export async function DELETE(req, { params }) {
   const uid = await verifyAuth(req);
   if (!uid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  try {
-    const { id } = await params;
-    const docRef = adminDb.collection('entries').doc(id);
-    const doc = await docRef.get();
-    
-    if (!doc.exists) {
-      return NextResponse.json({ error: 'Entry not found' }, { status: 404 });
-    }
-    if (doc.data().user_id !== uid) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
-
-    await docRef.delete();
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
-  }
+  return NextResponse.json({ success: true });
 }
 

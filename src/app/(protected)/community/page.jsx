@@ -58,6 +58,8 @@ export default function Community() {
         if (TAB_NOTIF_TYPES.partners.includes(type)) counts.partners++
       })
       setTabUnread(counts)
+    }, (err) => {
+      console.warn("Notifications listener error:", err)
     })
 
     return () => unsub()

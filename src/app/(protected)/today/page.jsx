@@ -28,15 +28,14 @@ export default function Today() {
       setPlanInfo(getCurrentPlanInfo(user, prefs.examMode))
       if (prefs.avatarUrl) setAvatarUrl(prefs.avatarUrl)
     })
-    getStreakAndCount(user.id).then(({ streak, totalEntries, recentDays }) => {
-      setStreak(streak)
-      setTotalEntries(totalEntries)
-      setRecentDays(recentDays || [])
-      if (streak > 0) {
-        const badge = getNewBadge(streak)
-        if (badge) setNewBadge(badge)
-      }
-    })
+    const { streak: s, totalEntries: t, recentDays: r } = getStreakAndCount(user.id)
+    setStreak(s)
+    setTotalEntries(t)
+    setRecentDays(r || [])
+    if (s > 0) {
+      const badge = getNewBadge(s)
+      if (badge) setNewBadge(badge)
+    }
   }, [user])
 
   const greeting = getGreeting()

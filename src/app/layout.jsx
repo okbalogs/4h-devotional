@@ -1,10 +1,10 @@
 import { Playfair_Display, Outfit } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import ShellWrapper from "@/components/ShellWrapper";
 import { AuthProvider } from "@/context/AuthContext";
 import PwaRegistration from "@/components/PwaRegistration";
 import InstallPopup from "@/components/InstallPopup";
-import ChangelogModal from "@/components/ChangelogModal";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const outfit = Outfit({
@@ -100,27 +100,20 @@ export default function RootLayout({ children }) {
       className={`${outfit.variable} ${playfair.variable} antialiased`}>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebSite",
-              "name": "4H Devotional",
-              "alternateName": "4H Devotion Tracker",
-              "url": "https://4h-devotional.vercel.app/"
-            })
-          }}
-        />
-        {/* Prevent flash of wrong theme on load */}
-        <script dangerouslySetInnerHTML={{ __html: `(function(){var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t)})()` }} />
       </head>
       <body>
+        {/* Structured data */}
+        <Script id="ld-website" type="application/ld+json" strategy="beforeInteractive">{`
+          {"@context":"https://schema.org","@type":"WebSite","name":"4H Devotional","alternateName":"4H Devotion Tracker","url":"https://4h-devotional.vercel.app/"}
+        `}</Script>
+        {/* Prevent flash of wrong theme — runs before React hydrates */}
+        <Script id="theme-init" strategy="beforeInteractive">{`
+          (function(){var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t)})()
+        `}</Script>
         <AuthProvider>
           <ThemeProvider>
             <PwaRegistration />
             <InstallPopup />
-            <ChangelogModal />
             <ShellWrapper>{children}</ShellWrapper>
           </ThemeProvider>
         </AuthProvider>

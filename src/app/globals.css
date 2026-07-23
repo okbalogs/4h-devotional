@@ -2247,15 +2247,68 @@ a {
   text-align: left;
 }
 
-.auth-error {
-  color: #d13030;
-  font-size: 0.85rem;
+.auth-error { display: none; }
+
+/* ─── Auth Toast Notification ─── */
+.auth-toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #1a1a1a;
+  border-radius: 100px;
+  padding: 14px 20px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.22);
+  white-space: nowrap;
+  font-size: 0.875rem;
   font-weight: 500;
-  text-align: center;
-  background: #ffebe5;
-  padding: 10px;
-  border-radius: 6px;
-  margin-bottom: 20px;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.auth-toast--in {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.auth-toast--out {
+  opacity: 0;
+  transform: translateX(-50%) translateY(20px);
+}
+.auth-toast svg { color: #ff6b6b; flex-shrink: 0; }
+.auth-toast-close {
+  background: rgba(255,255,255,0.12);
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-size: 0.75rem;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.auth-toast-close:hover { background: rgba(255,255,255,0.22); }
+.auth-toast-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background: rgba(255,107,107,0.6);
+  border-radius: 100px;
+  animation: auth-toast-drain 5s linear forwards;
+}
+@keyframes auth-toast-drain {
+  from { width: 100%; }
+  to   { width: 0%; }
 }
 
 /* ─── Form ─── */

@@ -45,6 +45,8 @@ function GroupDetail({ group: initialGroup, user, role, memberCounts, onClose, o
     const q = query(collection(db, 'group_members'), where('group_id', '==', group.id), orderBy('created_at', 'asc'))
     const unsub = onSnapshot(q, (snap) => {
       setMembers(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    }, (err) => {
+      console.warn("Group members listener error:", err)
     })
     return () => unsub()
   }, [group.id])
@@ -54,6 +56,9 @@ function GroupDetail({ group: initialGroup, user, role, memberCounts, onClose, o
     const q = query(collection(db, 'group_messages'), where('group_id', '==', group.id), orderBy('created_at', 'asc'), limit(60))
     const unsub = onSnapshot(q, (snap) => {
       setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      setLoadingMsgs(false)
+    }, (err) => {
+      console.warn("Group messages listener error:", err)
       setLoadingMsgs(false)
     })
     return () => unsub()
@@ -306,7 +311,13 @@ export default function GroupsTab({ user }) {
          setMemberCounts(counts)
          setMembership(myMembership)
          setLoading(false)
+      }, (err) => {
+         console.warn("Group members list listener error:", err)
       })
+    }, (err) => {
+      console.warn("Small groups listener error:", err)
+      setError("Unable to load groups. Please check permissions.")
+      setLoading(false)
     })
 
     return () => unsub()

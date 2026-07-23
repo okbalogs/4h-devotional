@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { adminDb, adminAuth } from '@/utils/firebaseAdmin';
+import { adminAuth } from '@/utils/firebaseAdmin';
 
 const STUDENT_PLANS = [
   { title: "Foundation of Trust", verses: ["Proverbs 3:5-6", "Philippians 4:6-7", "Isaiah 40:31", "Jeremiah 29:11", "Matthew 6:33"] },
@@ -38,42 +38,48 @@ export async function GET(req) {
     const userRecord = await adminAuth.getUser(uid);
     const journeyDay = getJourneyDay(userRecord.metadata.creationTime);
 
-    // Get preferences
-    const prefsDoc = await adminDb.collection('profiles').doc(uid).get();
-    const bibleVersion = prefsDoc.exists && prefsDoc.data().bible_version ? prefsDoc.data().bible_version : 'web';
-    const examMode = prefsDoc.exists && prefsDoc.data().exam_mode ? prefsDoc.data().exam_mode : false;
+    // Read preferences + examMode from query params (sent by client, no DB needed)
+    const { searchParams } = new URL(req.url);
+    const bibleVersion = searchParams.get('translation') || 'web';
+    const examMode = searchParams.get('examMode') === 'true';
 
     const list = getFlatList(examMode ? EXAM_PLANS : STUDENT_PLANS);
     const expectedRef = list[(journeyDay - 1) % list.length];
 
-    // Check Firebase cache
-    const cacheDocId = `${uid}_${journeyDay}`;
-    const cacheDoc = await adminDb.collection('user_verses').doc(cacheDocId).get();
-    
-    if (cacheDoc.exists) {
-      const data = cacheDoc.data();
-      if (data.bible_version === bibleVersion && data.verse_reference === expectedRef) {
-        return NextResponse.json({ journeyDay, ...data });
-      }
+    // Fetch from Bible API (timeout after 8s)
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    let json;
+    try {
+      const url = `https://bible-api.com/${encodeURIComponent(expectedRef)}?translation=${bibleVersion}`;
+      const res = await fetch(url, { signal: controller.signal });
+      json = await res.json();
+    } finally {
+      clearTimeout(timeout);
     }
 
-    // Fetch from Bible API
-    const url = `https://bible-api.com/${encodeURIComponent(expectedRef)}?translation=${bibleVersion}`;
-    const res = await fetch(url);
-    const json = await res.json();
-    
-    const newVerse = {
+    // Fallback to WEB translation if chosen version doesn't have the verse
+    if (!json?.text && bibleVersion !== 'web') {
+      const fallbackRes = await fetch(`https://bible-api.com/${encodeURIComponent(expectedRef)}?translation=web`);
+      json = await fallbackRes.json();
+    }
+
+    if (!json?.text) {
+      return NextResponse.json(
+        { error: `Bible API could not find "${expectedRef}": ${json?.error ?? 'unknown error'}` },
+        { status: 502 }
+      );
+    }
+
+    // Return verse — client caches it in localStorage via offlineStorage.js
+    return NextResponse.json({
+      journeyDay,
       user_id: uid,
       journey_day: journeyDay,
-      verse_reference: json.reference,
+      verse_reference: json.reference ?? expectedRef,
       verse_text: json.text.trim().replace(/\n/g, ' '),
       bible_version: bibleVersion,
-    };
-
-    // Save to Firestore
-    await adminDb.collection('user_verses').doc(cacheDocId).set(newVerse);
-
-    return NextResponse.json({ journeyDay, ...newVerse });
+    });
 
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });

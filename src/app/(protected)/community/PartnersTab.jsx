@@ -96,6 +96,10 @@ export default function PartnersTab({ user }) {
         setPartnerStats(partnerS)
       }
       setLoading(false)
+    }, (err) => {
+      console.warn("Accountability partners listener error:", err)
+      setError("Unable to load partners. Please check permissions.")
+      setLoading(false)
     })
 
     return () => unsub()
@@ -106,6 +110,8 @@ export default function PartnersTab({ user }) {
     const q = query(collection(db, 'partner_messages'), where('partnership_id', '==', activePartner.id), orderBy('created_at', 'desc'), limit(60))
     const unsub = onSnapshot(q, (snap) => {
       setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    }, (err) => {
+      console.warn("Partner messages listener error:", err)
     })
     return () => unsub()
   }, [activePartner])

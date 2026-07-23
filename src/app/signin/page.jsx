@@ -1,36 +1,60 @@
 "use client"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useAuth } from "@/context/AuthContext"
 import GoogleButton from "@/components/GoogleButton"
+
+function Toast({ message, onDone }) {
+  const [visible, setVisible] = useState(true)
+  const timerRef = useRef(null)
+
+  useEffect(() => {
+    timerRef.current = setTimeout(() => {
+      setVisible(false)
+      setTimeout(onDone, 350) // wait for fade-out before clearing
+    }, 5000)
+    return () => clearTimeout(timerRef.current)
+  }, [onDone])
+
+  return (
+    <div className={`auth-toast auth-toast--error ${visible ? 'auth-toast--in' : 'auth-toast--out'}`}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span>Incorrect email or password. Please try again.</span>
+      <button className="auth-toast-close" onClick={() => { setVisible(false); setTimeout(onDone, 350) }} aria-label="Dismiss">✕</button>
+      <div className="auth-toast-bar" />
+    </div>
+  )
+}
 
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [error, setError] = useState(null)
+  const [toastKey, setToastKey] = useState(null)
   const [loading, setLoading] = useState(false)
   const { login, loginWithGoogle } = useAuth()
 
+  const showError = () => setToastKey(Date.now())
+
   const handleLogin = async (e) => {
     e.preventDefault()
-    setError(null)
     setLoading(true)
     try {
       await login(email, password)
     } catch (err) {
-      setError(err.message)
+      showError()
     } finally {
       setLoading(false)
     }
   }
 
   const handleGoogle = async () => {
-    setError(null)
     try {
       await loginWithGoogle()
     } catch (err) {
-      setError(err.message)
+      showError()
     }
   }
 
@@ -70,8 +94,9 @@ export default function SignIn() {
             <span>Or continue with email</span>
           </div>
 
+          {toastKey && <Toast key={toastKey} message="" onDone={() => setToastKey(null)} />}
+
           <form className="auth-form" onSubmit={handleLogin}>
-            {error && <div className="auth-error">{error}</div>}
             <div className="auth-field">
               <label htmlFor="email">EMAIL ADDRESS</label>
               <div className="auth-input-wrap">

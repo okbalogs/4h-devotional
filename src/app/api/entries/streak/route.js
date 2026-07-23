@@ -1,5 +1,7 @@
+export const runtime = 'nodejs';
+
 import { NextResponse } from 'next/server';
-import { adminDb, adminAuth } from '@/utils/firebaseAdmin';
+import { adminAuth } from '@/utils/firebaseAdmin';
 
 async function verifyAuth(req) {
   const authHeader = req.headers.get('Authorization');
@@ -16,12 +18,11 @@ async function verifyAuth(req) {
 export async function GET(req) {
   const uid = await verifyAuth(req);
   if (!uid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Streak is now calculated client-side from localStorage — this endpoint is deprecated
+  return NextResponse.json({ streak: 0, totalEntries: 0, recentDays: [] });
 
   try {
-    const snapshot = await adminDb.collection('entries')
-      .where('user_id', '==', uid)
-      .orderBy('created_at', 'desc')
-      .get();
+    const snapshot = { empty: true, docs: [] }; // Firestore removed
       
     if (snapshot.empty) {
       const recentDays = [];

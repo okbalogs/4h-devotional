@@ -2,7 +2,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/utils/supabase'
+import { auth } from '@/utils/firebase'
+import { confirmPasswordReset } from 'firebase/auth'
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('')
@@ -20,13 +21,20 @@ export default function ResetPassword() {
     }
     setError(null)
     setLoading(true)
-    const { error } = await supabase.auth.updateUser({ password })
-    if (error) {
-      setError(error.message)
+    // Firebase password reset requires the oobCode from the URL (emailed link)
+    const oobCode = new URLSearchParams(window.location.search).get('oobCode')
+    if (!oobCode) {
+      setError('Invalid or expired reset link. Please request a new one.')
       setLoading(false)
-    } else {
+      return
+    }
+    try {
+      await confirmPasswordReset(auth, oobCode, password)
       setSuccess(true)
-      setTimeout(() => router.push('/today'), 2000)
+      setTimeout(() => router.push('/signin'), 2000)
+    } catch (err) {
+      setError(err.message)
+      setLoading(false)
     }
   }
 

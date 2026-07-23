@@ -36,15 +36,27 @@ export const AuthProvider = ({ children }) => {
     // Intercept Custom Token from Google OAuth redirect
     const urlParams = new URLSearchParams(window.location.search);
     const customToken = urlParams.get('customToken');
+    let pendingCustomToken = !!customToken;
+
     if (customToken) {
-      signInWithCustomToken(auth, customToken).then(() => {
-        // Clear the token from the URL for security
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }).catch(err => console.error("Custom token login failed", err));
+      // Clear from URL immediately
+      window.history.replaceState({}, document.title, window.location.pathname);
+      // Sign in; onAuthStateChanged will receive the user and clear loading
+      signInWithCustomToken(auth, customToken)
+        .catch(err => {
+          console.error("Custom token login failed", err);
+          pendingCustomToken = false;
+          setLoading(false);
+        });
     }
 
-    // Listen for auth changes
+    // Listen for auth changes — skip the initial null if we're still signing in
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (!firebaseUser && pendingCustomToken) {
+        // Custom token sign-in hasn't resolved yet — keep loading
+        return;
+      }
+      pendingCustomToken = false;
       setUser(formatUser(firebaseUser))
       setLoading(false)
     })
