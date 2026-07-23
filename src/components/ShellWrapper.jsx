@@ -55,12 +55,12 @@ export default function ShellWrapper({ children }) {
   if (isAuthRoute || isProtectedRoute) return <>{children}</>;
 
   return (
-    <div className="site-outer">
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      <div className="site-wrapper">
+      <div className="flex-1" style={{ paddingTop: pathname === '/' ? '0' : '6.5rem' }}>
         {children}
-        <Footer />
       </div>
+      <Footer />
     </div>
   );
 }

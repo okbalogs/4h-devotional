@@ -1,4 +1,4 @@
-import { Playfair_Display, Outfit } from "next/font/google";
+import { Inter, Outfit } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import ShellWrapper from "@/components/ShellWrapper";
@@ -13,8 +13,8 @@ const outfit = Outfit({
   display: "swap",
 });
 
-const playfair = Playfair_Display({
-  variable: "--font-caveat", // keeping the variable name mapping
+const inter = Inter({
+  variable: "--font-sans",
   subsets: ["latin"],
   display: "swap",
 });
@@ -97,19 +97,19 @@ export default function RootLayout({ children }) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${outfit.variable} ${playfair.variable} antialiased`}>
+      className={`${outfit.variable} ${inter.variable} antialiased font-sans bg-slate-50 dark:bg-[#09090b] text-slate-900 dark:text-slate-100`}>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body>
         {/* Structured data */}
-        <Script id="ld-website" type="application/ld+json" strategy="beforeInteractive">{`
-          {"@context":"https://schema.org","@type":"WebSite","name":"4H Devotional","alternateName":"4H Devotion Tracker","url":"https://4h-devotional.vercel.app/"}
-        `}</Script>
+        <Script id="ld-website" type="application/ld+json" strategy="beforeInteractive" dangerouslySetInnerHTML={{
+          __html: `{"@context":"https://schema.org","@type":"WebSite","name":"4H Devotional","alternateName":"4H Devotion Tracker","url":"https://4h-devotional.vercel.app/"}`
+        }} />
         {/* Prevent flash of wrong theme — runs before React hydrates */}
-        <Script id="theme-init" strategy="beforeInteractive">{`
-          (function(){var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t)})()
-        `}</Script>
+        <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{
+          __html: `(function(){var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t);if(t==='dark'){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark')}})()`
+        }} />
         <AuthProvider>
           <ThemeProvider>
             <PwaRegistration />

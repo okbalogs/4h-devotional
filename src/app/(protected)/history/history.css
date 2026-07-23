@@ -12,7 +12,7 @@
   border-radius: 12px;
   padding: 30px;
   margin-bottom: 20px;
-  box-shadow: 0 4px 20px rgba(47, 93, 69, 0.04);
+  box-shadow: 0 4px 20px rgba(92, 61, 46, 0.04);
 }
 .calendar-header {
   display: flex;
@@ -110,13 +110,13 @@
   background: #fff;
   border-radius: 12px;
   padding: 30px;
-  box-shadow: 0 4px 24px rgba(47, 93, 69, 0.05);
+  box-shadow: 0 4px 24px rgba(92, 61, 46, 0.05);
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
 }
 .entry-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(47, 93, 69, 0.08);
+  box-shadow: 0 8px 30px rgba(92, 61, 46, 0.08);
 }
 .entry-meta {
   display: flex;

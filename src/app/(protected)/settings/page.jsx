@@ -488,7 +488,7 @@ export default function Settings() {
               </div>
 
               {showPasswordForm && (
-                <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(47, 93, 69, 0.15)' }}>
+                <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(92, 61, 46, 0.15)' }}>
                   <div className="form-row" style={{ marginBottom: '16px' }}>
                     <div>
                       <label className="input-label">New Password</label>

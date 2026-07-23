@@ -83,8 +83,8 @@ export default function DailyArchives() {
       {/* Offline banner */}
       {isOffline && (
         <div style={{
-          background: 'rgba(47, 93, 69, 0.08)',
-          border: '1px solid rgba(47, 93, 69, 0.25)',
+          background: 'rgba(92, 61, 46, 0.08)',
+          border: '1px solid rgba(92, 61, 46, 0.25)',
           borderRadius: '10px',
           padding: '10px 16px',
           marginBottom: '20px',
