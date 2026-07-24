@@ -31,9 +31,28 @@ export default function ForgotPassword() {
       <div className="auth-bg-shape auth-bg-shape--top"></div>
       <div className="auth-bg-shape auth-bg-shape--bottom"></div>
 
-      <header className="auth-header">
-        <Link href="/" className="auth-brand">
-          <em>Editorial Devotion</em>
+      <header className="auth-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 2rem' }}>
+        <Link href="/" className="auth-brand" style={{ textDecoration: 'none', color: 'inherit', fontWeight: 700, fontSize: '1.15rem' }}>
+          4H Devotional
+        </Link>
+        <Link
+          href="/"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            padding: '0.5rem 1.1rem',
+            borderRadius: '9999px',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            color: '#5C3D2E',
+            background: 'rgba(92, 61, 46, 0.08)',
+            border: '1px solid rgba(92, 61, 46, 0.15)',
+            textDecoration: 'none',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          ← Back to Home
         </Link>
       </header>
 

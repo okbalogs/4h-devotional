@@ -28,7 +28,7 @@ export default function Navbar() {
 
   useEffect(() => { setMenuOpen(false) }, [currentPage])
 
-  const ctaHref = user ? "/today" : "/signup"
+  const ctaHref = user ? "/today" : "/signin"
   const ctaLabel = user ? "Go to App" : "Start Selah"
 
   return (

@@ -15,20 +15,34 @@ import {
 
 const AuthContext = createContext({})
 
+const isBypassEnabled =
+  process.env.NODE_ENV === "development" &&
+  process.env.NEXT_PUBLIC_DEV_BYPASS_AUTH === "true";
+
+const MOCK_DEV_USER = {
+  uid: "dev-user-123",
+  id: "dev-user-123",
+  email: "dev@example.com",
+  displayName: "Dev User",
+  user_metadata: {
+    full_name: "Dev User",
+  },
+};
+
 // Shim to make Firebase user object compatible with existing Supabase references
 const formatUser = (firebaseUser) => {
-  if (!firebaseUser) return null;
+  if (!firebaseUser) return isBypassEnabled ? MOCK_DEV_USER : null;
   return {
     ...firebaseUser,
     id: firebaseUser.uid, // Supabase uses user.id
     user_metadata: {
-      full_name: firebaseUser.displayName, // Supabase uses user.user_metadata.full_name
+      full_name: firebaseUser.displayName || firebaseUser.email || "Dev User", // Supabase uses user.user_metadata.full_name
     }
   };
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState(isBypassEnabled ? MOCK_DEV_USER : null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 

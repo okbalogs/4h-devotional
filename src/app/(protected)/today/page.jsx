@@ -52,10 +52,7 @@ export default function Today() {
       <div className="today-header">
         <div>
           <div className="today-greeting-sub">{greeting},</div>
-          <div className="today-greeting-name">{firstName} ✦</div>
-        </div>
-        <div className="today-avatar">
-          {avatarUrl ? <img src={avatarUrl} alt="avatar" /> : <span>{initials}</span>}
+          <div className="today-greeting-name">{firstName}</div>
         </div>
       </div>
 

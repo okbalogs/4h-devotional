@@ -92,7 +92,6 @@ export default function Sidebar() {
   const pathname = usePathname()
   const { user } = useAuth()
   const [streak, setStreak] = useState(0)
-  const [profileOpen, setProfileOpen] = useState(false)
   const isAdmin = ADMIN_EMAILS.includes(user?.email?.toLowerCase())
 
   useEffect(() => {
@@ -107,107 +106,87 @@ export default function Sidebar() {
     setStreak(count)
   }, [user])
 
-  const name = user?.user_metadata?.full_name || 'Devotee'
-  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-
   const navItems = [
-    {
-      name: 'Home', path: '/today', icon: <Home size={20} strokeWidth={1.5} />
-    },
-    {
-      name: 'Archive', path: '/history', icon: <Book size={20} strokeWidth={1.5} />
-    },
-    {
-      name: 'Community', path: '/community', icon: <Users size={20} strokeWidth={1.5} />
-    },
-    {
-      name: 'Settings', path: '/settings', icon: <Settings size={20} strokeWidth={1.5} />
-    },
+    { name: 'Home', path: '/today', icon: <Home size={20} strokeWidth={1.8} /> },
+    { name: 'Archive', path: '/history', icon: <Book size={20} strokeWidth={1.8} /> },
+    { name: 'Community', path: '/community', icon: <Users size={20} strokeWidth={1.8} /> },
+    { name: 'Settings', path: '/settings', icon: <Settings size={20} strokeWidth={1.8} /> },
   ]
 
   return (
-    <>
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <h1>Editorial<br />Devotion</h1>
-          {streak > 0 && <p className="sidebar-streak flex items-center gap-1">{streak}-day streak <Flame size={14} /></p>}
-        </div>
+    <aside className="sidebar">
+      {/* Top Header Logo Mark */}
+      <div className="sidebar-header">
+        <Link href="/today" className="sidebar-brand-mark" aria-label="Home">
+          <span className="sidebar-brand-icon">4H</span>
+        </Link>
+        {streak > 0 && (
+          <div className="sidebar-streak-badge" title={`${streak}-day streak`}>
+            <Flame size={12} />
+            <span>{streak}</span>
+          </div>
+        )}
+      </div>
 
-        <Link href="/entry/new" className="sidebar-new-entry">+ New Entry</Link>
-
-        <nav className="sidebar-nav">
-          {navItems.slice(0, 2).map((item) => {
-            const isActive = pathname.startsWith(item.path)
-            return (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`sidebar-link ${isActive ? 'sidebar-link--active' : ''}`}
-              >
+      {/* Navigation Items */}
+      <nav className="sidebar-nav">
+        {/* First 2 items (Home, Archive) */}
+        {navItems.slice(0, 2).map((item) => {
+          const isActive = pathname.startsWith(item.path)
+          return (
+            <Link
+              key={item.path}
+              href={item.path}
+              className={`sidebar-link ${isActive ? 'sidebar-link--active' : ''}`}
+            >
+              <span className="sidebar-icon-glow">
                 <span className="sidebar-icon">{item.icon}</span>
-                <span className="sidebar-link-text">{item.name}</span>
-              </Link>
-            )
-          })}
+              </span>
+              <span className="sidebar-link-text">{item.name}</span>
+            </Link>
+          )
+        })}
 
-          <Link href="/entry/new" className="sidebar-new-entry-mobile">
-            +
-          </Link>
+        {/* Central Glowing Action Button (+ New Entry) */}
+        <Link
+          href="/entry/new"
+          className="sidebar-action-btn"
+          title="Write New Entry"
+          aria-label="New Entry"
+        >
+          <span className="sidebar-action-disc">
+            <BookOpen size={20} strokeWidth={2} />
+          </span>
+          <span className="sidebar-link-text sidebar-action-label">Write</span>
+        </Link>
 
-          {navItems.slice(2).map((item) => {
-            const isActive = pathname.startsWith(item.path)
-            return (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`sidebar-link ${item.name === 'Settings' ? 'mobile-hidden' : ''} ${isActive ? 'sidebar-link--active' : ''}`}
-              >
+        {/* Remaining items (Community, Settings) */}
+        {navItems.slice(2).map((item) => {
+          const isActive = pathname.startsWith(item.path)
+          return (
+            <Link
+              key={item.path}
+              href={item.path}
+              className={`sidebar-link ${isActive ? 'sidebar-link--active' : ''}`}
+            >
+              <span className="sidebar-icon-glow">
                 <span className="sidebar-icon">{item.icon}</span>
-                <span className="sidebar-link-text">{item.name}</span>
                 {item.name === 'Community' && isAdmin && (
                   <span className="sidebar-badge sidebar-badge--admin">A</span>
                 )}
-              </Link>
-            )
-          })}
+              </span>
+              <span className="sidebar-link-text">{item.name}</span>
+            </Link>
+          )
+        })}
+      </nav>
 
-
-
-          {/* Profile tab — shown in bottom bar on mobile */}
-          <button
-            className={`sidebar-link sidebar-link--profile ${profileOpen ? 'sidebar-link--active' : ''}`}
-            onClick={() => setProfileOpen(true)}
-            aria-label="Open profile"
-          >
-            <span className="sidebar-icon sidebar-profile-avatar">
-              <User size={20} strokeWidth={1.5} />
-            </span>
-            <span className="sidebar-link-text">Me</span>
-          </button>
-        </nav>
-
-        {/* Desktop-only footer */}
-        <div className="sidebar-footer">
-          <button
-            className="sidebar-profile-btn"
-            onClick={() => setProfileOpen(true)}
-          >
-            <span className="sidebar-profile-avatar sidebar-profile-avatar--sm">{initials}</span>
-            <span className="sidebar-profile-name">{name.split(' ')[0]}</span>
-          </button>
-          <ThemeToggle />
+      {/* Desktop Footer (Theme Toggle) */}
+      <div className="sidebar-footer">
+        <div className="sidebar-theme-wrap">
+          <ThemeToggle compact />
         </div>
-      </aside>
-
-      {profileOpen && (
-        <ProfileModal
-          user={user}
-          streak={streak}
-          onClose={() => setProfileOpen(false)}
-        />
-      )}
-
-
-    </>
+      </div>
+    </aside>
   )
 }
