@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { getTodayVerseForUser, getGreeting, getStreakAndCount, getCurrentPlanInfo, getUserPreferences } from '@/utils/dailyVerse'
 import BadgeModal, { getNewBadge } from '@/components/BadgeModal'
+import { Flame, BookOpen, Sparkles, ArrowRight, BookMarked } from 'lucide-react'
 import './today.css'
 
 export default function Today() {
@@ -16,7 +17,6 @@ export default function Today() {
   const [recentDays, setRecentDays] = useState([])
   const [planInfo, setPlanInfo] = useState(null)
   const [newBadge, setNewBadge] = useState(null)
-  const [avatarUrl, setAvatarUrl] = useState(null)
   
   useEffect(() => {
     if (!user) return
@@ -26,7 +26,6 @@ export default function Today() {
     })
     getUserPreferences(user.id).then((prefs) => {
       setPlanInfo(getCurrentPlanInfo(user, prefs.examMode))
-      if (prefs.avatarUrl) setAvatarUrl(prefs.avatarUrl)
     })
     const { streak: s, totalEntries: t, recentDays: r } = getStreakAndCount(user.id)
     setStreak(s)
@@ -40,9 +39,6 @@ export default function Today() {
 
   const greeting = getGreeting()
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] ?? 'Devotee'
-  const initials = firstName.slice(0, 2).toUpperCase()
-  
-
 
   return (
     <div className="page-container today-page">
@@ -51,17 +47,23 @@ export default function Today() {
       {/* Header */}
       <div className="today-header">
         <div>
-          <div className="today-greeting-sub">{greeting},</div>
-          <div className="today-greeting-name">{firstName}</div>
+          <div className="today-greeting-sub">{greeting}</div>
+          <h1 className="today-greeting-name">{firstName}</h1>
         </div>
       </div>
 
       {/* Streak Card */}
-      <div className="today-streak-card">
+      <div className="today-glass-card today-streak-card">
         <div className="today-streak-header">
-          <span className="today-streak-count">{streak}</span>
-          <span className="today-streak-label">day streak</span>
+          <div className="today-streak-info">
+            <span className="today-streak-count">{streak}</span>
+            <span className="today-streak-label">day streak</span>
+          </div>
+          <div className="today-flame-icon">
+            <Flame size={24} />
+          </div>
         </div>
+
         <div className="today-streak-week">
           {recentDays.map((d, i) => (
              <div key={i} className="today-streak-day">
@@ -72,9 +74,14 @@ export default function Today() {
         </div>
       </div>
 
-      {/* Verse Card */}
-      <div className="today-verse-card">
-        <div className="today-verse-ref">TODAY &middot; {verse?.verse_reference?.toUpperCase() || 'LOADING...'}</div>
+      {/* Scripture Verse Card */}
+      <div className="today-glass-card today-verse-card">
+        <div className="today-verse-head">
+          <span className="today-verse-badge">
+            <Sparkles size={13} />
+            {verse?.verse_reference || 'TODAY\'S WORD'}
+          </span>
+        </div>
         
         {verseLoading ? (
           <div className="today-verse-skeleton">
@@ -93,20 +100,29 @@ export default function Today() {
         )}
         
         <button className="today-action-btn" onClick={() => router.push('/entry/new')}>
-          Open today&apos;s 4H &rarr;
+          <span>Open Today&apos;s 4H Framework</span>
+          <ArrowRight size={18} />
         </button>
       </div>
 
-      {/* Reading Plan */}
-      <div className="today-plan-card">
-        <div className="today-plan-header">
-          <span className="today-plan-title">Reading plan &middot; {planInfo?.title || 'Loading...'}</span>
-          <span className="today-plan-progress">Day {planInfo?.currentDay || 1}/{planInfo?.totalDays || 5}</span>
+      {/* Reading Plan Card */}
+      {planInfo && (
+        <div className="today-glass-card today-plan-card">
+          <div className="today-plan-header">
+            <div className="flex items-center gap-2">
+              <BookMarked size={18} className="text-amber-600" />
+              <span className="today-plan-title">{planInfo.title || 'Reading Plan'}</span>
+            </div>
+            <span className="today-plan-progress">Day {planInfo.currentDay || 1}/{planInfo.totalDays || 5}</span>
+          </div>
+          <div className="today-plan-bar-bg">
+            <div 
+              className="today-plan-bar-fill" 
+              style={{ width: `${Math.min(100, Math.max(5, ((planInfo.currentDay || 1) / (planInfo.totalDays || 5)) * 100))}%` }} 
+            />
+          </div>
         </div>
-        <div className="today-plan-bar-bg">
-          <div className="today-plan-bar-fill" style={{ width: `${((planInfo?.currentDay || 1) / (planInfo?.totalDays || 5)) * 100}%` }}></div>
-        </div>
-      </div>
+      )}
 
     </div>
   )

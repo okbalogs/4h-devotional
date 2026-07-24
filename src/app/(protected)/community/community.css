@@ -3,6 +3,54 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  animation: fadeIn 0.4s ease forwards;
+}
+
+/* Glassmorphism for Community Cards */
+.prayer-post-form,
+.prayer-card,
+.group-card,
+.partner-card,
+.notice-card,
+.notif-banner {
+  background: rgba(251, 250, 247, 0.72) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  border-radius: 20px !important;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+[data-theme="dark"] .prayer-post-form,
+[data-theme="dark"] .prayer-card,
+[data-theme="dark"] .group-card,
+[data-theme="dark"] .partner-card,
+[data-theme="dark"] .notice-card,
+[data-theme="dark"] .notif-banner {
+  background: rgba(25, 22, 20, 0.75) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+.prayer-card:hover,
+.group-card:hover,
+.partner-card:hover,
+.notice-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(92, 61, 46, 0.1) !important;
+}
+
+.prayer-textarea {
+  background: rgba(92, 61, 46, 0.04) !important;
+  border: 1px solid rgba(92, 61, 46, 0.15) !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(8px);
+}
+
+[data-theme="dark"] .prayer-textarea {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 /* ── Prayer post form ── */
