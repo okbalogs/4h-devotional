@@ -245,7 +245,7 @@ export default function NewEntry() {
           {verseText && (
             <>
               <VerseAudioPlayer verseText={verseText} verseRef={scriptureRef} />
-              <AiInsightsPanel verseText={verseText} verseRef={scriptureRef} />
+              <AiInsightsPanel verseText={verseText} verseRef={scriptureRef} activeTab={step.id} />
             </>
           )}
         </div>

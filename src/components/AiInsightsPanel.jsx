@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Sparkles, ChevronDown, Book, Lightbulb, History } from 'lucide-react'
 import './ai-insights.css'
 
-export default function AiInsightsPanel({ verseText, verseRef }) {
+export default function AiInsightsPanel({ verseText, verseRef, activeTab }) {
   const [expanded, setExpanded] = useState(false)
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState(null)
@@ -70,42 +70,73 @@ export default function AiInsightsPanel({ verseText, verseRef }) {
 
           {data && !loading && (
             <div className="ai-insights-data animate-fade-in-up">
-              {data.context && (
-                <div className="ai-section">
-                  <div className="ai-section-title">
-                    <History size={13} /> Historical Context
-                  </div>
-                  <div className="ai-section-body">
-                    {data.context}
-                  </div>
-                </div>
+              
+              {/* Head / Hear Tab */}
+              {activeTab === 'hear' && data.hear && (
+                <>
+                  {data.hear.context && (
+                    <div className="ai-section">
+                      <div className="ai-section-title">
+                        <History size={13} /> Historical Context
+                      </div>
+                      <div className="ai-section-body">
+                        {data.hear.context}
+                      </div>
+                    </div>
+                  )}
+                  {data.hear.crossReferences && data.hear.crossReferences.length > 0 && (
+                    <div className="ai-section">
+                      <div className="ai-section-title">
+                        <Book size={13} /> Cross References
+                      </div>
+                      <div className="ai-section-body">
+                        <ul>
+                          {data.hear.crossReferences.map((ref, idx) => (
+                            <li key={idx}>{ref}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
 
-              {data.crossReferences && data.crossReferences.length > 0 && (
-                <div className="ai-section">
-                  <div className="ai-section-title">
-                    <Book size={13} /> Cross References
-                  </div>
-                  <div className="ai-section-body">
-                    <ul>
-                      {data.crossReferences.map((ref, idx) => (
-                        <li key={idx}>{ref}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
-
-              {data.reflection && (
+              {/* Heart / Heed Tab */}
+              {activeTab === 'heed' && data.heed && data.heed.reflection && (
                 <div className="ai-section">
                   <div className="ai-section-title">
                     <Lightbulb size={13} /> Reflection Prompt
                   </div>
                   <div className="ai-section-body" style={{ fontStyle: 'italic', color: 'var(--clr-primary)' }}>
-                    &ldquo;{data.reflection}&rdquo;
+                    &ldquo;{data.heed.reflection}&rdquo;
                   </div>
                 </div>
               )}
+
+              {/* Hand / Hold Tab */}
+              {activeTab === 'hold' && data.hold && data.hold.action && (
+                <div className="ai-section">
+                  <div className="ai-section-title">
+                    <Sparkles size={13} /> Practical Action
+                  </div>
+                  <div className="ai-section-body">
+                    {data.hold.action}
+                  </div>
+                </div>
+              )}
+
+              {/* Help / Help Tab */}
+              {activeTab === 'help' && data.help && data.help.sharing && (
+                <div className="ai-section">
+                  <div className="ai-section-title">
+                    <Sparkles size={13} /> Sharing & Prayer
+                  </div>
+                  <div className="ai-section-body">
+                    {data.help.sharing}
+                  </div>
+                </div>
+              )}
+              
             </div>
           )}
         </div>

@@ -34,13 +34,21 @@ Reference: ${verseRef}
 Text: "${verseText}"
 
 Provide devotional insights in strict JSON format. Do not use Markdown backticks.
-The JSON must have exactly the following structure:
+The JSON must have exactly the following structure, corresponding to the Head (Hear), Heart (Heed), Hand (Hold), and Help (Help) sections of their journal:
 {
-  "context": "A 2-3 sentence explanation of the historical or literary context of this verse.",
-  "crossReferences": [
-    "List exactly 2 or 3 related Bible references (e.g. 'John 3:16') that deepen the understanding"
-  ],
-  "reflection": "A single, thought-provoking question to help the user apply this verse to their heart and daily life."
+  "hear": {
+    "context": "A 2-3 sentence explanation of the historical or literary context of this verse.",
+    "crossReferences": ["List exactly 2 or 3 related Bible references (e.g. 'John 3:16') that deepen the understanding"]
+  },
+  "heed": {
+    "reflection": "A single, thought-provoking question to help the user apply this verse to their heart and daily life."
+  },
+  "hold": {
+    "action": "2-3 practical, actionable steps the user can take today to live out this verse."
+  },
+  "help": {
+    "sharing": "A suggestion on who might need to hear this message today, or a brief prayer prompt to wrap up the devotional."
+  }
 }
 `;
 
