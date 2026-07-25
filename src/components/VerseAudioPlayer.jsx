@@ -21,6 +21,7 @@ export default function VerseAudioPlayer({ verseText, verseRef }) {
   // Check browser support
   useEffect(() => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSupported(false)
     }
   }, [])

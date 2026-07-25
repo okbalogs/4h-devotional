@@ -10,6 +10,7 @@ import { queueEntry, saveLocalEntry } from '@/utils/offlineStorage'
 import { notifyUser } from '@/utils/pushManager'
 import { FileText } from 'lucide-react'
 import VerseAudioPlayer from '@/components/VerseAudioPlayer'
+import AiInsightsPanel from '@/components/AiInsightsPanel'
 
 const DRAFT_KEY = 'devotion_draft'
 
@@ -242,7 +243,10 @@ export default function NewEntry() {
           <span className="new-verse-ref">{scriptureRef}</span>
           <p className="new-verse-text">&ldquo;{verseText || 'Loading...'}&rdquo;</p>
           {verseText && (
-            <VerseAudioPlayer verseText={verseText} verseRef={scriptureRef} />
+            <>
+              <VerseAudioPlayer verseText={verseText} verseRef={scriptureRef} />
+              <AiInsightsPanel verseText={verseText} verseRef={scriptureRef} />
+            </>
           )}
         </div>
 
