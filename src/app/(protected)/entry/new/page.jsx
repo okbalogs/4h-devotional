@@ -9,6 +9,7 @@ import { getTodayVerseForUser } from '@/utils/dailyVerse'
 import { queueEntry, saveLocalEntry } from '@/utils/offlineStorage'
 import { notifyUser } from '@/utils/pushManager'
 import { FileText } from 'lucide-react'
+import VerseAudioPlayer from '@/components/VerseAudioPlayer'
 
 const DRAFT_KEY = 'devotion_draft'
 
@@ -240,6 +241,9 @@ export default function NewEntry() {
         <div className="new-verse-context">
           <span className="new-verse-ref">{scriptureRef}</span>
           <p className="new-verse-text">&ldquo;{verseText || 'Loading...'}&rdquo;</p>
+          {verseText && (
+            <VerseAudioPlayer verseText={verseText} verseRef={scriptureRef} />
+          )}
         </div>
 
         <h1 className="new-step-title">{step.title}</h1>

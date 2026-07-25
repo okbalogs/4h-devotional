@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext'
 import { getTodayVerseForUser, getGreeting, getStreakAndCount, getCurrentPlanInfo, getUserPreferences } from '@/utils/dailyVerse'
 import BadgeModal, { getNewBadge } from '@/components/BadgeModal'
 import { Flame, BookOpen, Sparkles, ArrowRight, BookMarked } from 'lucide-react'
+import VerseAudioPlayer from '@/components/VerseAudioPlayer'
 import './today.css'
 
 export default function Today() {
@@ -99,6 +100,14 @@ export default function Today() {
           </div>
         )}
         
+        {/* Audio Player */}
+        {!verseLoading && verse && (
+          <VerseAudioPlayer 
+            verseText={verse.verse_text} 
+            verseRef={verse.verse_reference} 
+          />
+        )}
+
         <button className="today-action-btn" onClick={() => router.push('/entry/new')}>
           <span>Open Today&apos;s 4H Framework</span>
           <ArrowRight size={18} />
