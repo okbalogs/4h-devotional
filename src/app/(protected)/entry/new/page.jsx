@@ -11,6 +11,7 @@ import { notifyUser } from '@/utils/pushManager'
 import { FileText } from 'lucide-react'
 import VerseAudioPlayer from '@/components/VerseAudioPlayer'
 import AiInsightsPanel from '@/components/AiInsightsPanel'
+import HighlightableVerse from '@/components/HighlightableVerse'
 
 const DRAFT_KEY = 'devotion_draft'
 
@@ -241,7 +242,11 @@ export default function NewEntry() {
         {/* Verse display above the input for context */}
         <div className="new-verse-context">
           <span className="new-verse-ref">{scriptureRef}</span>
-          <p className="new-verse-text">&ldquo;{verseText || 'Loading...'}&rdquo;</p>
+          {verseText ? (
+            <HighlightableVerse verseText={verseText} verseRef={scriptureRef} />
+          ) : (
+            <p className="new-verse-text">Loading...</p>
+          )}
           {verseText && (
             <>
               <VerseAudioPlayer verseText={verseText} verseRef={scriptureRef} />

@@ -6,6 +6,7 @@ import { getTodayVerseForUser, getGreeting, getStreakAndCount, getCurrentPlanInf
 import BadgeModal, { getNewBadge } from '@/components/BadgeModal'
 import { Flame, BookOpen, Sparkles, ArrowRight, BookMarked } from 'lucide-react'
 import VerseAudioPlayer from '@/components/VerseAudioPlayer'
+import HighlightableVerse from '@/components/HighlightableVerse'
 import './today.css'
 
 export default function Today() {
@@ -91,9 +92,7 @@ export default function Today() {
             <div className="skeleton-line short"></div>
           </div>
         ) : verse ? (
-          <div className="today-verse-text">
-             &ldquo;{verse.verse_text.trim()}&rdquo;
-          </div>
+          <HighlightableVerse verseText={verse.verse_text.trim()} verseRef={verse.verse_reference} />
         ) : (
           <div className="today-verse-text">
              No verse loaded — check your connection.

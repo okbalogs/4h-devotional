@@ -1,0 +1,146 @@
+/* ─── HIGHLIGHT POPUP TOOLBAR ─── */
+.highlight-toolbar {
+  position: absolute;
+  background: var(--clr-card);
+  border: 1px solid var(--clr-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 30px;
+  padding: 6px 10px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  z-index: 1000;
+  animation: fade-in-up 0.2s ease-out forwards;
+}
+
+[data-theme="dark"] .highlight-toolbar {
+  background: var(--clr-card);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.highlight-color-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.highlight-color-btn:hover {
+  transform: scale(1.15);
+}
+
+/* ─── HIGHLIGHT SPANS ─── */
+.highlighted-text {
+  border-radius: 4px;
+  padding: 2px 0;
+  cursor: pointer;
+  transition: filter 0.2s;
+  position: relative;
+}
+
+.highlighted-text:hover {
+  filter: brightness(0.95);
+}
+
+[data-theme="dark"] .highlighted-text {
+  color: #141211;
+}
+
+/* Colors */
+.hl-yellow { background-color: #FDE047; }
+.hl-green { background-color: #86EFAC; }
+.hl-blue { background-color: #93C5FD; }
+.hl-pink { background-color: #F9A8D4; }
+
+/* ─── NOTE MODAL ─── */
+.highlight-note-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.highlight-note-modal {
+  background: var(--clr-card);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: var(--shadow-card);
+  animation: fade-in-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.highlight-note-modal h3 {
+  font-family: var(--font-serif);
+  color: var(--clr-primary);
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+}
+
+.highlight-note-modal textarea {
+  width: 100%;
+  min-height: 100px;
+  background: transparent;
+  border: 1px solid var(--clr-border);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--clr-text);
+  font-size: 0.95rem;
+  resize: vertical;
+  margin-bottom: 16px;
+  outline: none;
+}
+
+.highlight-note-modal textarea:focus {
+  border-color: var(--clr-primary);
+}
+
+.highlight-note-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.highlight-btn-save {
+  background: var(--clr-primary);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.highlight-btn-save:hover {
+  background: var(--clr-primary-hover);
+}
+
+.highlight-btn-cancel, .highlight-btn-delete {
+  background: transparent;
+  color: var(--clr-text-muted);
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  transition: color 0.2s;
+  font-weight: 500;
+}
+
+.highlight-btn-delete {
+  color: #ef4444;
+}
+
+.highlight-btn-delete:hover {
+  color: #dc2626;
+}
+
+.highlight-btn-cancel:hover {
+  color: var(--clr-text);
+}

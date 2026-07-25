@@ -2,6 +2,43 @@ const VERSE_KEY    = (uid, day) => `verse_${uid}_${day}`
 const PENDING_KEY  = 'pending_entries'
 const ENTRIES_KEY  = (uid) => `entries_${uid}`
 const PROFILE_KEY  = (uid) => `profile_${uid}`
+const HIGHLIGHTS_KEY = (uid, verseRef) => `highlights_${uid}_${verseRef}`
+
+// ─── Highlights ───
+
+export function getLocalHighlights(uid, verseRef) {
+  try {
+    const raw = localStorage.getItem(HIGHLIGHTS_KEY(uid, verseRef))
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
+export function saveLocalHighlight(uid, verseRef, highlight) {
+  try {
+    const highlights = getLocalHighlights(uid, verseRef)
+    const newHighlight = {
+      ...highlight,
+      id: highlight.id || `hl_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+      created_at: new Date().toISOString()
+    }
+    // Remove if there's an existing highlight that overlaps exactly, or just append
+    highlights.push(newHighlight)
+    localStorage.setItem(HIGHLIGHTS_KEY(uid, verseRef), JSON.stringify(highlights))
+    return newHighlight
+  } catch {
+    return null
+  }
+}
+
+export function deleteLocalHighlight(uid, verseRef, highlightId) {
+  try {
+    const highlights = getLocalHighlights(uid, verseRef)
+    const filtered = highlights.filter(h => h.id !== highlightId)
+    localStorage.setItem(HIGHLIGHTS_KEY(uid, verseRef), JSON.stringify(filtered))
+  } catch {}
+}
 
 // ─── Verse cache ───
 
