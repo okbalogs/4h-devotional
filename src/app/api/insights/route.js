@@ -24,7 +24,8 @@ export async function POST(req) {
       );
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Using gemini-flash-latest as per guidelines
+    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
     const prompt = `
 You are a theological assistant helping a believer with their daily devotional (Quiet Time).
