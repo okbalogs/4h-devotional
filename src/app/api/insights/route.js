@@ -64,7 +64,7 @@ The JSON must have exactly the following structure:
   } catch (error) {
     console.error('[AI Insights Route Error]', error);
     return NextResponse.json(
-      { error: 'An error occurred while generating insights.' },
+      { error: error.message || 'An error occurred while generating insights.' },
       { status: 500 }
     );
   }
